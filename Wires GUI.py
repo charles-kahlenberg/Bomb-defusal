@@ -11,6 +11,11 @@
 #2x4 grid of circles, with the top row being the input wires and the bottom row being the output wires. Each circle will have a letter in it that corresponds to the color of the wire. The user will have to press the corresponding key to cut the wire and move it to the correct output. If they cut the wrong wire, they get a strike. If they get 3 strikes, they lose. If they get all 4 wires correct, they win and get a winning screen.
 #When the correct wire is attached, the wire will be drawn on the screen connecting the input and output circles. When the wrong wire is attached, a strike will be added and the wire will not be drawn. The user will have to press the corresponding key to cut the wire and move it to the correct output. If they cut the wrong wire, they get a strike. If they get 3 strikes, they lose. If they get all 4 wires correct, they win and get a winning screen.
 #Circles for the start positions and output positons
+#If button is pressed and gave is not over, check if the button pressed corresponds with correct place
+#else, add to strike counter
+#If all buttons are in the correct place, print win statement
+#If strike counter >= 3, print lose statement and quit game
+
 
 
 
@@ -136,7 +141,7 @@ green_wire = GreenWire((circle8_x, circle8_y), (circle4_x, circle4_y))
 connected = {"red": False, "blue": False, "yellow": False, "green": False}
 
 # Sequential order: player must connect these wires one at a time, in order.
-wires_in_order = [red_wire, blue_wire, yellow_wire, green_wire]
+wires_in_order = [red_wire, blue_wire, yellow_wire, green_wire] #Claude gave me this so that I could get the Wires in order
 current_index = 0
 game_over = False
 won = False
@@ -166,7 +171,7 @@ while True:
     # Clear the screen
     screen.fill(black)
 
-    # Top row (input circles)
+    # Top row (input circles) Claude simplified and output all the circles
     pygame.draw.circle(screen, red, (circle1_x, circle1_y), circle_radius)
     screen.blit(font.render("R", True, black), font.render("R", True, black).get_rect(center=(circle1_x, circle1_y)))
 
