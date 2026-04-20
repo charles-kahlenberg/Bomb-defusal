@@ -122,24 +122,30 @@ def create_game_state():
     # Variables
     circle_radius = 30
 
+    circle_loc_top = [[150, 250], [310, 250], [470, 250], [630, 250]]
+    circle_loc_bottom = [[150, 550], [310, 550], [470, 550], [630, 550]]
+
+    random.shuffle(circle_loc_top)
+    random.shuffle(circle_loc_bottom)
+
     # Top row (input wires) - 4 columns evenly spaced
-    circle1_x, circle1_y = 150, 250   # Red input
-    circle2_x, circle2_y = 310, 250   # Blue input
-    circle3_x, circle3_y = 470, 250   # Yellow input
-    circle4_x, circle4_y = 630, 250   # Green input
+    circle1_x, circle1_y = circle_loc_top[0]   # Red input
+    circle2_x, circle2_y = circle_loc_top[1]   # Blue input
+    circle3_x, circle3_y = circle_loc_top[2]   # Yellow input
+    circle4_x, circle4_y = circle_loc_top[3]   # Green input
 
     # Bottom row (output wires) - 4 columns evenly spaced
-    circle5_x, circle5_y = 150, 550   # Red output
-    circle6_x, circle6_y = 310, 550   # Blue output
-    circle7_x, circle7_y = 470, 550   # Yellow output
-    circle8_x, circle8_y = 630, 550   # Green output
+    circle5_x, circle5_y = circle_loc_bottom[0]   # Red output
+    circle6_x, circle6_y = circle_loc_bottom[1]   # Blue output
+    circle7_x, circle7_y = circle_loc_bottom[2]   # Yellow output
+    circle8_x, circle8_y = circle_loc_bottom[3]   # Green output
 
     return {
         "colors": {
             "white": white,
             "black": black,
-            "red": red,
-            "blue": blue,
+            "red": blue, # for some reason blue and red are swapped, so I swapped them here. good fix!
+            "blue": red,
             "yellow": yellow,
             "green": green,
         },
@@ -180,6 +186,8 @@ def main():
     circle_radius = state["circle_radius"]
 
     print("Watch the wires! Pressed the designate key that corresponds to the wire color to cut it. Red = R, Green = G, Blue = B, Yellow = Y")
+
+
 
     # Wire objects (created once; drawn each frame when connected)
     red_wire = RedWire(points["circle6"], points["circle2"])
