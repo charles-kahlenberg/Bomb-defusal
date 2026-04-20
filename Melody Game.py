@@ -16,6 +16,8 @@
 
 import pygame
 import random
+import sys
+import time
 
 COLOR = (255, 255, 255)        
 SURFACE_COLOR = (115, 147, 179) 
@@ -23,6 +25,8 @@ WIDTH = 800
 HEIGHT = 800
 
 #Everything below is imported from https://www.geeksforgeeks.org/python/pygame-creating-sprites/ and modified to fit my game, I will be using sprites for the buttons that the user will press to play the melodies
+
+#Make Sprites
 
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, color, height, width):
@@ -36,7 +40,19 @@ class Sprite(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect()
 
-pygame.init()
+class ClickableSprite(pygame.sprite.Sprite):
+    def __init__(self, image, x, y):
+        super().__init__()
+        self.image = image
+        self.rect = self.image.get_rect(topleft=(x, y))
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            # Check if the mouse click position (event.pos) is inside the sprite
+            if self.rect.collidepoint(event.pos):
+                print("Sprite clicked!")
+               
+
 
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
@@ -48,14 +64,16 @@ pygame.display.set_caption("Melody Game")
 
 all_sprites_list = pygame.sprite.Group()
 
-object_ = Sprite(WHITE, 20, 30)
+#Create Objects
+object1 = Sprite(RED, 20, 30)
 object2 = Sprite(BLACK, 20, 30)
-object3 = Sprite(WHITE, 20, 30)
+object3 = Sprite(RED, 20, 30)
 object4 = Sprite(BLACK, 20, 30)
-object5 = Sprite(WHITE, 20, 30)
+object5 = Sprite(RED, 20, 30)
 
-object_.rect.x = 100  
-object_.rect.y = 300  
+#Set the position of the objects
+object1.rect.x = 100  
+object1.rect.y = 300  
 object2.rect.x = 200
 object2.rect.y = 300
 object3.rect.x = 300
@@ -65,7 +83,8 @@ object4.rect.y = 300
 object5.rect.x = 500
 object5.rect.y = 300
 
-all_sprites_list.add(object_)
+#Add the objects to the list of sprites
+all_sprites_list.add(object1)
 all_sprites_list.add(object2)
 all_sprites_list.add(object3)
 all_sprites_list.add(object4)
@@ -73,6 +92,7 @@ all_sprites_list.add(object5)
 
 exit_game = True
 clock = pygame.time.Clock()
+print (clock)
 
 while exit_game:
     for event in pygame.event.get():
@@ -86,3 +106,23 @@ while exit_game:
     clock.tick(60)              
 
 pygame.quit()
+
+pressed = {object1: False, object2: False, object3: False, object4: False, object5: False}
+game_over = False
+won = False
+big_font = pygame.font.SysFont(None, 72)
+
+#Make the buttons pressable and play a sound when they are pressed, also add the melody to a list of melodies that the player has to repeat
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
+            for sprite in all_sprites_list:
+                if sprite.rect.collidepoint(event.pos):
+                    print("Sprite clicked!")
+                    pressed[sprite] = True
+                    #Play the corresponding sound for the sprite
+                    #Add the corresponding note to the melody list that the player has to repeat
+
