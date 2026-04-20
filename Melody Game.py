@@ -14,8 +14,6 @@
 #6. If the player presses the wrong button, they get a strike counter added to them, and they have to start the melody over again
 #7 If the player gets 3 strikes, they lose and have to start the game over again
 
-from time import sleep
-
 import pygame
 import random
 import sys
@@ -49,7 +47,38 @@ def make_chord_sound(frequencies, duration=0.6, sample_rate=44100, volume=0.3):
     stereo = np.column_stack((audio, audio))
     return pygame.sndarray.make_sound(stereo)
 
-COLOR = (255, 255, 255)        
+def make_hooray_sound(sample_rate=44100, volume=0.35):
+    #Ascending C-E-G-C arpeggio for a cheerful "hooray"
+    notes = [(523.25, 0.12), (659.25, 0.12), (783.99, 0.12), (1046.50, 0.28)]
+    pieces = []
+    for freq, dur in notes:
+        t = np.linspace(0, dur, int(sample_rate * dur), endpoint=False)
+        tone = np.sin(2 * np.pi * freq * t)
+        fade = int(sample_rate * 0.01)
+        env = np.ones_like(tone)
+        env[:fade] = np.linspace(0, 1, fade)
+        env[-fade:] = np.linspace(1, 0, fade)
+        pieces.append(tone * env)
+    wave = np.concatenate(pieces) * volume
+    audio = np.int16(wave * 32767)
+    stereo = np.column_stack((audio, audio))
+    return pygame.sndarray.make_sound(stereo)
+
+def make_buzzer_sound(duration=0.5, sample_rate=44100, volume=0.35):
+    #Harsh low square-wave buzzer for wrong answers
+    t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
+    wave = np.sign(np.sin(2 * np.pi * 140 * t)) * 0.6
+    wave += np.sign(np.sin(2 * np.pi * 95 * t)) * 0.4
+    fade = int(sample_rate * 0.02)
+    env = np.ones_like(wave)
+    env[:fade] = np.linspace(0, 1, fade)
+    env[-fade:] = np.linspace(1, 0, fade)
+    wave = wave * env * volume
+    audio = np.int16(wave * 32767)
+    stereo = np.column_stack((audio, audio))
+    return pygame.sndarray.make_sound(stereo)
+
+COLOR = (255, 255, 255)
 SURFACE_COLOR = (115, 147, 179) 
 WIDTH = 800
 HEIGHT = 800
@@ -79,6 +108,7 @@ class Sprite(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.highlight_until = 0
 
+    #Used Code from https://www.pygame.org/docs/ref/sprite.html#pygame.sprite.Sprite.update and modified it to fit my game, this is used to make the sprites flash when they are pressed by the computer or the user
     def highlight(self, now):
         self.image = self.highlight_image
         self.highlight_until = now + HIGHLIGHT_MS
@@ -147,6 +177,8 @@ sprite_objects = [object1, object2, object3, object4, object5]
 #Assign one chord from the library to each button
 button_chord_names = ["C_major", "D_minor", "E_minor", "F_major", "G_major"]
 button_sounds = [make_chord_sound(CHORD_LIBRARY[name]) for name in button_chord_names]
+hooray_sound = make_hooray_sound()
+buzzer_sound = make_buzzer_sound()
 
 #Game state
 rounds = 0
@@ -156,10 +188,14 @@ game_over = False
 
 melody = []
 player_melody = []
-state = "start_round"    # "start_round" -> "computer_playing" -> "player_input" -> "check"
+state = "start_round"    # "start_round" -> "computer_playing" -> "player_input" -> "check" -> "between_rounds"
 note_index = 0
 next_note_time = 0
+next_round_time = 0
+check_time = 0
 chord_gap_ms = 800        # time between computer-played chords
+between_rounds_ms = 1000  # pause after a round so the last highlight stays visible
+pre_result_ms = 250       # tiny beat between the last click and the win/lose sound
 
 while exit_game:
     now = pygame.time.get_ticks()
@@ -176,6 +212,7 @@ while exit_game:
                     player_melody.append(button_chord_names[i])
                     if len(player_melody) >= len(melody):
                         state = "check"
+                        check_time = now + pre_result_ms
                     break
 
     if not game_over:
@@ -202,18 +239,25 @@ while exit_game:
                     state = "player_input"
 
         elif state == "check":
-            if player_melody == melody:
-                print("Correct! Next round.")
-                rounds += 1
-            else:
-                strikes += 1
-                print(f"Wrong! Strike {strikes}/{max_strikes}.")
-                if strikes >= max_strikes:
-                    print("Game over!")
-                    game_over = True
-            if not game_over:
+            if now >= check_time:
+                if player_melody == melody:
+                    print("Correct! Next round.")
+                    hooray_sound.play()
+                    rounds += 1
+                else:
+                    strikes += 1
+                    print(f"Wrong! Strike {strikes}/{max_strikes}.")
+                    buzzer_sound.play()
+                    if strikes >= max_strikes:
+                        print("Game over!")
+                        game_over = True
+                if not game_over:
+                    state = "between_rounds"
+                    next_round_time = now + between_rounds_ms
+
+        elif state == "between_rounds":
+            if now >= next_round_time:
                 state = "start_round"
-                sleep(1)# Brief pause before next round
 
     for s in sprite_objects:
         s.update_highlight(now)
