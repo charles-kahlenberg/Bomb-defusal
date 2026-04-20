@@ -14,6 +14,8 @@
 #6. If the player presses the wrong button, they get a strike counter added to them, and they have to start the melody over again
 #7 If the player gets 3 strikes, they lose and have to start the game over again
 
+from time import sleep
+
 import pygame
 import random
 import sys
@@ -211,6 +213,7 @@ while exit_game:
                     game_over = True
             if not game_over:
                 state = "start_round"
+                sleep(1)# Brief pause before next round
 
     for s in sprite_objects:
         s.update_highlight(now)
