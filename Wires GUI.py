@@ -182,8 +182,8 @@ def main():
     print("Watch the wires! Pressed the designate key that corresponds to the wire color to cut it. Red = R, Green = G, Blue = B, Yellow = Y")
 
     # Wire objects (created once; drawn each frame when connected)
-    red_wire = RedWire(points["circle5"], points["circle1"])
-    blue_wire = BlueWire(points["circle6"], points["circle2"])
+    red_wire = RedWire(points["circle6"], points["circle2"])
+    blue_wire = BlueWire(points["circle5"], points["circle1"])
     yellow_wire = YellowWire(points["circle7"], points["circle3"])
     green_wire = GreenWire(points["circle8"], points["circle4"])
 
