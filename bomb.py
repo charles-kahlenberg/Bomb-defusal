@@ -9,6 +9,20 @@ from bomb_configs import *
 # import the phases
 from bomb_phases import *
 import pygame
+import sys
+from pathlib import Path
+
+# import the wires GUI module by file path
+def import_wires_gui():
+    import importlib.util
+
+    project_dir = Path(__file__).resolve().parent
+    wires_path = project_dir / "Wires GUI.py"
+
+    spec = importlib.util.spec_from_file_location("wires_gui", wires_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 ###########
 # functions
@@ -163,11 +177,24 @@ def turn_off():
     for pin in button._rgb:
         pin.value = True
 
+def main():
+    # launch the wires GUI immediately
+    wires_gui = import_wires_gui()
+    return wires_gui.main()
+
 ######
 # MAIN
 ######
 
-# initialize the LCD GUI (pygame)
+if __name__ == "__main__":
+    raise SystemExit(main())
+gui = Lcd()
+
+# initialize the bomb strikes and active phases (i.e., not yet defused)
+strikes_left = NUM_STRIKES
+active_phases = NUM_PHASES
+
+# "boot" the bomb (schedule the bootup)
 gui = Lcd()
 
 # initialize the bomb strikes and active phases (i.e., not yet defused)
