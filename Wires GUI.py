@@ -210,7 +210,7 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
-            if event.type == pygame.KEYDOWN and not game_over:
+            if event.type == pygame.KEYDOWN and not game_over: # will change to wires event later
                 expected_wire = wires_in_order[current_index]
                 if expected_wire.check_attached(event.key):
                     connected[expected_wire.color] = True
@@ -228,10 +228,10 @@ def main():
 
         # Top row (input circles)
         pygame.draw.circle(screen, colors["red"], points["circle1"], circle_radius)
-        draw_text_centered(screen, font, "R", colors["black"], points["circle1"])
+        draw_text_centered(screen, font, "B", colors["black"], points["circle1"])
 
         pygame.draw.circle(screen, colors["blue"], points["circle2"], circle_radius)
-        draw_text_centered(screen, font, "B", colors["black"], points["circle2"])
+        draw_text_centered(screen, font, "R", colors["black"], points["circle2"])
 
         pygame.draw.circle(screen, colors["yellow"], points["circle3"], circle_radius)
         draw_text_centered(screen, font, "Y", colors["black"], points["circle3"])
@@ -241,10 +241,10 @@ def main():
 
         # Bottom row (output circles)
         pygame.draw.circle(screen, colors["red"], points["circle5"], circle_radius)
-        draw_text_centered(screen, font, "R", colors["black"], points["circle5"])
+        draw_text_centered(screen, font, "B", colors["black"], points["circle5"])
 
         pygame.draw.circle(screen, colors["blue"], points["circle6"], circle_radius)
-        draw_text_centered(screen, font, "B", colors["black"], points["circle6"])
+        draw_text_centered(screen, font, "R", colors["black"], points["circle6"])
 
         pygame.draw.circle(screen, colors["yellow"], points["circle7"], circle_radius)
         draw_text_centered(screen, font, "Y", colors["black"], points["circle7"])
