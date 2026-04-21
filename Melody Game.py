@@ -23,6 +23,7 @@ pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=512)
 pygame.init()
 pygame.mixer.init()
 
+
 #Chord library: note frequencies in Hz for each chord (root, third, fifth)
 CHORD_LIBRARY = {
     "C_major":  [261.63, 329.63, 392.00],
@@ -59,6 +60,29 @@ def make_hooray_sound(sample_rate=44100, volume=0.35):
         env[:fade] = np.linspace(0, 1, fade)
         env[-fade:] = np.linspace(1, 0, fade)
         pieces.append(tone * env)
+    wave = np.concatenate(pieces) * volume
+    audio = np.int16(wave * 32767)
+    stereo = np.column_stack((audio, audio))
+    return pygame.sndarray.make_sound(stereo)
+
+def make_whomp_sound(sample_rate=44100, volume=0.35):
+    #Descending "sad trombone" whomp-whomp-whomp-whoooomp
+    notes = [(261.63, 0.22), (233.08, 0.22), (207.65, 0.22), (174.61, 0.55)]
+    pieces = []
+    for freq, dur in notes:
+        t = np.linspace(0, dur, int(sample_rate * dur), endpoint=False)
+        #Slight vibrato + saw-ish flavor for a brassy feel
+        tone = (np.sin(2 * np.pi * freq * t)
+                + 0.5 * np.sin(2 * np.pi * 2 * freq * t)
+                + 0.25 * np.sin(2 * np.pi * 3 * freq * t))
+        tone = tone / 1.75
+        fade = int(sample_rate * 0.015)
+        env = np.ones_like(tone)
+        env[:fade] = np.linspace(0, 1, fade)
+        env[-fade:] = np.linspace(1, 0, fade)
+        pieces.append(tone * env)
+        #Small silent gap between whomps
+        pieces.append(np.zeros(int(sample_rate * 0.04)))
     wave = np.concatenate(pieces) * volume
     audio = np.int16(wave * 32767)
     stereo = np.column_stack((audio, audio))
@@ -172,6 +196,11 @@ exit_game = True
 clock = pygame.time.Clock()
 print (clock)
 
+#Timer text
+timer_font = pygame.font.SysFont("Arial", 48, bold=True)
+TIMER_COLOR = (255, 255, 255)
+game_start_ticks = pygame.time.get_ticks()
+
 sprite_objects = [object1, object2, object3, object4, object5]
 
 #Assign one chord from the library to each button
@@ -179,6 +208,7 @@ button_chord_names = ["C_major", "D_minor", "E_minor", "F_major", "G_major"]
 button_sounds = [make_chord_sound(CHORD_LIBRARY[name]) for name in button_chord_names]
 hooray_sound = make_hooray_sound()
 buzzer_sound = make_buzzer_sound()
+whomp_sound = make_whomp_sound()
 
 #Game state
 rounds = 0
@@ -196,6 +226,7 @@ check_time = 0
 chord_gap_ms = 800        # time between computer-played chords
 between_rounds_ms = 1000  # pause after a round so the last highlight stays visible
 pre_result_ms = 250       # tiny beat between the last click and the win/lose sound
+timer = 0
 
 while exit_game:
     now = pygame.time.get_ticks()
@@ -251,6 +282,7 @@ while exit_game:
                     if strikes >= max_strikes:
                         print("Game over!")
                         game_over = True
+                        whomp_sound.play()
                 if not game_over:
                     state = "between_rounds"
                     next_round_time = now + between_rounds_ms
@@ -265,6 +297,28 @@ while exit_game:
     all_sprites_list.update()
     screen.fill(SURFACE_COLOR)
     all_sprites_list.draw(screen)
+
+    #Draw the elapsed-time timer in the top-right
+    time_left = 4000 - (now - game_start_ticks)  # 60 seconds total, converted to milliseconds
+    seconds_total = time_left // 1000
+    timer_text = f"{seconds_total // 60:02d}:{seconds_total % 60:02d}"
+    if time_left <= 0:
+        if not game_over:
+            whomp_sound.play()
+            game_over = True
+            for sprite in list(all_sprites_list):
+                sprite.remove()  # remove sprites to prevent further interaction
+            sprite_objects.clear()  # clear the list of sprites
+        timer_text = "00:00"
+        timer_surface = timer_font.render(timer_text, True, (255, 0, 0))  # red timer when time's up
+        lost_text = timer_font.render("Time's up! Game Over!", True, (255, 0, 0))
+        screen.blit(lost_text, ((WIDTH - lost_text.get_width()) // 2, 100))
+
+    else:
+        timer_text = f"{seconds_total // 60:02d}:{seconds_total % 60:02d}"
+    timer_surface = timer_font.render(timer_text, True, TIMER_COLOR)
+    screen.blit(timer_surface, (WIDTH - timer_surface.get_width() - 20, 20))
+
     pygame.display.flip()
     clock.tick(60)
 
