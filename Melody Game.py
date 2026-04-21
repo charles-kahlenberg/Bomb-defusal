@@ -17,12 +17,12 @@
 import pygame
 import random
 import sys
-import time
 import numpy as np
 
 pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=512)
 pygame.init()
 pygame.mixer.init()
+
 
 #Chord library: note frequencies in Hz for each chord (root, third, fifth)
 CHORD_LIBRARY = {
@@ -48,7 +48,95 @@ def make_chord_sound(frequencies, duration=0.6, sample_rate=44100, volume=0.3):
     stereo = np.column_stack((audio, audio))
     return pygame.sndarray.make_sound(stereo)
 
-COLOR = (255, 255, 255)        
+def make_hooray_sound(sample_rate=44100, volume=0.35):
+    #Ascending C-E-G-C arpeggio for a cheerful "hooray"
+    notes = [(523.25, 0.12), (659.25, 0.12), (783.99, 0.12), (1046.50, 0.28)]
+    pieces = []
+    for freq, dur in notes:
+        t = np.linspace(0, dur, int(sample_rate * dur), endpoint=False)
+        tone = np.sin(2 * np.pi * freq * t)
+        fade = int(sample_rate * 0.01)
+        env = np.ones_like(tone)
+        env[:fade] = np.linspace(0, 1, fade)
+        env[-fade:] = np.linspace(1, 0, fade)
+        pieces.append(tone * env)
+    wave = np.concatenate(pieces) * volume
+    audio = np.int16(wave * 32767)
+    stereo = np.column_stack((audio, audio))
+    return pygame.sndarray.make_sound(stereo)
+
+def make_anthem_sound(sample_rate=44100, volume=0.38):
+    #Short triumphant fanfare in C major: da-da-da-DAAA-da-DAAA
+    #(freq_hz, duration_seconds) pairs — rests use freq=0
+    notes = [
+        (523.25, 0.10),  # C5
+        (659.25, 0.10),  # E5
+        (783.99, 0.10),  # G5
+        (1046.50, 0.30), # C6 held
+        (0.0,    0.05),  # tiny breath
+        (783.99, 0.10),  # G5
+        (1046.50, 0.45), # C6 held long
+    ]
+    pieces = []
+    for freq, dur in notes:
+        t = np.linspace(0, dur, int(sample_rate * dur), endpoint=False)
+        if freq <= 0:
+            tone = np.zeros_like(t)
+        else:
+            #Stacked harmonics for a brassy anthem feel
+            tone = (np.sin(2 * np.pi * freq * t)
+                    + 0.5 * np.sin(2 * np.pi * 2 * freq * t)
+                    + 0.25 * np.sin(2 * np.pi * 3 * freq * t))
+            tone = tone / 1.75
+            fade = int(sample_rate * 0.012)
+            env = np.ones_like(tone)
+            env[:fade] = np.linspace(0, 1, fade)
+            env[-fade:] = np.linspace(1, 0, fade)
+            tone = tone * env
+        pieces.append(tone)
+    wave = np.concatenate(pieces) * volume
+    audio = np.int16(np.clip(wave, -1.0, 1.0) * 32767)
+    stereo = np.column_stack((audio, audio))
+    return pygame.sndarray.make_sound(stereo)
+
+def make_whomp_sound(sample_rate=44100, volume=0.35):
+    #Descending "sad trombone" whomp-whomp-whomp-whoooomp
+    notes = [(261.63, 0.22), (233.08, 0.22), (207.65, 0.22), (174.61, 0.55)]
+    pieces = []
+    for freq, dur in notes:
+        t = np.linspace(0, dur, int(sample_rate * dur), endpoint=False)
+        #Slight vibrato + saw-ish flavor for a brassy feel
+        tone = (np.sin(2 * np.pi * freq * t)
+                + 0.5 * np.sin(2 * np.pi * 2 * freq * t)
+                + 0.25 * np.sin(2 * np.pi * 3 * freq * t))
+        tone = tone / 1.75
+        fade = int(sample_rate * 0.015)
+        env = np.ones_like(tone)
+        env[:fade] = np.linspace(0, 1, fade)
+        env[-fade:] = np.linspace(1, 0, fade)
+        pieces.append(tone * env)
+        #Small silent gap between whomps
+        pieces.append(np.zeros(int(sample_rate * 0.04)))
+    wave = np.concatenate(pieces) * volume
+    audio = np.int16(wave * 32767)
+    stereo = np.column_stack((audio, audio))
+    return pygame.sndarray.make_sound(stereo)
+
+def make_buzzer_sound(duration=0.5, sample_rate=44100, volume=0.35):
+    #Harsh low square-wave buzzer for wrong answers
+    t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
+    wave = np.sign(np.sin(2 * np.pi * 140 * t)) * 0.6
+    wave += np.sign(np.sin(2 * np.pi * 95 * t)) * 0.4
+    fade = int(sample_rate * 0.02)
+    env = np.ones_like(wave)
+    env[:fade] = np.linspace(0, 1, fade)
+    env[-fade:] = np.linspace(1, 0, fade)
+    wave = wave * env * volume
+    audio = np.int16(wave * 32767)
+    stereo = np.column_stack((audio, audio))
+    return pygame.sndarray.make_sound(stereo)
+
+COLOR = (255, 255, 255)
 SURFACE_COLOR = (115, 147, 179) 
 WIDTH = 800
 HEIGHT = 800
@@ -57,17 +145,36 @@ HEIGHT = 800
 
 #Make Sprites
 
+HIGHLIGHT_COLOR = (255, 255, 0)  # yellow flash, visible on both red and black sprites
+HIGHLIGHT_MS = 350
+
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, color, height, width):
         super().__init__()
 
-        self.image = pygame.Surface([width, height])
-        self.image.fill(SURFACE_COLOR)
-        self.image.set_colorkey(COLOR)
+        self.base_image = pygame.Surface([width, height])
+        self.base_image.fill(SURFACE_COLOR)
+        self.base_image.set_colorkey(COLOR)
+        pygame.draw.rect(self.base_image, color, pygame.Rect(0, 0, width, height))
 
-        pygame.draw.rect(self.image, color, pygame.Rect(0, 0, width, height))
+        self.highlight_image = pygame.Surface([width, height])
+        self.highlight_image.fill(SURFACE_COLOR)
+        self.highlight_image.set_colorkey(COLOR)
+        pygame.draw.rect(self.highlight_image, HIGHLIGHT_COLOR, pygame.Rect(0, 0, width, height))
 
+        self.image = self.base_image
         self.rect = self.image.get_rect()
+        self.highlight_until = 0
+
+    #Used Code from https://www.pygame.org/docs/ref/sprite.html#pygame.sprite.Sprite.update and modified it to fit my game, this is used to make the sprites flash when they are pressed by the computer or the user
+    def highlight(self, now):
+        self.image = self.highlight_image
+        self.highlight_until = now + HIGHLIGHT_MS
+
+    def update_highlight(self, now):
+        if self.highlight_until and now >= self.highlight_until:
+            self.image = self.base_image
+            self.highlight_until = 0
 
 class ClickableSprite(pygame.sprite.Sprite):
     def __init__(self, image, x, y):
@@ -123,75 +230,146 @@ exit_game = True
 clock = pygame.time.Clock()
 print (clock)
 
+#Timer text
+timer_font = pygame.font.SysFont("Arial", 48, bold=True)
+TIMER_COLOR = (255, 255, 255)
+game_start_ticks = pygame.time.get_ticks()
+
 sprite_objects = [object1, object2, object3, object4, object5]
 
 #Assign one chord from the library to each button
 button_chord_names = ["C_major", "D_minor", "E_minor", "F_major", "G_major"]
 button_sounds = [make_chord_sound(CHORD_LIBRARY[name]) for name in button_chord_names]
+hooray_sound = make_hooray_sound()
+anthem_sound = make_anthem_sound()
+buzzer_sound = make_buzzer_sound()
+whomp_sound = make_whomp_sound()
 
-able_to_click = False
+#Game state
+rounds = 0
+strikes = 0
+max_strikes = 3
 game_over = False
 
+melody = []
+player_melody = []
+state = "start_round"    # "start_round" -> "computer_playing" -> "player_input" -> "check" -> "between_rounds"
+note_index = 0
+next_note_time = 0
+next_round_time = 0
+check_time = 0
+chord_gap_ms = 800        # time between computer-played chords
+between_rounds_ms = 1000  # pause after a round so the last highlight stays visible
+pre_result_ms = 250       # tiny beat between the last click and the win/lose sound
+timer = 0
+
 while exit_game:
+    now = pygame.time.get_ticks()
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit_game = False
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not game_over and able_to_click:
-            for i, obj in enumerate(sprite_objects): #Generated by ChatGPT, modified to fit my game
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not game_over and state == "player_input":
+            for i, obj in enumerate(sprite_objects): #Generated by Claude, modified to fit my game
                 if obj.rect.collidepoint(event.pos):
                     print(f"Sprite{i+1} clicked! Playing {button_chord_names[i]}")
                     button_sounds[i].play()
-                    #Add the corresponding note to the melody list that the player has to repeat
+                    obj.highlight(now)
+                    player_melody.append(button_chord_names[i])
+                    if len(player_melody) >= len(melody):
+                        state = "check"
+                        check_time = now + pre_result_ms
                     break
+
+    if not game_over:
+        if state == "start_round":
+            melody_length = rounds + 1
+            melody = [random.choice(button_chord_names) for _ in range(melody_length)]
+            player_melody = []
+            note_index = 0
+            next_note_time = now
+            print(f"Round {rounds + 1}: Listen to the melody! ({melody})")
+            state = "computer_playing"
+
+        elif state == "computer_playing":
+            if now >= next_note_time:
+                if note_index < len(melody):
+                    chord_name = melody[note_index]
+                    chord_idx = button_chord_names.index(chord_name)
+                    button_sounds[chord_idx].play()
+                    sprite_objects[chord_idx].highlight(now)
+                    note_index += 1
+                    next_note_time = now + chord_gap_ms
+                else:
+                    print("Your turn — repeat the melody!")
+                    state = "player_input"
+
+        elif state == "check":
+            if now >= check_time:
+                if player_melody == melody:
+                    print("Correct! Next round.")
+                    hooray_sound.play()
+                    rounds += 1
+                else:
+                    strikes += 1
+                    print(f"Wrong! Strike {strikes}/{max_strikes}.")
+                    buzzer_sound.play()
+                    if strikes >= max_strikes:
+                        print("Game over!")
+                        game_over = True
+                        whomp_sound.play()
+                if not game_over:
+                    state = "between_rounds"
+                    next_round_time = now + between_rounds_ms
+
+        elif state == "between_rounds":
+            if now >= next_round_time:
+                state = "start_round"
+
+    for s in sprite_objects:
+        s.update_highlight(now)
 
     all_sprites_list.update()
     screen.fill(SURFACE_COLOR)
     all_sprites_list.draw(screen)
+
+    if rounds <= 8 and not game_over:
+        round_text = timer_font.render(f"Round: {rounds}", True, TIMER_COLOR)
+        screen.blit(round_text, (WIDTH - round_text.get_width() - 20, 80))
+
+    elif rounds >= 8:
+        if not game_over:
+            anthem_sound.play()
+            game_over = True
+        win_text = timer_font.render("Congratulations! You won!", True, (0, 255, 0))
+        screen.blit(win_text, ((WIDTH - win_text.get_width()) // 2, 100))
+        
+
+    #Draw the elapsed-time timer in the top-right
+    time_left = 360000 - (now - game_start_ticks)  # 60 seconds total, converted to milliseconds
+    seconds_total = time_left // 1000
+    timer_text = f"{seconds_total // 60:02d}:{seconds_total % 60:02d}"
+    if time_left <= 0:
+        if not game_over:
+            whomp_sound.play()
+            game_over = True
+            for sprite in list(all_sprites_list):
+                sprite.remove()  # remove sprites to prevent further interaction
+            sprite_objects.clear()  # clear the list of sprites
+        timer_text = "00:00"
+        timer_surface = timer_font.render(timer_text, True, (255, 0, 0))  # red timer when time's up
+        lost_text = timer_font.render("Time's up! Game Over!", True, (255, 0, 0))
+        screen.blit(lost_text, ((WIDTH - lost_text.get_width()) // 2, 100))
+
+    else:
+        timer_text = f"{seconds_total // 60:02d}:{seconds_total % 60:02d}"
+
+   
+    timer_surface = timer_font.render(timer_text, True, TIMER_COLOR)
+    screen.blit(timer_surface, (WIDTH - timer_surface.get_width() - 20, 20))
+
     pygame.display.flip()
     clock.tick(60)
 
 pygame.quit()
 sys.exit()
-
-#Computer Generates a random melody by playing the corresponding chords in order, and the player has to repeat the melody by clicking the buttons in the correct order. If the player clicks the wrong button, they get a strike counter added to them, and they have to start the melody over again. If the player gets 3 strikes, they lose and have to start the game over again.
-rounds = 0
-strikes = 0
-while rounds >= 0 and strikes < 3:
-    #Computer generates a random melody
-    melody_length = rounds + 1
-    melody = [random.choice(button_chord_names) for _ in range(melody_length)]
-    
-    #Computer plays the melody
-    print (f"Round {rounds + 1}: Listen to the melody!")
-    for chord_name in melody:
-        chord_index = button_chord_names.index(chord_name)
-        button_sounds[chord_index].play()
-        time.sleep(0.8)  # Wait for the sound to play before the next one
-
-    able_to_click = True
-    player_melody = []
-    
-    while len(player_melody) < melody_length:
-        for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                for i, obj in enumerate(sprite_objects):
-                    if obj.rect.collidepoint(event.pos):
-                        print(f"Sprite{i+1} clicked! Playing {button_chord_names[i]}")
-                        button_sounds[i].play()
-                        player_melody.append(button_chord_names[i])
-                        break
-
-        all_sprites_list.update()
-        screen.fill(SURFACE_COLOR)
-        all_sprites_list.draw(screen)
-        pygame.display.flip()
-        clock.tick(60)
-
-    able_to_click = False
-    
-    if player_melody == melody:
-        print("Correct! Moving to the next round.")
-        rounds += 1
-    else:
-        strikes += 1
-        print(f"Wrong! Strike {strikes}/3. Try again.")
