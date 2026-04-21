@@ -65,6 +65,40 @@ def make_hooray_sound(sample_rate=44100, volume=0.35):
     stereo = np.column_stack((audio, audio))
     return pygame.sndarray.make_sound(stereo)
 
+def make_anthem_sound(sample_rate=44100, volume=0.38):
+    #Short triumphant fanfare in C major: da-da-da-DAAA-da-DAAA
+    #(freq_hz, duration_seconds) pairs — rests use freq=0
+    notes = [
+        (523.25, 0.10),  # C5
+        (659.25, 0.10),  # E5
+        (783.99, 0.10),  # G5
+        (1046.50, 0.30), # C6 held
+        (0.0,    0.05),  # tiny breath
+        (783.99, 0.10),  # G5
+        (1046.50, 0.45), # C6 held long
+    ]
+    pieces = []
+    for freq, dur in notes:
+        t = np.linspace(0, dur, int(sample_rate * dur), endpoint=False)
+        if freq <= 0:
+            tone = np.zeros_like(t)
+        else:
+            #Stacked harmonics for a brassy anthem feel
+            tone = (np.sin(2 * np.pi * freq * t)
+                    + 0.5 * np.sin(2 * np.pi * 2 * freq * t)
+                    + 0.25 * np.sin(2 * np.pi * 3 * freq * t))
+            tone = tone / 1.75
+            fade = int(sample_rate * 0.012)
+            env = np.ones_like(tone)
+            env[:fade] = np.linspace(0, 1, fade)
+            env[-fade:] = np.linspace(1, 0, fade)
+            tone = tone * env
+        pieces.append(tone)
+    wave = np.concatenate(pieces) * volume
+    audio = np.int16(np.clip(wave, -1.0, 1.0) * 32767)
+    stereo = np.column_stack((audio, audio))
+    return pygame.sndarray.make_sound(stereo)
+
 def make_whomp_sound(sample_rate=44100, volume=0.35):
     #Descending "sad trombone" whomp-whomp-whomp-whoooomp
     notes = [(261.63, 0.22), (233.08, 0.22), (207.65, 0.22), (174.61, 0.55)]
@@ -207,6 +241,7 @@ sprite_objects = [object1, object2, object3, object4, object5]
 button_chord_names = ["C_major", "D_minor", "E_minor", "F_major", "G_major"]
 button_sounds = [make_chord_sound(CHORD_LIBRARY[name]) for name in button_chord_names]
 hooray_sound = make_hooray_sound()
+anthem_sound = make_anthem_sound()
 buzzer_sound = make_buzzer_sound()
 whomp_sound = make_whomp_sound()
 
@@ -301,12 +336,13 @@ while exit_game:
     if rounds < 2 and not game_over:
         round_text = timer_font.render(f"Round: {rounds}", True, TIMER_COLOR)
         screen.blit(round_text, (WIDTH - round_text.get_width() - 20, 80))
-    
+
     elif rounds >= 2:
+        if not game_over:
+            anthem_sound.play()
+            game_over = True
         win_text = timer_font.render("Congratulations! You won!", True, (0, 255, 0))
         screen.blit(win_text, ((WIDTH - win_text.get_width()) // 2, 100))
-        game_over = True
-        hooray_sound.play()
         
 
     #Draw the elapsed-time timer in the top-right
