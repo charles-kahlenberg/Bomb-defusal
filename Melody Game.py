@@ -333,11 +333,11 @@ while exit_game:
     screen.fill(SURFACE_COLOR)
     all_sprites_list.draw(screen)
 
-    if rounds < 2 and not game_over:
+    if rounds <= 8 and not game_over:
         round_text = timer_font.render(f"Round: {rounds}", True, TIMER_COLOR)
         screen.blit(round_text, (WIDTH - round_text.get_width() - 20, 80))
 
-    elif rounds >= 2:
+    elif rounds >= 8:
         if not game_over:
             anthem_sound.play()
             game_over = True
