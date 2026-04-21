@@ -298,8 +298,19 @@ while exit_game:
     screen.fill(SURFACE_COLOR)
     all_sprites_list.draw(screen)
 
+    if rounds < 2 and not game_over:
+        round_text = timer_font.render(f"Round: {rounds}", True, TIMER_COLOR)
+        screen.blit(round_text, (WIDTH - round_text.get_width() - 20, 80))
+    
+    elif rounds >= 2:
+        win_text = timer_font.render("Congratulations! You won!", True, (0, 255, 0))
+        screen.blit(win_text, ((WIDTH - win_text.get_width()) // 2, 100))
+        game_over = True
+        hooray_sound.play()
+        
+
     #Draw the elapsed-time timer in the top-right
-    time_left = 36000 - (now - game_start_ticks)  # 60 seconds total, converted to milliseconds
+    time_left = 360000 - (now - game_start_ticks)  # 60 seconds total, converted to milliseconds
     seconds_total = time_left // 1000
     timer_text = f"{seconds_total // 60:02d}:{seconds_total % 60:02d}"
     if time_left <= 0:
@@ -316,6 +327,8 @@ while exit_game:
 
     else:
         timer_text = f"{seconds_total // 60:02d}:{seconds_total % 60:02d}"
+
+   
     timer_surface = timer_font.render(timer_text, True, TIMER_COLOR)
     screen.blit(timer_surface, (WIDTH - timer_surface.get_width() - 20, 20))
 
