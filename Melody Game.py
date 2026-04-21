@@ -299,7 +299,7 @@ while exit_game:
     all_sprites_list.draw(screen)
 
     #Draw the elapsed-time timer in the top-right
-    time_left = 4000 - (now - game_start_ticks)  # 60 seconds total, converted to milliseconds
+    time_left = 36000 - (now - game_start_ticks)  # 60 seconds total, converted to milliseconds
     seconds_total = time_left // 1000
     timer_text = f"{seconds_total // 60:02d}:{seconds_total % 60:02d}"
     if time_left <= 0:
