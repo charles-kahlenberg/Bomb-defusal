@@ -295,7 +295,7 @@ while exit_game:
             print(f"Round {rounds + 1}: Listen to the melody! ({melody})")
             state = "computer_playing"
 
-        elif state == "computer_playing":
+        elif state == "computer_playing": # computer plays the keys
             if now >= next_note_time:
                 if note_index < len(melody):
                     chord_name = melody[note_index]
@@ -308,7 +308,7 @@ while exit_game:
                     print("Your turn — repeat the melody!")
                     state = "player_input"
 
-        elif state == "check":
+        elif state == "check": # algorithm checks if keys were played in correct order
             if now >= check_time:
                 if player_melody == melody:
                     print("Correct! Next round.")
@@ -322,11 +322,11 @@ while exit_game:
                         print("Game over!")
                         game_over = True
                         whomp_sound.play()
-                if not game_over:
+                if not game_over: # adds a buffer between rounds so the last highlight stays visible before the next melody starts
                     state = "between_rounds"
                     next_round_time = now + between_rounds_ms
 
-        elif state == "between_rounds":
+        elif state == "between_rounds": 
             if now >= next_round_time:
                 state = "start_round"
 
@@ -337,18 +337,26 @@ while exit_game:
     screen.fill(SURFACE_COLOR)
     all_sprites_list.draw(screen)
 
-    if rounds <= 8 and not game_over:
+    if rounds <= 8 and not game_over: # display the current round number in the top-right, below the timer
         round_text = timer_font.render(f"Round: {rounds}", True, TIMER_COLOR)
         screen.blit(round_text, (WIDTH - round_text.get_width() - 20, 80))
+        strike_text = timer_font.render(f"Strikes: {strikes}/{max_strikes}", True, (255, 0, 0))
+        screen.blit(strike_text, (WIDTH - strike_text.get_width() - 20, 140))
 
-    elif rounds >= 8:
+    elif rounds >= 8: # if the player wins by completing 8 rounds, play anthem sound and display win message
         if not game_over:
             anthem_sound.play()
             game_over = True
         win_text = timer_font.render("Congratulations! You won!", True, (0, 255, 0))
         screen.blit(win_text, ((WIDTH - win_text.get_width()) // 2, 100))
         
-
+    elif strikes >= 3 : # if the player loses by getting 3 strikes, play whomp sound and display lose message
+        if not game_over:
+            whomp_sound.play()
+            game_over = True
+        lost_text = timer_font.render("Game Over! Try Again!", True, (255, 0, 0))
+        screen.blit(lost_text, ((WIDTH - lost_text.get_width()) // 2, 100))
+        
     # draw the elapsed-time timer in the top-right
     time_left = 360000 - (now - game_start_ticks)  # 60 seconds total, converted to milliseconds
     seconds_total = time_left // 1000
