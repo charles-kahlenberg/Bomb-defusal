@@ -481,7 +481,7 @@ def main():
         clock.tick(60)
 
     pygame.quit()
-    return 0
+    return won
 
 
 if __name__ == "__main__":
