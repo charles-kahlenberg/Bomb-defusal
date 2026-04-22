@@ -476,6 +476,7 @@ def main():
             msg_color = colors["green"] if won else colors["red"]
             end_text = big_font.render(msg, True, msg_color)
             screen.blit(end_text, end_text.get_rect(center=(400, 400)))
+            return won
 
         pygame.display.flip()
         clock.tick(60)

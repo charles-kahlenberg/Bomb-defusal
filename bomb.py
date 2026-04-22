@@ -24,6 +24,18 @@ def import_wires_gui():
     spec.loader.exec_module(module)
     return module
 
+# import the melody game module by file path
+def import_melody_game():
+    import importlib.util
+
+    project_dir = Path(__file__).resolve().parent
+    melody_path = project_dir / "Melody Game.py"
+
+    spec = importlib.util.spec_from_file_location("melody_game", melody_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
 ###########
 # functions
 ###########
@@ -178,9 +190,18 @@ def turn_off():
         pin.value = True
 
 def main():
-    # launch the wires GUI immediately
+    # launch the wires GUI first
     wires_gui = import_wires_gui()
-    return wires_gui.main()
+    wires_won = wires_gui.main()
+
+    # if wires fail, quit immediately
+    if not wires_won:
+        return False
+
+    # if wires succeed, launch the melody game next
+    melody_game = import_melody_game()
+    melody_game.main()
+    return True
 
 ######
 # MAIN
