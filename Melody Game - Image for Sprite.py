@@ -151,7 +151,7 @@ HEIGHT = 800
 HIGHLIGHT_COLOR = (255, 255, 0)  # yellow flash, visible on both red and black sprites
 HIGHLIGHT_MS = 350
 
-class Sprite(pygame.sprite.Sprite):
+class Sprite(pygame.sprite.Sprite): #https://www.pygame.org/docs/ref/sprite.html#:~:text=The%20initializer%20can%20accept%20any,can%20be%20passed%20as%20arguments.
     def __init__(self, color, width, height):
         super().__init__()
 
