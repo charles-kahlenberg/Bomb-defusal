@@ -21,12 +21,14 @@
 
 
 import abc
+import math
 import random
 #random.seed(1)
 
 import pygame
 from pygame import *
 from pygame.sprite import *
+import math  # re-import after star import so pygame.math doesn't shadow stdlib math
 import sys
 
 
@@ -421,6 +423,7 @@ def main():
     selected_end = None
     game_over = False
     won = False
+    explosion_particles = []
 
     running = True
     while running:
@@ -467,6 +470,21 @@ def main():
                             if strike_count >= 3:
                                 game_over = True
                                 won = False
+                                for _ in range(120):
+                                    angle = random.uniform(0, 2 * math.pi)
+                                    speed = random.uniform(2, 8)
+                                    explosion_particles.append({
+                                        "x": 400.0,
+                                        "y": 400.0,
+                                        "vx": speed * math.cos(angle),
+                                        "vy": speed * math.sin(angle),
+                                        "life": random.randint(30, 75),
+                                        "radius": random.randint(3, 8),
+                                        "color": random.choice([
+                                            (255, 200, 0), (255, 120, 0),
+                                            (255, 60, 0), (255, 240, 120),
+                                        ]),
+                                    })
 
         screen.fill(colors["black"])
 
@@ -527,6 +545,20 @@ def main():
             else:
                 prompt = font.render(f"Connect {selected_wire.color} wire (6-0)", True, colors["white"])
             screen.blit(prompt, (10, 50))
+
+        # Explosion effect on loss
+        if explosion_particles:
+            alive = []
+            for p in explosion_particles:
+                p["x"] += p["vx"]
+                p["y"] += p["vy"]
+                p["vy"] += 0.15  # slight gravity
+                p["life"] -= 1
+                if p["life"] > 0:
+                    r = max(1, int(p["radius"] * (p["life"] / 75)))
+                    pygame.draw.circle(screen, p["color"], (int(p["x"]), int(p["y"])), r)
+                    alive.append(p)
+            explosion_particles = alive
 
         # Win / lose overlay
         if game_over:
