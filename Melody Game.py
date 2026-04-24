@@ -337,13 +337,13 @@ while exit_game:
     screen.fill(SURFACE_COLOR)
     all_sprites_list.draw(screen)
 
-    if rounds <= 8 and not game_over: # display the current round number in the top-right, below the timer
+    if rounds <= 4 and not game_over: # display the current round number in the top-right, below the timer
         round_text = timer_font.render(f"Round: {rounds}", True, TIMER_COLOR)
         screen.blit(round_text, (WIDTH - round_text.get_width() - 20, 80))
         strike_text = timer_font.render(f"Strikes: {strikes}/{max_strikes}", True, (255, 0, 0))
         screen.blit(strike_text, (WIDTH - strike_text.get_width() - 20, 140))
 
-    elif rounds >= 8: # if the player wins by completing 8 rounds, play anthem sound and display win message
+    elif rounds >= 4: # if the player wins by completing 8 rounds, play anthem sound and display win message
         if not game_over:
             anthem_sound.play()
             game_over = True
