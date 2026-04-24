@@ -152,18 +152,19 @@ HIGHLIGHT_COLOR = (255, 255, 0)  # yellow flash, visible on both red and black s
 HIGHLIGHT_MS = 350
 
 class Sprite(pygame.sprite.Sprite):
-    def __init__(self, color, height, width):
+    def __init__(self, color, width, height):
         super().__init__()
 
-        self.base_image = pygame.Surface([width, height])
-        self.base_image.fill(SURFACE_COLOR)
-        self.base_image.set_colorkey(COLOR)
-        pygame.draw.rect(self.base_image, color, pygame.Rect(0, 0, width, height))
+        white_img = pygame.image.load("white_key.png").convert_alpha()
+        black_img = pygame.image.load("black_key.png").convert_alpha()
+        red_img = pygame.image.load("red_key.png").convert_alpha()
 
-        self.highlight_image = pygame.Surface([width, height])
-        self.highlight_image.fill(SURFACE_COLOR)
-        self.highlight_image.set_colorkey(COLOR)
-        pygame.draw.rect(self.highlight_image, HIGHLIGHT_COLOR, pygame.Rect(0, 0, width, height))
+        if color == WHITE:
+            self.base_image = pygame.transform.scale(white_img, (width, height))
+        else:
+            self.base_image = pygame.transform.scale(black_img, (width, height))
+
+        self.highlight_image = pygame.transform.scale(red_img, (width, height))
 
         self.image = self.base_image
         self.rect = self.image.get_rect()
