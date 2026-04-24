@@ -155,9 +155,9 @@ class Sprite(pygame.sprite.Sprite):
     def __init__(self, color, width, height):
         super().__init__()
 
-        white_img = pygame.image.load("white_key.png").convert_alpha()
-        black_img = pygame.image.load("black_key.png").convert_alpha()
-        red_img = pygame.image.load("red_key.png").convert_alpha()
+        white_img = pygame.image.load("img_keys//white_key.png").convert_alpha()
+        black_img = pygame.image.load("img_keys//black_key.png").convert_alpha()
+        red_img = pygame.image.load("img_keys//red_key.png").convert_alpha()
 
         if color == WHITE:
             self.base_image = pygame.transform.scale(white_img, (width, height))
@@ -205,11 +205,11 @@ pygame.display.set_caption("Melody Game")
 all_sprites_list = pygame.sprite.Group()
 
 # create objects
-object1 = Sprite(RED, 20, 30)
+object1 = Sprite(WHITE, 20, 30)
 object2 = Sprite(BLACK, 20, 30)
-object3 = Sprite(RED, 20, 30)
+object3 = Sprite(WHITE, 20, 30)
 object4 = Sprite(BLACK, 20, 30)
-object5 = Sprite(RED, 20, 30)
+object5 = Sprite(WHITE, 20, 30)
 
 # set the position of the objects
 object1.rect.x = 100  
