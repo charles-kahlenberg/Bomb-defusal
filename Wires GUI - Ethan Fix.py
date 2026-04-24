@@ -104,7 +104,7 @@ class RedWire(WiresGUI):
         self.expected_key = expected_key
 
     def draw(self, screen):
-        draw.line(screen, (255, 255, 255), self.start_position, self.end_position, 5)
+        draw.line(screen, (255, 0, 0), self.start_position, self.end_position, 5)
 
     def check_attached(self, pressed_key):
         return pressed_key == self.expected_key
@@ -138,7 +138,7 @@ class BlueWire(WiresGUI):
         self.expected_key = expected_key
 
     def draw(self, screen):
-        draw.line(screen, (255, 255, 255), self.start_position, self.end_position, 5)
+        draw.line(screen, (0, 0, 255), self.start_position, self.end_position, 5)
 
     def check_attached(self, pressed_key):
         return pressed_key == self.expected_key
@@ -168,7 +168,7 @@ class YellowWire(WiresGUI):
         self.expected_key = expected_key
 
     def draw(self, screen):
-        draw.line(screen, (255, 255, 255), self.start_position, self.end_position, 5)
+        draw.line(screen, (255, 255, 0), self.start_position, self.end_position, 5)
 
     def check_attached(self, pressed_key):
         return pressed_key == self.expected_key
@@ -196,7 +196,7 @@ class GreenWire(WiresGUI):
         self.expected_key = expected_key
 
     def draw(self, screen):
-        draw.line(screen, (255, 255, 255), self.start_position, self.end_position, 5)
+        draw.line(screen, (0, 255, 0), self.start_position, self.end_position, 5)
 
     def check_attached(self, pressed_key):
         return pressed_key == self.expected_key
@@ -221,7 +221,7 @@ class PurpleWire(WiresGUI):
         self.expected_key = expected_key
 
     def draw(self, screen):
-        draw.line(screen, (255, 255, 255), self.start_position, self.end_position, 5)
+        draw.line(screen, (128, 0, 128), self.start_position, self.end_position, 5)
 
     def check_attached(self, pressed_key):
         return pressed_key == self.expected_key
@@ -470,32 +470,39 @@ def main():
 
         screen.fill(colors["black"])
 
+        # Map each circle to its wire so connected circles keep their wire's color
+        circle_to_wire = {
+            "circle1": blue_wire, "circle6": blue_wire,
+            "circle2": red_wire,  "circle7": red_wire,
+            "circle3": yellow_wire, "circle8": yellow_wire,
+            "circle4": green_wire, "circle9": green_wire,
+            "circle5": purple_wire, "circle10": purple_wire,
+        }
+
         # Top row (input circles) with highlighting and color change
-        for i, (circle_name, label) in enumerate([
-            ("circle1", ""),
-            ("circle2", ""),
-            ("circle3", ""),
-            ("circle4", ""),
-            ("circle5", ""),
-        ]):
-            # Determine the color: show wire color if selected, otherwise white
-            color_name = "white"
-            if selected_start == circle_name and selected_wire is not None:
+        for circle_name in ["circle1", "circle2", "circle3", "circle4", "circle5"]:
+            wire = circle_to_wire[circle_name]
+            if connected[wire.color]:
+                color_name = wire.color
+            elif selected_start == circle_name and selected_wire is not None:
                 color_name = selected_wire.color
+            else:
+                color_name = "white"
 
             radius = circle_radius + 10 if selected_start == circle_name else circle_radius
             pygame.draw.circle(screen, colors[color_name], points[circle_name], radius)
-            draw_text_centered(screen, font, label, colors["black"], points[circle_name])
 
         # Bottom row (output circles) with color change when top wire is selected
         for circle_name in ["circle6", "circle7", "circle8", "circle9", "circle10"]:
-            # Determine the color: show wire color if this is the selected wire's end, otherwise white
-            color_name = "white"
-            if selected_end == circle_name and selected_wire is not None:
+            wire = circle_to_wire[circle_name]
+            if connected[wire.color]:
+                color_name = wire.color
+            elif selected_end == circle_name and selected_wire is not None:
                 color_name = selected_wire.color
+            else:
+                color_name = "white"
 
             pygame.draw.circle(screen, colors[color_name], points[circle_name], circle_radius)
-            draw_text_centered(screen, font, "", colors["black"], points[circle_name])
 
         # Draw connected wires
         if connected["red"]:
@@ -527,7 +534,6 @@ def main():
             msg_color = colors["green"] if won else colors["red"]
             end_text = big_font.render(msg, True, msg_color)
             screen.blit(end_text, end_text.get_rect(center=(400, 400)))
-            return won
 
         pygame.display.flip()
         clock.tick(60)
@@ -537,4 +543,5 @@ def main():
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()
+    sys.exit(0)
