@@ -269,8 +269,8 @@ while exit_game:
         elif event.type == pygame.KEYDOWN and not game_over and state == "player_input":
             key_to_index = {
                 pygame.K_1: 0, pygame.K_2: 1, pygame.K_3: 2, pygame.K_4: 3,
-                pygame.K_q: 4, pygame.K_w: 5, pygame.K_e: 6, pygame.K_r: 7,
-                pygame.K_a: 8, pygame.K_s: 9, pygame.K_d: 10, pygame.K_f: 11,
+                pygame.K_5: 4, pygame.K_6: 5, pygame.K_7: 6, pygame.K_8: 7,
+                pygame.K_9: 8, pygame.K_a: 9, pygame.K_0: 10, pygame.K_b: 11,
             }
             if event.key in key_to_index:
                 i = key_to_index[event.key]
