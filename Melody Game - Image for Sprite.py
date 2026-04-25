@@ -204,33 +204,28 @@ pygame.display.set_caption("Melody Game")
 
 all_sprites_list = pygame.sprite.Group()
 
-# create objects
-object1 = Sprite(WHITE, 20, 30)
-object2 = Sprite(BLACK, 20, 30)
-object3 = Sprite(WHITE, 20, 30)
-object4 = Sprite(BLACK, 20, 30)
-object5 = Sprite(WHITE, 20, 30)
+# 3 rows x 4 cols grid of buttons
+GRID_COLS = 3
+GRID_ROWS = 4
+NUM_BUTTONS = GRID_COLS * GRID_ROWS
+BUTTON_W = 140
+BUTTON_H = 120
+BUTTON_GAP_X = 30
+BUTTON_GAP_Y = 20
+grid_total_w = GRID_COLS * BUTTON_W + (GRID_COLS - 1) * BUTTON_GAP_X
+grid_total_h = GRID_ROWS * BUTTON_H + (GRID_ROWS - 1) * BUTTON_GAP_Y
+grid_origin_x = (WIDTH - grid_total_w) // 2
+grid_origin_y = 220
 
-# set the position of the objects
-object1.rect.x = 100  
-object1.rect.y = 300  
-object2.rect.x = 200
-object2.rect.y = 300
-object3.rect.x = 300
-object3.rect.y = 300
-object4.rect.x = 400
-object4.rect.y = 300
-object5.rect.x = 500
-object5.rect.y = 300
-
-# add the objects to the list of sprites
-all_sprites_list.add(object1)
-all_sprites_list.add(object2)
-all_sprites_list.add(object3)
-all_sprites_list.add(object4)
-all_sprites_list.add(object5)
-
-sprite_objects = [object1, object2, object3, object4, object5]
+sprite_objects = []
+for row in range(GRID_ROWS):
+    for col in range(GRID_COLS):
+        color = WHITE if (row + col) % 2 == 0 else BLACK
+        obj = Sprite(color, BUTTON_W, BUTTON_H)
+        obj.rect.x = grid_origin_x + col * (BUTTON_W + BUTTON_GAP_X)
+        obj.rect.y = grid_origin_y + row * (BUTTON_H + BUTTON_GAP_Y)
+        all_sprites_list.add(obj)
+        sprite_objects.append(obj)
 
 exit_game = True
 clock = pygame.time.Clock()
@@ -243,9 +238,6 @@ game_start_ticks = pygame.time.get_ticks()
 
 
 
-#Assign one chord from the library to each button (Claude generated the chord sounds)
-button_chord_names = ["C_major", "D_minor", "E_minor", "F_major", "G_major"]
-button_sounds = [make_chord_sound(CHORD_LIBRARY[name]) for name in button_chord_names]
 hooray_sound = make_hooray_sound()
 anthem_sound = make_anthem_sound()
 buzzer_sound = make_buzzer_sound()
@@ -276,14 +268,15 @@ while exit_game:
             exit_game = False
         elif event.type == pygame.KEYDOWN and not game_over and state == "player_input":
             key_to_index = {
-                pygame.K_1: 0, pygame.K_2: 1, pygame.K_3: 2, pygame.K_4: 3, pygame.K_5: 4,
+                pygame.K_1: 0, pygame.K_2: 1, pygame.K_3: 2, pygame.K_4: 3,
+                pygame.K_q: 4, pygame.K_w: 5, pygame.K_e: 6, pygame.K_r: 7,
+                pygame.K_a: 8, pygame.K_s: 9, pygame.K_d: 10, pygame.K_f: 11,
             }
             if event.key in key_to_index:
                 i = key_to_index[event.key]
                 obj = sprite_objects[i]
-                button_sounds[i].play()
                 obj.highlight(now)
-                player_melody.append(button_chord_names[i])
+                player_melody.append(i)
                 if len(player_melody) >= len(melody):
                     state = "check"
                     check_time = now + pre_result_ms
@@ -291,7 +284,7 @@ while exit_game:
     if not game_over:
         if state == "start_round":
             melody_length = rounds + 1
-            melody = [random.choice(button_chord_names) for _ in range(melody_length)] #Claude generated the melody, modified to fit my game
+            melody = [random.randrange(NUM_BUTTONS) for _ in range(melody_length)]
             player_melody = []
             note_index = 0
             next_note_time = now
@@ -301,10 +294,8 @@ while exit_game:
         elif state == "computer_playing": # computer plays the keys
             if now >= next_note_time:
                 if note_index < len(melody):
-                    chord_name = melody[note_index]
-                    chord_idx = button_chord_names.index(chord_name)
-                    button_sounds[chord_idx].play()
-                    sprite_objects[chord_idx].highlight(now)
+                    btn_idx = melody[note_index]
+                    sprite_objects[btn_idx].highlight(now)
                     note_index += 1
                     next_note_time = now + chord_gap_ms
                 else:
