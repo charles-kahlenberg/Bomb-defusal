@@ -59,12 +59,12 @@ def main():
     switches = [Switch(start_x + i * spacing, 80, f"SW{i+1}", values[i]) for i in range(4)]
     all_sprites = pygame.sprite.Group(*switches)
 
-    # 1. Generate a random number 1-15
-    target     = random.randint(1, 15)
-    rounds     = 0
-    strikes    = 0
-    game_over  = False
-    won        = False
+    # constants
+    target = random.randint(1, 15)
+    rounds = 0
+    strikes = 0
+    game_over = False
+    won = False
 
     while True:
         for event in pygame.event.get():
@@ -72,34 +72,34 @@ def main():
                 pygame.quit()
                 sys.exit()
 
-            # 3. User toggles switches on or off
-            if event.type == pygame.MOUSEBUTTONDOWN and not game_over and not won:
+            # 
+            if event.type == pygame.KEYDOWN and not game_over and not won:
                 for sw in switches:
                     sw.handle_click(event.pos)
 
-            # 4. Press Enter to confirm
+            # press Enter to confirm
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN and not game_over and not won:
-                # 5. Add the values of the ON switches together
+                # add the values of the ON switches together
                 total = sum(sw.value for sw in switches if sw.on)
-                # 6. Check if correct
+                # check if correct
                 if total == target:
                     rounds += 1
-                    # 7. 5 correct rounds = win
+                   
                     if rounds >= 5:
                         won = True
                     else:
                         for sw in switches:
                             if sw.on:
                                 sw.toggle()
-                        # 1. Generate a new random number
-                        target = random.randint(1, 16)
+                        # generate a new random number for next round
+                        target = random.randint(1, 15)
                 else:
                     strikes += 1
-                    # 7. 3 strikes = lose
+                    
                     if strikes >= 3:
                         game_over = True
 
-        # Draw
+        # draw the screen
         screen.fill((30, 30, 30))
         all_sprites.draw(screen)
         for sw in switches:
