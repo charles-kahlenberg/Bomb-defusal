@@ -180,12 +180,6 @@ class ClickableSprite(pygame.sprite.Sprite):
         self.image = image
         self.rect = self.image.get_rect(topleft=(x, y))
 
-    def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            # Check if the mouse click position (event.pos) is inside the sprite
-            if self.rect.collidepoint(event.pos):
-                print("Sprite clicked!")
-               
 
 
 RED = (255, 0, 0)
