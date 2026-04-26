@@ -17,7 +17,7 @@ KEY_W, KEY_H = 80, 180
 
 
 class Switch(pygame.sprite.Sprite):
-    def __init__(self, x, y, label, value):
+    def __init__(self, x, y, label, value, key):
         super().__init__()
         self.white_image = pygame.transform.scale(
             pygame.image.load("img_keys/white_key.png").convert_alpha(), (KEY_W, KEY_H)
@@ -26,13 +26,14 @@ class Switch(pygame.sprite.Sprite):
             pygame.image.load("img_keys/red_key.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.value = value
+        self.key   = key
         self.on    = False
         self.image = self.white_image
         self.rect  = self.image.get_rect(topleft=(x, y))
         self.label = label
 
     def toggle(self):
-        self.on    = not self.on
+        self.on = not self.on
         self.image = self.red_image if self.on else self.white_image
 
     def handle_click(self, pos):
@@ -55,8 +56,12 @@ def main():
 
     spacing = 120
     start_x = (600 - (4 * KEY_W + 3 * (spacing - KEY_W))) // 2
-    values   = [8, 4, 2, 1]
-    switches = [Switch(start_x + i * spacing, 80, f"SW{i+1}", values[i]) for i in range(4)]
+    switches = [
+        Switch(start_x + 0 * spacing, 80, "SW1", 8, pygame.K_1),
+        Switch(start_x + 1 * spacing, 80, "SW2", 4, pygame.K_2),
+        Switch(start_x + 2 * spacing, 80, "SW3", 2, pygame.K_3),
+        Switch(start_x + 3 * spacing, 80, "SW4", 1, pygame.K_4),
+    ]
     all_sprites = pygame.sprite.Group(*switches)
 
     # constants
@@ -71,11 +76,11 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-
-            # 
-            if event.type == pygame.KEYDOWN and not game_over and not won:
+            # toggles switches on or off (keyboard)
+            elif event.type == pygame.KEYDOWN and not game_over and not won:
                 for sw in switches:
-                    sw.handle_click(event.pos)
+                    if event.key == sw.key:
+                        sw.toggle()
 
             # press Enter to confirm
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN and not game_over and not won:
