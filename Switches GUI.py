@@ -39,7 +39,8 @@ class Switch(pygame.sprite.Sprite):
     def handle_click(self, pos):
         if self.rect.collidepoint(pos):
             self.toggle()
-
+            
+    # vibe coded by claude
     def draw_labels(self, screen, font):
         label_surf = font.render(self.label, True, (255, 255, 255))
         screen.blit(label_surf, label_surf.get_rect(center=(self.rect.centerx, self.rect.top - 20)))
@@ -56,6 +57,7 @@ def main():
 
     spacing = 120
     start_x = (600 - (4 * KEY_W + 3 * (spacing - KEY_W))) // 2
+    #creates switch objects
     switches = [
         Switch(start_x + 0 * spacing, 80, "SW1", 8, pygame.K_1),
         Switch(start_x + 1 * spacing, 80, "SW2", 4, pygame.K_2),
@@ -85,7 +87,7 @@ def main():
             # press Enter to confirm
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN and not game_over and not won:
                 # add the values of the ON switches together
-                total = sum(sw.value for sw in switches if sw.on)
+                total = sum(sw.value for sw in switches if sw.on) #claude helped with compacting syntax
                 # check if correct
                 if total == target:
                     rounds += 1
@@ -104,7 +106,7 @@ def main():
                     if strikes >= 3:
                         game_over = True
 
-        # draw the screen
+        # draw the screen (asked Claude because I'm lazy)
         screen.fill((30, 30, 30))
         all_sprites.draw(screen)
         for sw in switches:
