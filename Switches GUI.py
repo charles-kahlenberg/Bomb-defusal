@@ -62,8 +62,8 @@ def main():
     start_x = (600 - (4 * KEY_W + 3 * (spacing - KEY_W))) // 2
     #creates switch objects
     switches = [
-        Switch(start_x + 0 * spacing, 80, "SW1", 8, pygame.K_1),
-        Switch(start_x + 1 * spacing, 80, "SW2", 4, pygame.K_2),
+        Switch(start_x + 0 * spacing, 80, "SW1", 8, pygame.board.D12),
+        Switch(start_x + 1 * spacing, 80, "SW2", 4, pygame.board),
         Switch(start_x + 2 * spacing, 80, "SW3", 2, pygame.K_3),
         Switch(start_x + 3 * spacing, 80, "SW4", 1, pygame.K_4),
     ]
@@ -105,15 +105,15 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            # keyboard toggles (desktop only — hardware is the source of truth on RPi)
-            elif event.type == pygame.KEYDOWN and not game_over and not won:
-                if not RPi:
-                    for sw in switches:
-                        if event.key == sw.key:
-                            sw.toggle()
-                # Enter to confirm (always available)
-                if event.key == pygame.K_RETURN:
-                    confirm()
+            # # keyboard toggles (desktop only — hardware is the source of truth on RPi)
+            # elif event.type == pygame.KEYDOWN and not game_over and not won:
+            #     if not RPi:
+            #         for sw in switches:
+            #             if event.key == sw.key:
+            #                 sw.toggle()
+            #     # Enter to confirm (always available)
+            #     if event.key == pygame.K_RETURN:
+            #         confirm()
 
         # pushbutton confirm (rising edge)
         if RPi and not game_over and not won:

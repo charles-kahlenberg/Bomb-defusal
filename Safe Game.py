@@ -18,6 +18,7 @@ import pygame
 import random
 import sys
 import numpy as np
+from bomb_configs import *
 
 pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=512)
 pygame.init()
@@ -198,7 +199,7 @@ WHITE = (255, 255, 255)
 
 size = (WIDTH, HEIGHT)
 screen = pygame.display.set_mode(size)
-pygame.display.set_caption("Melody Game")
+pygame.display.set_caption("Safe Game")
 
 all_sprites_list = pygame.sprite.Group()
 
@@ -263,6 +264,22 @@ pre_result_ms = 250       # tiny beat between the last click and the win/lose so
 striketime = 180
 timer = 0
 
+# map keypad characters (matching bomb_configs.keypad_keys layout) to the grid index
+# of their corresponding sprite button (row-major in the 4x3 grid).
+KEYPAD_LAYOUT = ((1, 2, 3), (4, 5, 6), (7, 8, 9), ("*", 0, "#"))
+KEYPAD_TO_PYGAME = {
+    1: pygame.K_1, 2: pygame.K_2, 3: pygame.K_3,
+    4: pygame.K_4, 5: pygame.K_5, 6: pygame.K_6,
+    7: pygame.K_7, 8: pygame.K_8, 9: pygame.K_9,
+    0: pygame.K_0, "*": pygame.K_ASTERISK, "#": pygame.K_HASH,
+}
+key_to_index = {}
+_idx = 0
+for _row in KEYPAD_LAYOUT:
+    for _k in _row:
+        key_to_index[KEYPAD_TO_PYGAME[_k]] = _idx
+        _idx += 1
+
 while exit_game:
     now = pygame.time.get_ticks()
 
@@ -270,11 +287,6 @@ while exit_game:
         if event.type == pygame.QUIT:
             exit_game = False
         elif event.type == pygame.KEYDOWN and not game_over and state in ("player_input", "final_input"):
-            key_to_index = {
-                pygame.K_1: 0, pygame.K_2: 1, pygame.K_3: 2, pygame.K_4: 3,
-                pygame.K_5: 4, pygame.K_6: 5, pygame.K_7: 6, pygame.K_8: 7,
-                pygame.K_9: 8, pygame.K_a: 9, pygame.K_0: 10, pygame.K_b: 11,
-            }
             if event.key in key_to_index:
                 i = key_to_index[event.key]
                 obj = sprite_objects[i]
