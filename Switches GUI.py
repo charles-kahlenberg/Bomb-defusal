@@ -12,6 +12,9 @@
 import pygame
 import sys
 import random
+from bomb_configs import RPi
+if RPi:
+    from bomb_configs import component_toggles, component_button_state
 
 KEY_W, KEY_H = 80, 180
 
@@ -72,39 +75,52 @@ def main():
     strikes = 0
     game_over = False
     won = False
+    prev_btn = False
+
+    def confirm():
+        nonlocal rounds, strikes, game_over, won, target
+        total = sum(sw.value for sw in switches if sw.on)
+        if total == target:
+            rounds += 1
+            if rounds >= 5:
+                won = True
+            else:
+                for sw in switches:
+                    if sw.on:
+                        sw.toggle()
+                target = random.randint(1, 15)
+        else:
+            strikes += 1
+            if strikes >= 3:
+                game_over = True
 
     while True:
+        # mirror physical toggle switches onto the GUI
+        if RPi and not game_over and not won:
+            for sw, pin in zip(switches, component_toggles):
+                if sw.on != pin.value:
+                    sw.toggle()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            # toggles switches on or off (keyboard)
+            # keyboard toggles (desktop only — hardware is the source of truth on RPi)
             elif event.type == pygame.KEYDOWN and not game_over and not won:
-                for sw in switches:
-                    if event.key == sw.key:
-                        sw.toggle()
+                if not RPi:
+                    for sw in switches:
+                        if event.key == sw.key:
+                            sw.toggle()
+                # Enter to confirm (always available)
+                if event.key == pygame.K_RETURN:
+                    confirm()
 
-            # press Enter to confirm
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN and not game_over and not won:
-                # add the values of the ON switches together
-                total = sum(sw.value for sw in switches if sw.on) #claude helped with compacting syntax
-                # check if correct
-                if total == target:
-                    rounds += 1
-                   
-                    if rounds >= 5:
-                        won = True
-                    else:
-                        for sw in switches:
-                            if sw.on:
-                                sw.toggle()
-                        # generate a new random number for next round
-                        target = random.randint(1, 15)
-                else:
-                    strikes += 1
-                    
-                    if strikes >= 3:
-                        game_over = True
+        # pushbutton confirm (rising edge)
+        if RPi and not game_over and not won:
+            btn = component_button_state.value
+            if btn and not prev_btn:
+                confirm()
+            prev_btn = btn
 
         # draw the screen (asked Claude because I'm lazy)
         screen.fill((30, 30, 30))
@@ -115,7 +131,8 @@ def main():
         hud = font.render(f"Target: {target}   Round: {rounds+1}/5   Strikes: {strikes}/3", True, (255, 255, 255))
         screen.blit(hud, (10, 10))
 
-        hint = font.render("Click to toggle | Enter to confirm", True, (150, 150, 150))
+        hint_text = "Flip switches | Press button to confirm" if RPi else "Click to toggle | Enter to confirm"
+        hint = font.render(hint_text, True, (150, 150, 150))
         screen.blit(hint, hint.get_rect(center=(300, 400)))
 
         if won:
