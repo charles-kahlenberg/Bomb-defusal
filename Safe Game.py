@@ -135,8 +135,8 @@ def make_buzzer_sound(duration=0.5, sample_rate=44100, volume=0.35):
 
 COLOR = (255, 255, 255)
 SURFACE_COLOR = (115, 147, 179) 
-WIDTH = 800
-HEIGHT = 800
+WIDTH = 200
+HEIGHT = 300
 
 # everything below is imported from https://www.geeksforgeeks.org/python/pygame-creating-sprites/ and modified to fit my game, I will be using sprites for the buttons that the user will press to play the melodies
 
@@ -152,6 +152,10 @@ class Sprite(pygame.sprite.Sprite): #https://www.pygame.org/docs/ref/sprite.html
         white_img = pygame.image.load("img_keys//white_key.png").convert_alpha()
         black_img = pygame.image.load("img_keys//black_key.png").convert_alpha()
         red_img = pygame.image.load("img_keys//red_key.png").convert_alpha()
+        
+        white_img.set_alpha(0)
+        black_img.set_alpha(0)
+        red_img.set_alpha(128)
 
         if color == WHITE:
             self.base_image = pygame.transform.scale(white_img, (width, height))
@@ -180,6 +184,12 @@ class ClickableSprite(pygame.sprite.Sprite):
         self.image = image
         self.rect = self.image.get_rect(topleft=(x, y))
 
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            # Check if the mouse click position (event.pos) is inside the sprite
+            if self.rect.collidepoint(event.pos):
+                print("Sprite clicked!")
+               
 
 
 RED = (255, 0, 0)
@@ -196,14 +206,14 @@ all_sprites_list = pygame.sprite.Group()
 GRID_COLS = 3
 GRID_ROWS = 4
 NUM_BUTTONS = GRID_COLS * GRID_ROWS
-BUTTON_W = 140
-BUTTON_H = 120
-BUTTON_GAP_X = 30
-BUTTON_GAP_Y = 20
+BUTTON_W = 50
+BUTTON_H = 50
+BUTTON_GAP_X = 3
+BUTTON_GAP_Y = 2
 grid_total_w = GRID_COLS * BUTTON_W + (GRID_COLS - 1) * BUTTON_GAP_X
 grid_total_h = GRID_ROWS * BUTTON_H + (GRID_ROWS - 1) * BUTTON_GAP_Y
 grid_origin_x = (WIDTH - grid_total_w) // 2
-grid_origin_y = 220
+grid_origin_y = 71
 
 sprite_objects = []
 for row in range(GRID_ROWS):
@@ -220,7 +230,7 @@ clock = pygame.time.Clock()
 print (clock)
 
 #timer text
-timer_font = pygame.font.SysFont("Arial", 48, bold=True)
+timer_font = pygame.font.Font("img_keys//Baskic8.otf", 24)
 TIMER_COLOR = (255, 255, 255)
 game_start_ticks = pygame.time.get_ticks()
 
@@ -239,6 +249,7 @@ max_strikes = 3
 game_over = False
 won = False
 
+KeyBg = pygame.image.load("img_keys//KeypadFull.png").convert()
 melody = []
 player_melody = []
 final_melody = [] #add list for the final round combination
@@ -249,6 +260,7 @@ check_time = 0
 chord_gap_ms = 800        # time between computer-played chords
 between_rounds_ms = 1000  # pause after a round so the last highlight stays visible
 pre_result_ms = 250       # tiny beat between the last click and the win/lose sound
+striketime = 180
 timer = 0
 
 while exit_game:
@@ -314,6 +326,7 @@ while exit_game:
                 else:
                     strikes += 1
                     print(f"Wrong! Strike {strikes}/{max_strikes}.")
+                    striketime = 0
                     buzzer_sound.play()
                     if strikes >= max_strikes:
                         print("Game over!")
@@ -332,6 +345,7 @@ while exit_game:
                     game_over = True
                 else:
                     strikes += 1
+                    strike_text = timer_font.render(f"Strikes: {strikes}/{max_strikes}", True, (255, 0, 0))
                     print(f"Wrong! Strike {strikes}/{max_strikes}.")
                     buzzer_sound.play()
                     player_melody = []
@@ -351,47 +365,29 @@ while exit_game:
 
     all_sprites_list.update()
     screen.fill(SURFACE_COLOR)
+    screen.blit(KeyBg, (0,0))
     all_sprites_list.draw(screen)
 
     if not game_over:
         round_text = timer_font.render(f"Round: {rounds + 1}", True, TIMER_COLOR)
-        screen.blit(round_text, (WIDTH - round_text.get_width() - 20, 80))
         strike_text = timer_font.render(f"Strikes: {strikes}/{max_strikes}", True, (255, 0, 0))
-        screen.blit(strike_text, (WIDTH - strike_text.get_width() - 20, 140))
+        if striketime < 60:
+            striketime += 1
+            screen.blit(strike_text, (28, 30))
+        elif rounds != 4:
+            screen.blit(round_text, (28, 30))
+        strike_text = timer_font.render(f"Strikes: {strikes}/{max_strikes}", True, (255, 0, 0))
+        ## screen.blit(strike_text, (WIDTH - strike_text.get_width() - 20, 140))
         if state in ("final_input", "final_check"):
-            prompt_text = timer_font.render("Input the Combination!", True, (255, 215, 0))
-            screen.blit(prompt_text, ((WIDTH - prompt_text.get_width()) // 2, 100))
+            prompt_text = timer_font.render("Combination?", True, (255, 215, 0))
+            screen.blit(prompt_text, (28, 30))
 
     elif won:
-        win_text = timer_font.render("Congratulations! You won!", True, (0, 255, 0))
-        screen.blit(win_text, ((WIDTH - win_text.get_width()) // 2, 100))
-
+        win_text = timer_font.render("Pass!", True, (0, 255, 0))
+        screen.blit(win_text, (28, 30))
     else:
-        lost_text = timer_font.render("Game Over! Try Again!", True, (255, 0, 0))
-        screen.blit(lost_text, ((WIDTH - lost_text.get_width()) // 2, 100))
-        
-    # draw the elapsed-time timer in the top-right
-    time_left = 360000 - (now - game_start_ticks)  # 60 seconds total, converted to milliseconds
-    seconds_total = time_left // 1000
-    timer_text = f"{seconds_total // 60:02d}:{seconds_total % 60:02d}"
-    if time_left <= 0:
-        if not game_over:
-            whomp_sound.play()
-            game_over = True
-            for sprite in list(all_sprites_list):
-                sprite.remove()  # remove sprites to prevent further interaction
-            sprite_objects.clear()  # clear the list of sprites
-        timer_text = "00:00"
-        timer_surface = timer_font.render(timer_text, True, (255, 0, 0))  # red timer when time's up
-        lost_text = timer_font.render("Time's up! Game Over!", True, (255, 0, 0))
-        screen.blit(lost_text, ((WIDTH - lost_text.get_width()) // 2, 100))
-
-    else:
-        timer_text = f"{seconds_total // 60:02d}:{seconds_total % 60:02d}"
-
-   
-    timer_surface = timer_font.render(timer_text, True, TIMER_COLOR)
-    screen.blit(timer_surface, (WIDTH - timer_surface.get_width() - 20, 20))
+        lost_text = timer_font.render("Game over..", True, (255, 0, 0))
+        screen.blit(lost_text, (28, 30))
 
     pygame.display.flip()
     clock.tick(60)
