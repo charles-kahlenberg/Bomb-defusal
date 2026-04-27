@@ -12,7 +12,7 @@
 import pygame
 import sys
 import random
-from bomb_configs import RPi
+from bomb_configs import *
 if RPi:
     from bomb_configs import component_toggles, component_button_state
 
@@ -62,10 +62,10 @@ def main():
     start_x = (600 - (4 * KEY_W + 3 * (spacing - KEY_W))) // 2
     #creates switch objects
     switches = [
-        Switch(start_x + 0 * spacing, 80, "SW1", 8, pygame.board.D12),
-        Switch(start_x + 1 * spacing, 80, "SW2", 4, pygame.board),
-        Switch(start_x + 2 * spacing, 80, "SW3", 2, pygame.K_3),
-        Switch(start_x + 3 * spacing, 80, "SW4", 1, pygame.K_4),
+        Switch(start_x + 0 * spacing, 80, "SW1", 8, board.D12),
+        Switch(start_x + 1 * spacing, 80, "SW2", 4, board.D16),
+        Switch(start_x + 2 * spacing, 80, "SW3", 2, board.D20),
+        Switch(start_x + 3 * spacing, 80, "SW4", 1, board.D21),
     ]
     all_sprites = pygame.sprite.Group(*switches)
 
