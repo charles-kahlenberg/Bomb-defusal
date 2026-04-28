@@ -197,191 +197,199 @@ RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
-size = (WIDTH, HEIGHT)
-screen = pygame.display.set_mode(size)
-pygame.display.set_caption("Melody Game")
 
-all_sprites_list = pygame.sprite.Group()
+def main():
+    size = (WIDTH, HEIGHT)
+    screen = pygame.display.set_mode(size)
+    pygame.display.set_caption("Melody Game")
 
-# create objects
-object1 = Sprite(RED, 20, 30)
-object2 = Sprite(BLACK, 20, 30)
-object3 = Sprite(RED, 20, 30)
-object4 = Sprite(BLACK, 20, 30)
-object5 = Sprite(RED, 20, 30)
+    all_sprites_list = pygame.sprite.Group()
 
-# set the position of the objects
-object1.rect.x = 100  
-object1.rect.y = 300  
-object2.rect.x = 200
-object2.rect.y = 300
-object3.rect.x = 300
-object3.rect.y = 300
-object4.rect.x = 400
-object4.rect.y = 300
-object5.rect.x = 500
-object5.rect.y = 300
+    # create objects
+    object1 = Sprite(RED, 20, 30)
+    object2 = Sprite(BLACK, 20, 30)
+    object3 = Sprite(RED, 20, 30)
+    object4 = Sprite(BLACK, 20, 30)
+    object5 = Sprite(RED, 20, 30)
 
-# add the objects to the list of sprites
-all_sprites_list.add(object1)
-all_sprites_list.add(object2)
-all_sprites_list.add(object3)
-all_sprites_list.add(object4)
-all_sprites_list.add(object5)
+    # set the position of the objects
+    object1.rect.x = 100
+    object1.rect.y = 300
+    object2.rect.x = 200
+    object2.rect.y = 300
+    object3.rect.x = 300
+    object3.rect.y = 300
+    object4.rect.x = 400
+    object4.rect.y = 300
+    object5.rect.x = 500
+    object5.rect.y = 300
 
-sprite_objects = [object1, object2, object3, object4, object5]
+    # add the objects to the list of sprites
+    all_sprites_list.add(object1)
+    all_sprites_list.add(object2)
+    all_sprites_list.add(object3)
+    all_sprites_list.add(object4)
+    all_sprites_list.add(object5)
 
-exit_game = True
-clock = pygame.time.Clock()
-print (clock)
+    sprite_objects = [object1, object2, object3, object4, object5]
 
-#timer text
-timer_font = pygame.font.SysFont("Arial", 48, bold=True)
-TIMER_COLOR = (255, 255, 255)
-game_start_ticks = pygame.time.get_ticks()
+    exit_game = True
+    clock = pygame.time.Clock()
+    print(clock)
 
+    # timer text
+    timer_font = pygame.font.SysFont("Arial", 48, bold=True)
+    TIMER_COLOR = (255, 255, 255)
+    game_start_ticks = pygame.time.get_ticks()
 
+    # Assign one chord from the library to each button
+    button_chord_names = ["C_major", "D_minor", "E_minor", "F_major", "G_major"]
+    button_sounds = [make_chord_sound(CHORD_LIBRARY[name]) for name in button_chord_names]
+    hooray_sound = make_hooray_sound()
+    anthem_sound = make_anthem_sound()
+    buzzer_sound = make_buzzer_sound()
+    whomp_sound = make_whomp_sound()
 
-#Assign one chord from the library to each button (Claude generated the chord sounds)
-button_chord_names = ["C_major", "D_minor", "E_minor", "F_major", "G_major"]
-button_sounds = [make_chord_sound(CHORD_LIBRARY[name]) for name in button_chord_names]
-hooray_sound = make_hooray_sound()
-anthem_sound = make_anthem_sound()
-buzzer_sound = make_buzzer_sound()
-whomp_sound = make_whomp_sound()
+    # constants and variables for game state
+    rounds = 0
+    strikes = 0
+    max_strikes = 3
+    game_over = False
+    won = False
 
-# constants and variables for game state
-rounds = 0
-strikes = 0
-max_strikes = 3
-game_over = False
+    melody = []
+    player_melody = []
+    state = "start_round"
+    next_note_time = 0
+    next_round_time = 0
+    check_time = 0
+    chord_gap_ms = 800
+    between_rounds_ms = 1000
+    pre_result_ms = 250
 
-melody = []
-player_melody = []
-state = "start_round"    # "start_round" -> "computer_playing" -> "player_input" -> "check" -> "between_rounds" (Planned by Claude)
-next_note_time = 0
-next_round_time = 0
-check_time = 0
-chord_gap_ms = 800        # time between computer-played chords
-between_rounds_ms = 1000  # pause after a round so the last highlight stays visible
-pre_result_ms = 250       # tiny beat between the last click and the win/lose sound
-timer = 0
+    while exit_game:
+        now = pygame.time.get_ticks()
 
-while exit_game:
-    now = pygame.time.get_ticks()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                exit_game = False
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not game_over and state == "player_input":
+                for i, obj in enumerate(sprite_objects):
+                    if obj.rect.collidepoint(event.pos):
+                        print(f"Sprite{i + 1} clicked! Playing {button_chord_names[i]}")
+                        button_sounds[i].play()
+                        obj.highlight(now)
+                        player_melody.append(button_chord_names[i])
+                        if len(player_melody) >= len(melody):
+                            state = "check"
+                            check_time = now + pre_result_ms
+                        break
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            exit_game = False
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not game_over and state == "player_input": # when user clicks sprite, check if correct key is played
-            for i, obj in enumerate(sprite_objects): #Generated by Claude, modified to fit my game
-                if obj.rect.collidepoint(event.pos):
-                    print(f"Sprite{i+1} clicked! Playing {button_chord_names[i]}") # just for debugging, can be removed later
-                    button_sounds[i].play()
-                    obj.highlight(now)
-                    player_melody.append(button_chord_names[i])
-                    if len(player_melody) >= len(melody):
-                        state = "check"
-                        check_time = now + pre_result_ms
-                    break
-
-    if not game_over:
-        if state == "start_round":
-            melody_length = rounds + 1
-            melody = [random.choice(button_chord_names) for _ in range(melody_length)] #Claude generated the melody, modified to fit my game
-            player_melody = []
-            note_index = 0
-            next_note_time = now
-            print(f"Round {rounds + 1}: Listen to the melody! ({melody})")
-            state = "computer_playing"
-
-        elif state == "computer_playing": # computer plays the keys
-            if now >= next_note_time:
-                if note_index < len(melody):
-                    chord_name = melody[note_index]
-                    chord_idx = button_chord_names.index(chord_name)
-                    button_sounds[chord_idx].play()
-                    sprite_objects[chord_idx].highlight(now)
-                    note_index += 1
-                    next_note_time = now + chord_gap_ms
-                else:
-                    print("Your turn — repeat the melody!")
-                    state = "player_input"
-
-        elif state == "check": # algorithm checks if keys were played in correct order
-            if now >= check_time:
-                if player_melody == melody:
-                    print("Correct! Next round.")
-                    hooray_sound.play()
-                    rounds += 1
-                else:
-                    strikes += 1
-                    print(f"Wrong! Strike {strikes}/{max_strikes}.")
-                    buzzer_sound.play()
-                    if strikes >= max_strikes:
-                        print("Game over!")
-                        game_over = True
-                        whomp_sound.play()
-                if not game_over: # adds a buffer between rounds so the last highlight stays visible before the next melody starts
-                    state = "between_rounds"
-                    next_round_time = now + between_rounds_ms
-
-        elif state == "between_rounds": 
-            if now >= next_round_time:
-                state = "start_round"
-
-    for s in sprite_objects:
-        s.update_highlight(now)
-
-    all_sprites_list.update()
-    screen.fill(SURFACE_COLOR)
-    all_sprites_list.draw(screen)
-
-    if rounds <= 4 and not game_over: # display the current round number in the top-right, below the timer
-        round_text = timer_font.render(f"Round: {rounds}", True, TIMER_COLOR)
-        screen.blit(round_text, (WIDTH - round_text.get_width() - 20, 80))
-        strike_text = timer_font.render(f"Strikes: {strikes}/{max_strikes}", True, (255, 0, 0))
-        screen.blit(strike_text, (WIDTH - strike_text.get_width() - 20, 140))
-
-    elif rounds >= 4: # if the player wins by completing 8 rounds, play anthem sound and display win message
         if not game_over:
-            anthem_sound.play()
-            game_over = True
-        win_text = timer_font.render("Congratulations! You won!", True, (0, 255, 0))
-        screen.blit(win_text, ((WIDTH - win_text.get_width()) // 2, 100))
-        
-    elif strikes >= 3 : # if the player loses by getting 3 strikes, play whomp sound and display lose message
-        if not game_over:
-            whomp_sound.play()
-            game_over = True
-        lost_text = timer_font.render("Game Over! Try Again!", True, (255, 0, 0))
-        screen.blit(lost_text, ((WIDTH - lost_text.get_width()) // 2, 100))
-        
-    # draw the elapsed-time timer in the top-right
-    time_left = 360000 - (now - game_start_ticks)  # 60 seconds total, converted to milliseconds
-    seconds_total = time_left // 1000
-    timer_text = f"{seconds_total // 60:02d}:{seconds_total % 60:02d}"
-    if time_left <= 0:
-        if not game_over:
-            whomp_sound.play()
-            game_over = True
-            for sprite in list(all_sprites_list):
-                sprite.remove()  # remove sprites to prevent further interaction
-            sprite_objects.clear()  # clear the list of sprites
-        timer_text = "00:00"
-        timer_surface = timer_font.render(timer_text, True, (255, 0, 0))  # red timer when time's up
-        lost_text = timer_font.render("Time's up! Game Over!", True, (255, 0, 0))
-        screen.blit(lost_text, ((WIDTH - lost_text.get_width()) // 2, 100))
+            if state == "start_round":
+                melody_length = rounds + 1
+                melody = [random.choice(button_chord_names) for _ in range(melody_length)]
+                player_melody = []
+                note_index = 0
+                next_note_time = now
+                print(f"Round {rounds + 1}: Listen to the melody! ({melody})")
+                state = "computer_playing"
 
-    else:
-        timer_text = f"{seconds_total // 60:02d}:{seconds_total % 60:02d}"
+            elif state == "computer_playing":
+                if now >= next_note_time:
+                    if note_index < len(melody):
+                        chord_name = melody[note_index]
+                        chord_idx = button_chord_names.index(chord_name)
+                        button_sounds[chord_idx].play()
+                        sprite_objects[chord_idx].highlight(now)
+                        note_index += 1
+                        next_note_time = now + chord_gap_ms
+                    else:
+                        print("Your turn — repeat the melody!")
+                        state = "player_input"
 
-   
-    timer_surface = timer_font.render(timer_text, True, TIMER_COLOR)
-    screen.blit(timer_surface, (WIDTH - timer_surface.get_width() - 20, 20))
+            elif state == "check":
+                if now >= check_time:
+                    if player_melody == melody:
+                        print("Correct! Next round.")
+                        hooray_sound.play()
+                        rounds += 1
+                    else:
+                        strikes += 1
+                        print(f"Wrong! Strike {strikes}/{max_strikes}.")
+                        buzzer_sound.play()
+                        if strikes >= max_strikes:
+                            print("Game over!")
+                            game_over = True
+                            won = False
+                            whomp_sound.play()
 
-    pygame.display.flip()
-    clock.tick(60)
+                    if not game_over:
+                        state = "between_rounds"
+                        next_round_time = now + between_rounds_ms
 
-pygame.quit()
-sys.exit()
+            elif state == "between_rounds":
+                if now >= next_round_time:
+                    state = "start_round"
+
+        for s in sprite_objects:
+            s.update_highlight(now)
+
+        all_sprites_list.update()
+        screen.fill(SURFACE_COLOR)
+        all_sprites_list.draw(screen)
+
+        if rounds <= 4 and not game_over:
+            round_text = timer_font.render(f"Round: {rounds}", True, TIMER_COLOR)
+            screen.blit(round_text, (WIDTH - round_text.get_width() - 20, 80))
+            strike_text = timer_font.render(f"Strikes: {strikes}/{max_strikes}", True, (255, 0, 0))
+            screen.blit(strike_text, (WIDTH - strike_text.get_width() - 20, 140))
+
+        elif rounds >= 4:
+            if not game_over:
+                anthem_sound.play()
+                game_over = True
+                won = True
+            win_text = timer_font.render("Congratulations! You won!", True, (0, 255, 0))
+            screen.blit(win_text, ((WIDTH - win_text.get_width()) // 2, 100))
+            break
+
+        elif strikes >= 3:
+            if not game_over:
+                whomp_sound.play()
+                game_over = True
+                won = False
+            lost_text = timer_font.render("Game Over! Try Again!", True, (255, 0, 0))
+            screen.blit(lost_text, ((WIDTH - lost_text.get_width()) // 2, 100))
+
+        # draw the elapsed-time timer in the top-right
+        time_left = 360000 - (now - game_start_ticks)
+        seconds_total = time_left // 1000
+
+        if time_left <= 0:
+            if not game_over:
+                whomp_sound.play()
+                game_over = True
+                won = False
+                for sprite in list(all_sprites_list):
+                    sprite.remove()
+                sprite_objects.clear()
+
+            timer_text = "00:00"
+            lost_text = timer_font.render("Time's up! Game Over!", True, (255, 0, 0))
+            screen.blit(lost_text, ((WIDTH - lost_text.get_width()) // 2, 100))
+        else:
+            timer_text = f"{seconds_total // 60:02d}:{seconds_total % 60:02d}"
+
+        timer_surface = timer_font.render(timer_text, True, TIMER_COLOR)
+        screen.blit(timer_surface, (WIDTH - timer_surface.get_width() - 20, 20))
+
+        pygame.display.flip()
+        clock.tick(60)
+
+    pygame.quit()
+    return won
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

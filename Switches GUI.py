@@ -84,6 +84,7 @@ def main():
             rounds += 1
             if rounds >= 5:
                 won = True
+                game_over = True
             else:
                 for sw in switches:
                     if sw.on:
@@ -92,9 +93,11 @@ def main():
         else:
             strikes += 1
             if strikes >= 3:
+                won = False
                 game_over = True
 
-    while True:
+    running = True
+    while running:
         # mirror physical toggle switches onto the GUI
         if RPi and not game_over and not won:
             for sw, pin in zip(switches, component_toggles):
@@ -103,17 +106,15 @@ def main():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            # # keyboard toggles (desktop only — hardware is the source of truth on RPi)
-            # elif event.type == pygame.KEYDOWN and not game_over and not won:
-            #     if not RPi:
-            #         for sw in switches:
-            #             if event.key == sw.key:
-            #                 sw.toggle()
-            #     # Enter to confirm (always available)
-            #     if event.key == pygame.K_RETURN:
-            #         confirm()
+                running = False
+
+            elif event.type == pygame.MOUSEBUTTONDOWN and not RPi and not game_over:
+                for sw in switches:
+                    sw.handle_click(event.pos)
+
+            elif event.type == pygame.KEYDOWN and not game_over:
+                if event.key == pygame.K_RETURN:
+                    confirm()
 
         # pushbutton confirm (rising edge)
         if RPi and not game_over and not won:
@@ -122,7 +123,7 @@ def main():
                 confirm()
             prev_btn = btn
 
-        # draw the screen (asked Claude because I'm lazy)
+        # draw the screen
         screen.fill((30, 30, 30))
         all_sprites.draw(screen)
         for sw in switches:
@@ -137,12 +138,24 @@ def main():
 
         if won:
             screen.blit(font.render("You win!", True, (0, 255, 0)), (240, 370))
+            pygame.display.flip()
+            pygame.time.wait(1000)
+            pygame.quit()
+            return True
+
         elif game_over:
             screen.blit(font.render("Game Over!", True, (255, 60, 60)), (230, 370))
+            pygame.display.flip()
+            pygame.time.wait(1000)
+            pygame.quit()
+            return False
 
         pygame.display.flip()
         clock.tick(60)
 
+    pygame.quit()
+    return False
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

@@ -11,30 +11,37 @@ from bomb_phases import *
 import pygame
 import sys
 from pathlib import Path
+import importlib.util
+
+
+def import_game_module(module_name, file_name):
+    project_dir = Path(__file__).resolve().parent
+    game_path = project_dir / file_name
+
+    spec = importlib.util.spec_from_file_location(module_name, game_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
 
 # import the wires GUI module by file path
 def import_wires_gui():
-    import importlib.util
+    return import_game_module("wires_gui", "Wires GUI.py")
 
-    project_dir = Path(__file__).resolve().parent
-    wires_path = project_dir / "Wires GUI.py"
-
-    spec = importlib.util.spec_from_file_location("wires_gui", wires_path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
 
 # import the melody game module by file path
 def import_melody_game():
-    import importlib.util
+    return import_game_module("melody_game", "Melody Game.py")
 
-    project_dir = Path(__file__).resolve().parent
-    melody_path = project_dir / "Melody Game.py"
 
-    spec = importlib.util.spec_from_file_location("melody_game", melody_path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+# import the safe/keypad game module by file path
+def import_safe_game():
+    return import_game_module("safe_game", "Safe Game.py")
+
+
+# import the switches GUI module by file path
+def import_switches_gui():
+    return import_game_module("switches_gui", "Switches GUI.py")
 
 ###########
 # functions
@@ -191,6 +198,7 @@ def turn_off():
 
 def main():
     # launch the wires GUI first
+
     wires_gui = import_wires_gui()
     wires_won = wires_gui.main()
 
@@ -200,8 +208,27 @@ def main():
 
     # if wires succeed, launch the melody game next
     melody_game = import_melody_game()
-    melody_game.main()
+    melody_won = melody_game.main()
+
+    if not melody_won:
+        return False
+
+    # move on to safe game
+    safe_game = import_safe_game()
+    safe_won = safe_game.main()
+
+    if not safe_won:
+        return False
+
+    # move on to switches game
+    switches_gui = import_switches_gui()
+    switches_won = switches_gui.main()
+
+    if not switches_won:
+        return False
+
     return True
+
 
 ######
 # MAIN
