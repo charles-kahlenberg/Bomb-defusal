@@ -205,14 +205,14 @@ def main():
     # if wires fail, quit immediately
     if not wires_won:
         return False
-
+    """
     # if wires succeed, launch the melody game next
     melody_game = import_melody_game()
     melody_won = melody_game.main()
 
     if not melody_won:
         return False
-
+    """
     # move on to safe game
     safe_game = import_safe_game()
     safe_won = safe_game.main()
