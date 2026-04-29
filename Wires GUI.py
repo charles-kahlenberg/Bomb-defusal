@@ -431,23 +431,29 @@ def main():
                                 game_over = True
                                 won = False
 
-        # Hardware poll: a wire whose pin rises False->True has been plugged into 3V3.
-        # Treat the plug-in as the "connect" action for that wire.
-        if not game_over:
+        # hardware poll: plugging a wire into its top pin (False->True) selects that wire,
+        # exactly like pressing K_1..K_5 on the keyboard. The user still confirms the
+        # randomized bottom slot with keyboard 6-0; a wrong slot is handled above as a strike.
+        if not game_over and selected_wire is None:
             for w in all_wires:
                 if w.pin is None:
                     continue
                 current = bool(w.pin.value)
                 if prev_pin_state[w.color] is False and current is True and not connected[w.color]:
-                    connected[w.color] = True
-                    if selected_wire is w:
-                        selected_wire = None
-                        selected_start = None
-                        selected_end = None
-                    if all(connected.values()):
-                        game_over = True
-                        won = True
+                    selected_wire = w
+                    # find this wire's start and (randomized) end circles
+                    for _val in wire_map.values():
+                        if _val["wire"] is w and _val["type"] == "start":
+                            selected_start = _val["circle"]
+                        elif _val["wire"] is w and _val["type"] == "end":
+                            selected_end = _val["circle"]
                 prev_pin_state[w.color] = current
+        else:
+            # keep prev state in sync even when we are not acting on it
+            for w in all_wires:
+                if w.pin is None:
+                    continue
+                prev_pin_state[w.color] = bool(w.pin.value)
 
         screen.fill(colors["black"])
 
