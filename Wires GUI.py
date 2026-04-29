@@ -396,7 +396,7 @@ def main():
                 if event.key in wire_map:
                     mapping = wire_map[event.key]
 
-                    # If no wire is selected, select a start wire (keys 1-5)
+                    # If no wire is selected, select a start wire (keys 1-5) (Claude generated this block)
                     if selected_wire is None and mapping["type"] == "start":
                         selected_wire = mapping["wire"]
                         selected_start = mapping["circle"]
