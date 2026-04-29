@@ -252,7 +252,7 @@ def create_game_state():
     circle_loc_top = [[80, 250], [240, 250], [400, 250], [560, 250], [720, 250]]
     circle_loc_bottom = [[80, 550], [240, 550], [400, 550], [560, 550], [720, 550]]
 
-    random.shuffle(circle_loc_bottom)
+    # random.shuffle(circle_loc_bottom)
 
     # Top row (input wires)
     circle1_x, circle1_y = circle_loc_top[0]
