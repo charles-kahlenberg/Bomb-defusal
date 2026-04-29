@@ -405,6 +405,8 @@ def main():
     }
 
     wire_order = [blue_wire, red_wire, yellow_wire, green_wire, purple_wire]
+    current_target_wire = random.choice(wire_order)
+
     key_to_wire_index = {
         K_1: 0,
         K_2: 1,
@@ -433,12 +435,24 @@ def main():
         if pressed_wire_index is not None and not game_over:
             pressed_wire = wire_order[pressed_wire_index]
 
-            if not connected[pressed_wire.color]:
+            if pressed_wire == current_target_wire and not connected[pressed_wire.color]:
                 connected[pressed_wire.color] = True
 
                 if all(connected.values()):
                     game_over = True
                     won = True
+                else:
+                    remaining_wires = [
+                        wire for wire in wire_order
+                        if not connected[wire.color]
+                    ]
+                    current_target_wire = random.choice(remaining_wires)
+            else:
+                strike_count += 1
+
+                if strike_count >= 3:
+                    game_over = True
+                    won = False
 
         screen.fill(colors["black"])
 
@@ -450,7 +464,11 @@ def main():
             ("circle4", green_wire),
             ("circle5", purple_wire),
         ]:
-            color_name = wire.color if connected[wire.color] else "white"
+            if connected[wire.color] or wire == current_target_wire:
+                color_name = wire.color
+            else:
+                color_name = "white"
+
             pygame.draw.circle(screen, colors[color_name], points[circle_name], circle_radius)
             draw_text_centered(screen, font, "", colors["black"], points[circle_name])
 
@@ -462,7 +480,11 @@ def main():
             ("circle9", green_wire),
             ("circle10", purple_wire),
         ]:
-            color_name = wire.color if connected[wire.color] else "white"
+            if connected[wire.color] or wire == current_target_wire:
+                color_name = wire.color
+            else:
+                color_name = "white"
+
             pygame.draw.circle(screen, colors[color_name], points[circle_name], circle_radius)
             draw_text_centered(screen, font, "", colors["black"], points[circle_name])
 
@@ -484,7 +506,11 @@ def main():
 
         # Wire prompt
         if not game_over:
-            prompt = font.render("Connect wire or press 1-5", True, colors["white"])
+            prompt = font.render(
+                f"Connect the {current_target_wire.color} wire",
+                True,
+                colors["white"]
+            )
             screen.blit(prompt, (10, 50))
 
         # Win / lose overlay
@@ -493,6 +519,8 @@ def main():
             msg_color = colors["green"] if won else colors["red"]
             end_text = big_font.render(msg, True, msg_color)
             screen.blit(end_text, end_text.get_rect(center=(400, 400)))
+            pygame.display.flip()
+            pygame.time.wait(1500)
             return won
 
         pygame.display.flip()
