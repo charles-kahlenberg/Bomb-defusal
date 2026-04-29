@@ -28,7 +28,12 @@ import pygame
 from pygame import *
 from pygame.sprite import *
 import sys
-from bomb_configs import *
+
+try:
+    from bomb_configs import RPi, component_wires
+except ImportError:
+    RPi = False
+    component_wires = []
 
 
 class WiresGUI(metaclass=abc.ABCMeta):
@@ -94,9 +99,8 @@ class RedWire(WiresGUI):
     :type expected_key: int
     """
 
-    def __init__(self, end_position, start_position, pin=None):
+    def __init__(self, end_position, start_position):
         super().__init__("red", end_position, start_position)
-        self.pin = pin
         self.expected_key = K_5
 
     def get_expected_key(self):
@@ -129,9 +133,8 @@ class BlueWire(WiresGUI):
     :type end_position: tuple[int, int]
     """
 
-    def __init__(self, end_position, start_position, pin=None):
+    def __init__(self, end_position, start_position):
         super().__init__("blue", end_position, start_position)
-        self.pin = pin
         self.expected_key = K_6
 
     def get_expected_key(self):
@@ -160,9 +163,8 @@ class YellowWire(WiresGUI):
     :type expected_key: int
     """
 
-    def __init__(self, end_position, start_position, pin=None):
+    def __init__(self, end_position, start_position):
         super().__init__("yellow", end_position, start_position)
-        self.pin = pin
         self.expected_key = K_7
 
     def get_expected_key(self):
@@ -189,9 +191,8 @@ class GreenWire(WiresGUI):
     :type expected_key: int
     """
 
-    def __init__(self, end_position, start_position, pin=None):
+    def __init__(self, end_position, start_position):
         super().__init__("green", end_position, start_position)
-        self.pin = pin
         self.expected_key = K_8
 
     def get_expected_key(self):
@@ -215,9 +216,8 @@ class PurpleWire(WiresGUI):
     :type expected_key: int
     """
 
-    def __init__(self, end_position, start_position, pin=None):
+    def __init__(self, end_position, start_position):
         super().__init__("purple", end_position, start_position)
-        self.pin = pin
         self.expected_key = K_9
 
     def get_expected_key(self):
@@ -295,11 +295,82 @@ def create_game_state():
 
 
 def draw_text_centered(surface, font, text, color, center):
+    """
+    Draws a given text string centered at the specified position on the given surface.
+
+    This function uses the provided font and color to render the text, and it ensures
+    the text is centered based on the given position. The rendered text is then drawn
+    onto the provided surface.
+
+    :param surface: The surface to draw the text on.
+    :type surface: pygame.Surface
+    :param font: The font used to render the text.
+    :type font: pygame.font.Font
+    :param text: The string of text to be rendered and drawn.
+    :type text: str
+    :param color: The color of the text in RGB format.
+    :type color: tuple[int, int, int]
+    :param center: The (x, y) coordinates to center the text on.
+    :type center: tuple[int, int]
+    :return: None
+    """
     text_surface = font.render(text, True, color)
     surface.blit(text_surface, text_surface.get_rect(center=center))
 
 
+def get_pressed_wire_from_rpi(previous_wire_values):
+    """
+    Returns the index of the newly connected RPi wire, or None if no new wire was connected.
+    """
+    if not RPi:
+        return None
+
+    for index, pin in enumerate(component_wires):
+        current_value = pin.value
+
+        if current_value and not previous_wire_values[index]:
+            previous_wire_values[index] = current_value
+            return index
+
+        previous_wire_values[index] = current_value
+
+    return None
+
+
 def main():
+    """
+    The `main` function initializes and runs a Pygame application for a wires-based GUI game.
+    The game requires players to select and connect wires to their correct endpoints.
+    Players win by successfully connecting all wires correctly, and lose if
+    too many incorrect connection attempts (strikes) are made.
+
+    :raises SystemExit: When the game is exited.
+    :raises pygame.error: If Pygame initialization fails.
+    :return: 0 upon successful game termination.
+
+    Variables:
+        **screen** (*Surface*): The main Pygame display surface for the game window.
+        **strike_count** (*int*): Tracks the number of incorrect wire connection attempts.
+        **font** (*Font*): Font object for rendering small-sized text.
+        **big_font** (*Font*): Font object for rendering large-sized text.
+        **clock** (*Clock*): Pygame clock object used to control the game's framerate.
+        **state** (*dict*): A dictionary holding initial game state configuration.
+        **colors** (*dict*): A mapping of color keys to RGB color values.
+        **points** (*dict*): A mapping of circular input and output point identifiers to their positions.
+        **circle_radius** (*int*): The radius for the input and output circle graphics.
+        **red_wire** (*RedWire*): Instance of a wire connecting specific input and output points for red.
+        **blue_wire** (*BlueWire*): Instance of a wire connecting specific input and output points for blue.
+        **yellow_wire** (*YellowWire*): Instance of a wire connecting specific input and output points for yellow.
+        **green_wire** (*GreenWire*): Instance of a wire connecting specific input and output points for green.
+        **connected** (*dict*): A dictionary tracking which wires have been successfully connected.
+        **wire_map** (*dict*): Maps number keys 1-8 to their corresponding wire objects and circle names.
+        **selected_wire** (*WiresGUI or None*): The currently selected wire awaiting connection.
+        **selected_start** (*str or None*): The circle name of the selected wire's start point.
+        **selected_end** (*str or None*): The circle name of the selected wire's end point.
+        **game_over** (*bool*): Indicates whether the game has ended.
+        **won** (*bool*): Tracks whether the player has won the game.
+        **running** (*bool*): Controls whether the game loop continues execution.
+    """
     pygame.init()
     pygame.font.init()
 
@@ -316,18 +387,14 @@ def main():
     points = state["points"]
     circle_radius = state["circle_radius"]
 
-    print("Watch the wires! Press 1-5 to select top wires, 6-9 to connect to bottom wires.")
+    print("Watch the wires! Press 1-5 or connect a wire on the RPi.")
 
-    # pull jumper-wire pins from bomb_configs when running on the Pi.
-    # component_wires order: D14, D15, D18, D23, D24 -> blue, red, yellow, green, purple
-    wire_pins = component_wires if RPi else [None] * 5
-
-    # wire objects (created once; drawn each frame when connected)
-    blue_wire = BlueWire(points["circle6"], points["circle1"], pin=wire_pins[0])
-    red_wire = RedWire(points["circle7"], points["circle2"], pin=wire_pins[1])
-    yellow_wire = YellowWire(points["circle8"], points["circle3"], pin=wire_pins[2])
-    green_wire = GreenWire(points["circle9"], points["circle4"], pin=wire_pins[3])
-    purple_wire = PurpleWire(points["circle10"], points["circle5"], pin=wire_pins[4])
+    # Wire objects (created once; drawn each frame when connected)
+    blue_wire = BlueWire(points["circle6"], points["circle1"])
+    red_wire = RedWire(points["circle7"], points["circle2"])
+    yellow_wire = YellowWire(points["circle8"], points["circle3"])
+    green_wire = GreenWire(points["circle9"], points["circle4"])
+    purple_wire = PurpleWire(points["circle10"], points["circle5"])
 
     connected = {
         "red": False,
@@ -338,149 +405,64 @@ def main():
     }
 
     wire_order = [blue_wire, red_wire, yellow_wire, green_wire, purple_wire]
-
-    bottom_row_keys = []
-    bottom_row_pos = [
-        points["circle6"][0],
-        points["circle7"][0],
-        points["circle8"][0],
-        points["circle9"][0],
-        points["circle10"][0],
-    ]
-    bottom_row_pos.sort()
-
-    for circle in ["circle6", "circle7", "circle8", "circle9", "circle10"]:
-        if bottom_row_pos[0] == points[circle][0]:
-            bottom_row_keys.append(K_6)
-        elif bottom_row_pos[1] == points[circle][0]:
-            bottom_row_keys.append(K_7)
-        elif bottom_row_pos[2] == points[circle][0]:
-            bottom_row_keys.append(K_8)
-        elif bottom_row_pos[3] == points[circle][0]:
-            bottom_row_keys.append(K_9)
-        elif bottom_row_pos[4] == points[circle][0]:
-            bottom_row_keys.append(K_0)
-
-    wire_map = {
-        K_1: {"wire": wire_order[0], "circle": "circle1", "type": "start"},
-        K_2: {"wire": wire_order[1], "circle": "circle2", "type": "start"},
-        K_3: {"wire": wire_order[2], "circle": "circle3", "type": "start"},
-        K_4: {"wire": wire_order[3], "circle": "circle4", "type": "start"},
-        K_5: {"wire": wire_order[4], "circle": "circle5", "type": "start"},
-        bottom_row_keys[0]: {"wire": wire_order[0], "circle": "circle6", "type": "end"},
-        bottom_row_keys[1]: {"wire": wire_order[1], "circle": "circle7", "type": "end"},
-        bottom_row_keys[2]: {"wire": wire_order[2], "circle": "circle8", "type": "end"},
-        bottom_row_keys[3]: {"wire": wire_order[3], "circle": "circle9", "type": "end"},
-        bottom_row_keys[4]: {"wire": wire_order[4], "circle": "circle10", "type": "end"},
+    key_to_wire_index = {
+        K_1: 0,
+        K_2: 1,
+        K_3: 2,
+        K_4: 3,
+        K_5: 4,
     }
 
-    selected_wire = None
-    selected_start = None
-    selected_end = None
+    previous_wire_values = [False for _ in component_wires]
+
     game_over = False
     won = False
 
-    # track physical wire pin states so we only fire on True->False (cut) transitions.
-    # pulled-down inputs read True when the jumper bridges to 3V3, False when cut.
-    all_wires = [blue_wire, red_wire, yellow_wire, green_wire, purple_wire]
-    prev_pin_state = {w.color: (bool(w.pin.value) if w.pin is not None else None) for w in all_wires}
-
     running = True
     while running:
+        pressed_wire_index = get_pressed_wire_from_rpi(previous_wire_values)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
             if event.type == pygame.KEYDOWN and not game_over:
-                # Check if the key is valid
-                if event.key in wire_map:
-                    mapping = wire_map[event.key]
+                if event.key in key_to_wire_index:
+                    pressed_wire_index = key_to_wire_index[event.key]
 
-                    # If no wire is selected, select a start wire (keys 1-5) (Claude generated this block)
-                    if selected_wire is None and mapping["type"] == "start":
-                        selected_wire = mapping["wire"]
-                        selected_start = mapping["circle"]
-                        # Find the corresponding end circle for this wire
-                        for key, val in wire_map.items():
-                            if val["type"] == "end" and val["wire"] == selected_wire:
-                                selected_end = val["circle"]
-                                break
+        if pressed_wire_index is not None and not game_over:
+            pressed_wire = wire_order[pressed_wire_index]
 
-                    # If a wire is selected, try to connect it (keys 6-0)
-                    elif selected_wire is not None and mapping["type"] == "end":
-                        # Check if this is the correct endpoint for the selected wire
-                        if mapping["wire"] == selected_wire:
-                            # Correct connection!
-                            connected[selected_wire.color] = True
-                            selected_wire = None
-                            selected_start = None
-                            selected_end = None
+            if not connected[pressed_wire.color]:
+                connected[pressed_wire.color] = True
 
-                            # Check if all wires are connected
-                            if all(connected.values()):
-                                game_over = True
-                                won = True
-                        else:
-                            # Wrong connection - strike!
-                            strike_count += 1
-                            selected_wire = None
-                            selected_start = None
-                            selected_end = None
-
-                            if strike_count >= 3:
-                                game_over = True
-                                won = False
-
-        # hardware poll: plugging a wire into its top pin (False->True) selects that wire,
-        # exactly like pressing K_1..K_5 on the keyboard. The user still confirms the
-        # randomized bottom slot with keyboard 6-0; a wrong slot is handled above as a strike.
-        if not game_over and selected_wire is None:
-            for w in all_wires:
-                if w.pin is None:
-                    continue
-                current = bool(w.pin.value)
-                if prev_pin_state[w.color] is False and current is True and not connected[w.color]:
-                    selected_wire = w
-                    # find this wire's start and (randomized) end circles
-                    for _val in wire_map.values():
-                        if _val["wire"] is w and _val["type"] == "start":
-                            selected_start = _val["circle"]
-                        elif _val["wire"] is w and _val["type"] == "end":
-                            selected_end = _val["circle"]
-                prev_pin_state[w.color] = current
-        else:
-            # keep prev state in sync even when we are not acting on it
-            for w in all_wires:
-                if w.pin is None:
-                    continue
-                prev_pin_state[w.color] = bool(w.pin.value)
+                if all(connected.values()):
+                    game_over = True
+                    won = True
 
         screen.fill(colors["black"])
 
-        # Top row (input circles) with highlighting and color change
-        for i, (circle_name, label) in enumerate([
-            ("circle1", ""),
-            ("circle2", ""),
-            ("circle3", ""),
-            ("circle4", ""),
-            ("circle5", ""),
-        ]):
-            # Determine the color: show wire color if selected, otherwise white
-            color_name = "white"
-            if selected_start == circle_name and selected_wire is not None:
-                color_name = selected_wire.color
+        # Top row input circles
+        for circle_name, wire in [
+            ("circle1", blue_wire),
+            ("circle2", red_wire),
+            ("circle3", yellow_wire),
+            ("circle4", green_wire),
+            ("circle5", purple_wire),
+        ]:
+            color_name = wire.color if connected[wire.color] else "white"
+            pygame.draw.circle(screen, colors[color_name], points[circle_name], circle_radius)
+            draw_text_centered(screen, font, "", colors["black"], points[circle_name])
 
-            radius = circle_radius + 10 if selected_start == circle_name else circle_radius
-            pygame.draw.circle(screen, colors[color_name], points[circle_name], radius)
-            draw_text_centered(screen, font, label, colors["black"], points[circle_name])
-
-        # Bottom row (output circles) with color change when top wire is selected
-        for circle_name in ["circle6", "circle7", "circle8", "circle9", "circle10"]:
-            # Determine the color: show wire color if this is the selected wire's end, otherwise white
-            color_name = "white"
-            if selected_end == circle_name and selected_wire is not None:
-                color_name = selected_wire.color
-
+        # Bottom row output circles
+        for circle_name, wire in [
+            ("circle6", blue_wire),
+            ("circle7", red_wire),
+            ("circle8", yellow_wire),
+            ("circle9", green_wire),
+            ("circle10", purple_wire),
+        ]:
+            color_name = wire.color if connected[wire.color] else "white"
             pygame.draw.circle(screen, colors[color_name], points[circle_name], circle_radius)
             draw_text_centered(screen, font, "", colors["black"], points[circle_name])
 
@@ -500,12 +482,9 @@ def main():
         strike_text = font.render(f"Strikes: {strike_count}/3", True, colors["white"])
         screen.blit(strike_text, (10, 10))
 
-        # Wire selection prompt
+        # Wire prompt
         if not game_over:
-            if selected_wire is None:
-                prompt = font.render("Select a wire (1-5)", True, colors["white"])
-            else:
-                prompt = font.render(f"Connect {selected_wire.color} wire (6-0)", True, colors["white"])
+            prompt = font.render("Connect wire or press 1-5", True, colors["white"])
             screen.blit(prompt, (10, 50))
 
         # Win / lose overlay

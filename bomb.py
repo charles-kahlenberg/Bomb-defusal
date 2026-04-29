@@ -197,7 +197,7 @@ def turn_off():
         pin.value = True
 
 def main():
-    setup_phases()
+    #setup_phases()
 
     # launch the wires GUI first
 
