@@ -28,6 +28,7 @@ import pygame
 from pygame import *
 from pygame.sprite import *
 import sys
+from bomb_configs import *
 
 
 class WiresGUI(metaclass=abc.ABCMeta):
@@ -93,8 +94,9 @@ class RedWire(WiresGUI):
     :type expected_key: int
     """
 
-    def __init__(self, end_position, start_position):
+    def __init__(self, end_position, start_position, pin=None):
         super().__init__("red", end_position, start_position)
+        self.pin = pin
         self.expected_key = K_5
 
     def get_expected_key(self):
@@ -127,8 +129,9 @@ class BlueWire(WiresGUI):
     :type end_position: tuple[int, int]
     """
 
-    def __init__(self, end_position, start_position):
+    def __init__(self, end_position, start_position, pin=None):
         super().__init__("blue", end_position, start_position)
+        self.pin = pin
         self.expected_key = K_6
 
     def get_expected_key(self):
@@ -157,8 +160,9 @@ class YellowWire(WiresGUI):
     :type expected_key: int
     """
 
-    def __init__(self, end_position, start_position):
+    def __init__(self, end_position, start_position, pin=None):
         super().__init__("yellow", end_position, start_position)
+        self.pin = pin
         self.expected_key = K_7
 
     def get_expected_key(self):
@@ -185,8 +189,9 @@ class GreenWire(WiresGUI):
     :type expected_key: int
     """
 
-    def __init__(self, end_position, start_position):
+    def __init__(self, end_position, start_position, pin=None):
         super().__init__("green", end_position, start_position)
+        self.pin = pin
         self.expected_key = K_8
 
     def get_expected_key(self):
@@ -210,8 +215,9 @@ class PurpleWire(WiresGUI):
     :type expected_key: int
     """
 
-    def __init__(self, end_position, start_position):
+    def __init__(self, end_position, start_position, pin=None):
         super().__init__("purple", end_position, start_position)
+        self.pin = pin
         self.expected_key = K_9
 
     def get_expected_key(self):
@@ -289,63 +295,11 @@ def create_game_state():
 
 
 def draw_text_centered(surface, font, text, color, center):
-    """
-    Draws a given text string centered at the specified position on the given surface.
-
-    This function uses the provided font and color to render the text, and it ensures
-    the text is centered based on the given position. The rendered text is then drawn
-    onto the provided surface.
-
-    :param surface: The surface to draw the text on.
-    :type surface: pygame.Surface
-    :param font: The font used to render the text.
-    :type font: pygame.font.Font
-    :param text: The string of text to be rendered and drawn.
-    :type text: str
-    :param color: The color of the text in RGB format.
-    :type color: tuple[int, int, int]
-    :param center: The (x, y) coordinates to center the text on.
-    :type center: tuple[int, int]
-    :return: None
-    """
     text_surface = font.render(text, True, color)
     surface.blit(text_surface, text_surface.get_rect(center=center))
 
 
 def main():
-    """
-    The `main` function initializes and runs a Pygame application for a wires-based GUI game.
-    The game requires players to select and connect wires to their correct endpoints.
-    Players win by successfully connecting all wires correctly, and lose if
-    too many incorrect connection attempts (strikes) are made.
-
-    :raises SystemExit: When the game is exited.
-    :raises pygame.error: If Pygame initialization fails.
-    :return: 0 upon successful game termination.
-
-    Variables:
-        **screen** (*Surface*): The main Pygame display surface for the game window.
-        **strike_count** (*int*): Tracks the number of incorrect wire connection attempts.
-        **font** (*Font*): Font object for rendering small-sized text.
-        **big_font** (*Font*): Font object for rendering large-sized text.
-        **clock** (*Clock*): Pygame clock object used to control the game's framerate.
-        **state** (*dict*): A dictionary holding initial game state configuration.
-        **colors** (*dict*): A mapping of color keys to RGB color values.
-        **points** (*dict*): A mapping of circular input and output point identifiers to their positions.
-        **circle_radius** (*int*): The radius for the input and output circle graphics.
-        **red_wire** (*RedWire*): Instance of a wire connecting specific input and output points for red.
-        **blue_wire** (*BlueWire*): Instance of a wire connecting specific input and output points for blue.
-        **yellow_wire** (*YellowWire*): Instance of a wire connecting specific input and output points for yellow.
-        **green_wire** (*GreenWire*): Instance of a wire connecting specific input and output points for green.
-        **connected** (*dict*): A dictionary tracking which wires have been successfully connected.
-        **wire_map** (*dict*): Maps number keys 1-8 to their corresponding wire objects and circle names.
-        **selected_wire** (*WiresGUI or None*): The currently selected wire awaiting connection.
-        **selected_start** (*str or None*): The circle name of the selected wire's start point.
-        **selected_end** (*str or None*): The circle name of the selected wire's end point.
-        **game_over** (*bool*): Indicates whether the game has ended.
-        **won** (*bool*): Tracks whether the player has won the game.
-        **running** (*bool*): Controls whether the game loop continues execution.
-    """
     pygame.init()
     pygame.font.init()
 
@@ -364,12 +318,16 @@ def main():
 
     print("Watch the wires! Press 1-5 to select top wires, 6-9 to connect to bottom wires.")
 
-    # Wire objects (created once; drawn each frame when connected)
-    blue_wire = BlueWire(points["circle6"], points["circle1"])
-    red_wire = RedWire(points["circle7"], points["circle2"])
-    yellow_wire = YellowWire(points["circle8"], points["circle3"])
-    green_wire = GreenWire(points["circle9"], points["circle4"])
-    purple_wire = PurpleWire(points["circle10"], points["circle5"])
+    # pull jumper-wire pins from bomb_configs when running on the Pi.
+    # component_wires order: D14, D15, D18, D23, D24 -> blue, red, yellow, green, purple
+    wire_pins = component_wires if RPi else [None] * 5
+
+    # wire objects (created once; drawn each frame when connected)
+    blue_wire = BlueWire(points["circle6"], points["circle1"], pin=wire_pins[0])
+    red_wire = RedWire(points["circle7"], points["circle2"], pin=wire_pins[1])
+    yellow_wire = YellowWire(points["circle8"], points["circle3"], pin=wire_pins[2])
+    green_wire = GreenWire(points["circle9"], points["circle4"], pin=wire_pins[3])
+    purple_wire = PurpleWire(points["circle10"], points["circle5"], pin=wire_pins[4])
 
     connected = {
         "red": False,
@@ -422,6 +380,11 @@ def main():
     game_over = False
     won = False
 
+    # track physical wire pin states so we only fire on True->False (cut) transitions.
+    # pulled-down inputs read True when the jumper bridges to 3V3, False when cut.
+    all_wires = [blue_wire, red_wire, yellow_wire, green_wire, purple_wire]
+    prev_pin_state = {w.color: (bool(w.pin.value) if w.pin is not None else None) for w in all_wires}
+
     running = True
     while running:
         for event in pygame.event.get():
@@ -467,6 +430,24 @@ def main():
                             if strike_count >= 3:
                                 game_over = True
                                 won = False
+
+        # Hardware poll: a wire whose pin drops True->False has been physically cut.
+        # Treat the cut as the "connect" action for that wire (analogous to pressing the right key pair).
+        if not game_over:
+            for w in all_wires:
+                if w.pin is None:
+                    continue
+                current = bool(w.pin.value)
+                if prev_pin_state[w.color] is True and current is False and not connected[w.color]:
+                    connected[w.color] = True
+                    if selected_wire is w:
+                        selected_wire = None
+                        selected_start = None
+                        selected_end = None
+                    if all(connected.values()):
+                        game_over = True
+                        won = True
+                prev_pin_state[w.color] = current
 
         screen.fill(colors["black"])
 
