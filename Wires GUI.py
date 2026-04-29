@@ -431,14 +431,14 @@ def main():
                                 game_over = True
                                 won = False
 
-        # Hardware poll: a wire whose pin drops True->False has been physically cut.
-        # Treat the cut as the "connect" action for that wire (analogous to pressing the right key pair).
+        # Hardware poll: a wire whose pin rises False->True has been plugged into 3V3.
+        # Treat the plug-in as the "connect" action for that wire.
         if not game_over:
             for w in all_wires:
                 if w.pin is None:
                     continue
                 current = bool(w.pin.value)
-                if prev_pin_state[w.color] is True and current is False and not connected[w.color]:
+                if prev_pin_state[w.color] is False and current is True and not connected[w.color]:
                     connected[w.color] = True
                     if selected_wire is w:
                         selected_wire = None
