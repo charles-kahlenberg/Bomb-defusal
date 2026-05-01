@@ -110,7 +110,7 @@ class RedWire(WiresGUI):
         self.expected_key = expected_key
 
     def draw(self, screen):
-        draw.line(screen, (255, 255, 255), self.start_position, self.end_position, 5)
+        draw.line(screen, (255, 0, 0), self.start_position, self.end_position, 5)
 
     def check_attached(self, pressed_key):
         return pressed_key == self.expected_key
@@ -125,7 +125,7 @@ class BlueWire(WiresGUI):
     It inherits from the `WiresGUI` class.
 
     :ivar expected_key: The key that is expected to be pressed for this
-        wire to register correctly.
+    wire to register correctly.
     :type expected_key: int
     :ivar start_position: The starting position of the wire on the screen.
     :type start_position: tuple[int, int]
@@ -144,7 +144,7 @@ class BlueWire(WiresGUI):
         self.expected_key = expected_key
 
     def draw(self, screen):
-        draw.line(screen, (255, 255, 255), self.start_position, self.end_position, 5)
+        draw.line(screen, (0, 0, 255), self.start_position, self.end_position, 5)
 
     def check_attached(self, pressed_key):
         return pressed_key == self.expected_key
@@ -159,7 +159,7 @@ class YellowWire(WiresGUI):
     draw the wire and check if a specific key is attached to it.
 
     :ivar expected_key: The key that is expected to be pressed to attach to
-        this wire.
+    this wire.
     :type expected_key: int
     """
 
@@ -174,7 +174,7 @@ class YellowWire(WiresGUI):
         self.expected_key = expected_key
 
     def draw(self, screen):
-        draw.line(screen, (255, 255, 255), self.start_position, self.end_position, 5)
+        draw.line(screen, (255, 255, 0), self.start_position, self.end_position, 5)
 
     def check_attached(self, pressed_key):
         return pressed_key == self.expected_key
@@ -202,22 +202,22 @@ class GreenWire(WiresGUI):
         self.expected_key = expected_key
 
     def draw(self, screen):
-        draw.line(screen, (255, 255, 255), self.start_position, self.end_position, 5)
+        draw.line(screen, (0, 255, 0), self.start_position, self.end_position, 5)
 
     def check_attached(self, pressed_key):
         return pressed_key == self.expected_key
 
 
-class PurpleWire(WiresGUI):
+class OrangeWire(WiresGUI):
     """
-    Represents a purple wire in the GUI.
+    Represents an orange wire in the GUI.
 
     :ivar expected_key: The key expected to be associated with this wire.
     :type expected_key: int
     """
 
     def __init__(self, end_position, start_position):
-        super().__init__("purple", end_position, start_position)
+        super().__init__("orange", end_position, start_position)
         self.expected_key = K_9
 
     def get_expected_key(self):
@@ -227,7 +227,7 @@ class PurpleWire(WiresGUI):
         self.expected_key = expected_key
 
     def draw(self, screen):
-        draw.line(screen, (255, 255, 255), self.start_position, self.end_position, 5)
+        draw.line(screen, (255, 165, 0), self.start_position, self.end_position, 5)
 
     def check_attached(self, pressed_key):
         return pressed_key == self.expected_key
@@ -244,7 +244,7 @@ def create_game_state():
     blue = (0, 0, 255)
     yellow = (255, 255, 0)
     green = (0, 255, 0)
-    purple = (128, 0, 128)
+    orange = (255, 165, 0)
 
     # Variables
     circle_radius = 30
@@ -276,7 +276,7 @@ def create_game_state():
             "blue": blue,
             "yellow": yellow,
             "green": green,
-            "purple": purple,
+            "orange": orange,
         },
         "circle_radius": circle_radius,
         "points": {
@@ -394,17 +394,17 @@ def main():
     red_wire = RedWire(points["circle7"], points["circle2"])
     yellow_wire = YellowWire(points["circle8"], points["circle3"])
     green_wire = GreenWire(points["circle9"], points["circle4"])
-    purple_wire = PurpleWire(points["circle10"], points["circle5"])
+    orange_wire = OrangeWire(points["circle10"], points["circle5"])
 
     connected = {
         "red": False,
         "blue": False,
         "yellow": False,
         "green": False,
-        "purple": False,
+        "orange": False,
     }
 
-    wire_order = [blue_wire, red_wire, yellow_wire, green_wire, purple_wire]
+    wire_order = [blue_wire, red_wire, yellow_wire, green_wire, orange_wire]
     current_target_wire = random.choice(wire_order)
 
     key_to_wire_index = {
@@ -462,7 +462,7 @@ def main():
             ("circle2", red_wire),
             ("circle3", yellow_wire),
             ("circle4", green_wire),
-            ("circle5", purple_wire),
+            ("circle5", orange_wire),
         ]:
             if connected[wire.color] or wire == current_target_wire:
                 color_name = wire.color
@@ -478,7 +478,7 @@ def main():
             ("circle7", red_wire),
             ("circle8", yellow_wire),
             ("circle9", green_wire),
-            ("circle10", purple_wire),
+            ("circle10", orange_wire),
         ]:
             if connected[wire.color] or wire == current_target_wire:
                 color_name = wire.color
@@ -497,8 +497,8 @@ def main():
             yellow_wire.draw(screen)
         if connected["green"]:
             green_wire.draw(screen)
-        if connected["purple"]:
-            purple_wire.draw(screen)
+        if connected["orange"]:
+            orange_wire.draw(screen)
 
         # Strike counter
         strike_text = font.render(f"Strikes: {strike_count}/3", True, colors["white"])
