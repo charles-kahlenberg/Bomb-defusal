@@ -30,9 +30,9 @@ from pygame.sprite import *
 import sys
 
 MINIGAME_WINDOW_X = 300
-MINIGAME_WINDOW_Y = 240
-MINIGAME_WINDOW_W = 400
-MINIGAME_WINDOW_H = 251
+MINIGAME_WINDOW_Y = 232
+MINIGAME_WINDOW_W = 425
+MINIGAME_WINDOW_H = 299
 
 try:
     from bomb_configs import RPi, component_wires
@@ -477,7 +477,7 @@ def main(screen=None, clock=None):
                     game_over = True
                     won = False
 
-        screen.fill(colors["white"])
+        screen.fill(colors["black"])
 
         # Top row input circles
         for circle_name, wire in [
