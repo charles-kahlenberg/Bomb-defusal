@@ -1,17 +1,29 @@
 import pygame
 
 
-def main():
-    pygame.mixer.init()
-    pygame.init()
+def main(screen=None, clock=None):
+    if not pygame.get_init():
+        pygame.init()
 
-    screen = pygame.display.set_mode((800, 480))
-    pygame.display.set_caption("Rectangle Test")
+    if not pygame.mixer.get_init():
+        pygame.mixer.init()
+
+    created_display = screen is None
+    if screen is None:
+        screen = pygame.display.set_mode((1024, 576))
+
+    if clock is None:
+        clock = pygame.time.Clock()
+
+    pygame.display.set_caption("Defuse the Bomb")
 
     bg = pygame.image.load("base.png").convert()
+    bg = pygame.transform.scale(bg, screen.get_size())
 
-    rect_pos = pygame.Rect(0, 0, 800, 480)
-    rect_surf = pygame.Surface((800, 480), pygame.SRCALPHA)
+    screen_width, screen_height = screen.get_size()
+
+    rect_pos = pygame.Rect(0, 0, screen_width, screen_height)
+    rect_surf = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
     rect_surf.fill((0, 0, 0, 160))
 
     messages = [
@@ -39,7 +51,6 @@ def main():
     speed = 1
     doorup = False
 
-    clock = pygame.time.Clock()
     running = True
 
     while running:
@@ -47,7 +58,7 @@ def main():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                return False
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN and done and activem < len(messages) - 1:
@@ -93,7 +104,9 @@ def main():
         pygame.display.flip()
         clock.tick(24)
 
-    pygame.quit()
+    if created_display:
+        pygame.quit()
+
     return True
 
 
