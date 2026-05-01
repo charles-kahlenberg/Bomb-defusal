@@ -10,30 +10,30 @@ class Switch(pygame.sprite.Sprite):
     def __init__(self, x, y, label, value, key):
         super().__init__()
         self.down = pygame.transform.scale(
-            pygame.image.load("img_keys\SwitchD.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("SwitchD.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.up = pygame.transform.scale(
-            pygame.image.load("img_keys\SwitchUp.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("SwitchUp.png").convert_alpha(), (KEY_W, KEY_H)
         )
         
         self.fu1 = pygame.transform.scale(
-            pygame.image.load("img_keys\SwitchFUp1.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("SwitchFUp1.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.fu2 = pygame.transform.scale(
-            pygame.image.load("img_keys\SwitchFUp2.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("SwitchFUp2.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.fu3 = pygame.transform.scale(
-            pygame.image.load("img_keys\SwitchFUp3.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("SwitchFUp3.png").convert_alpha(), (KEY_W, KEY_H)
         )
         
         self.fd1 = pygame.transform.scale(
-            pygame.image.load("img_keys\SwitchFD1.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("SwitchFD1.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.fd2 = pygame.transform.scale(
-            pygame.image.load("img_keys\SwitchFD2.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("SwitchFD2.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.fd3= pygame.transform.scale(
-            pygame.image.load("img_keys\SwitchFD3.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("SwitchFD3.png").convert_alpha(), (KEY_W, KEY_H)
         )
         
         self.value = value
@@ -66,22 +66,9 @@ class Switch(pygame.sprite.Sprite):
     def draw_labels(self, screen, font):
         label_surf = font.render(self.label, True, (255, 255, 255))
         screen.blit(label_surf, label_surf.get_rect(center=(self.rect.centerx, self.rect.top - 20)))
-        
-def main():
-    pygame.init()
-    screen = pygame.display.set_mode((616, 342))
-    pygame.display.set_caption("Switches")
-    font  = pygame.font.Font("img_keys\Baskic8.otf", 24)
-    clock = pygame.time.Clock()
-    Bg = pygame.image.load("img_keys\SwitchesBg.png").convert()
-    Door = pygame.image.load("img_keys\Door.png").convert()
+
+def randomval(first):
     
-    spacing = 30
-    start_x = (820 - (4 * KEY_W + 3 * (spacing - KEY_W))) // 2
-    #creates switch objects
-    rannum =  random.randint(0,3)
-    
-    first = [1, 2, 4, 8]
     baby = random.randint(0,3)
     valu1 = first[baby]
     first.remove(first[baby])
@@ -92,10 +79,29 @@ def main():
     valu3 = first[baby3]
     first.remove(first[baby3])
     valu4 = first[0]
+    values = [valu1, valu2, valu3, valu4]
+    return values
     
-    second = [16, 4, 32, 8, 64, 2, 1]
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((616, 342))
+    pygame.display.set_caption("Switches")
+    font  = pygame.font.Font("Baskic8.otf", 24)
+    clock = pygame.time.Clock()
+    Bg = pygame.image.load("SwitchesBg.png").convert()
+    Door = pygame.image.load("Door.png").convert()
     
-    third = [128, 256, 64, 32, 16, 512]
+    spacing = 30
+    start_x = (820 - (4 * KEY_W + 3 * (spacing - KEY_W))) // 2
+    #creates switch objects
+    rannum =  random.randint(0,3)
+    
+    first = [1, 2, 4, 8]
+    randomvals = randomval(first)
+    valu1 = randomvals[0]
+    valu2 = randomvals[1]
+    valu3 = randomvals[2]
+    valu4 = randomvals[3]
     
     print(valu1)
     print(valu2)
@@ -124,23 +130,62 @@ def main():
 
     def confirm():
         nonlocal rounds, strikes, game_over, won, target, tcounter
-
         total = sum(sw.value for sw in switches if sw.on)
-
         if total == target:
             tcounter = 0
             rounds += 1
-
             if rounds >= 5:
                 won = True
                 game_over = True
             else:
-                print(tcounter)
-                target = random.randint(1, 15)
+                first = [1, 2, 4, 8]
+                second = [16, 4, 32, 8, 64]
+                third = [128, 256, 64, 32, 16, 512]
+                fourth = [413, 27, 31, 93]
+                if rounds <= 1:
+                    tcounter = 0
+                    i = 0
+                    target = random.randint(1,15)
+                    randomvals = randomval(first)
+                    for sw in switches:
+                        sw.value = randomvals[i]
+                        i += 1
+                if rounds == 2:
+                    tcounter = 0
+                    i = 0
+                    randomvals = randomval(second)
+                    target = 0
+                    for sw in switches:
+                        sw.value = randomvals[i]
+                        i += 1
+                    for r in randomvals:
+                        if random.randint(0,1) == 1:
+                            target += r
+                if rounds == 3:
+                    tcounter = 0
+                    i = 0
+                    randomvals = randomval(third)
+                    target = 0
+                    for sw in switches:
+                        sw.value = randomvals[i]
+                        i += 1
+                    for r in randomvals:
+                        if random.randint(0,1) == 1:
+                            target += r
+                if rounds == 4:
+                    tcounter = 0
+                    i = 0
+                    randomvals = randomval(fourth)
+                    target = 0
+                    for sw in switches:
+                        sw.value = randomvals[i]
+                        i += 1
+                    for r in randomvals:
+                        if random.randint(0,1) == 1:
+                            target += r
         else:
             tcounter = -100
             strikes += 1
-
             if strikes >= 3:
                 won = False
                 game_over = True
@@ -182,7 +227,6 @@ def main():
                     counter = 0
                     flipping = False
                     flipswitch.image = flipswitch.up
-                    print(flipswitch.on)
             else:
                 if counter == 0:
                     counter += 1
@@ -197,29 +241,31 @@ def main():
                     counter = 0
                     flipping = False
                     flipswitch.image = flipswitch.down
-                    print(flipswitch.on)
                     
                     
                     
         screen.blit(Bg, (0, 0))
         screen.blit(Door, (29, 16))
         all_sprites.draw(screen)
-
-        if tcounter < 0:
-            hud = font.render(f"Strikes: {strikes}/3", True, (255, 255, 255))
-            tcounter += 1
-        elif tcounter <= 100:
-            hud = font.render(f"Round: {rounds + 1}/5", True, (255, 255, 255))
-            tcounter += 1
+        if rounds < 5:
+            if tcounter <= 0:
+                hud = font.render(f"Strikes: {strikes}/3", True, (255, 255, 255))
+                tcounter += 1
+            if 0 <= tcounter and tcounter <= 100:
+                hud = font.render(f"Round: {rounds+1}/5", True, (255,255,255))
+                tcounter += 1
+            if tcounter > 100:
+                hud = font.render(f"Target: {target}", True, (255,255,255))
         else:
-            hud = font.render(f"Target: {target}", True, (255, 255, 255))
-
+            hud = font.render(f"You win!", True, (255,255,255))
+        
         screen.blit(hud, (380, 40))
-
         total = sum(sw.value for sw in switches if sw.on)
-        tot = font.render(f"Total : {total}", True, (255, 255, 255))
+        tot = font.render(f"Total : {total}", True, (255,255,255))
         screen.blit(tot, (380, 290))
-
+        total = sum(sw.value for sw in switches if sw.on)
+        
+        
         hint_text = "Flip switches | Press button to confirm" 
         hint = font.render(hint_text, True, (150, 150, 150))
         screen.blit(hint, hint.get_rect(center=(300, 400)))
@@ -247,3 +293,4 @@ def main():
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
