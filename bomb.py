@@ -206,6 +206,7 @@ def main():
     pygame.mixer.init()
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     # if intro is done, move on to wires GUI
     if pygame_intro.done:
         wires_gui = import_wires_gui()
@@ -213,6 +214,8 @@ def main():
         pygame.mixer.music.load("img.keys/Delirious.mp3")
         pygame.mixer.music.play()
 =======
+=======
+>>>>>>> 71efed5e27033d32e6e9a58e77a0adcc3a76879d
     screen = pygame.display.set_mode((1024, 576))
     pygame.display.set_caption("Defuse the Bomb")
     clock = pygame.time.Clock()
@@ -228,6 +231,9 @@ def main():
     # move on to wires GUI
     wires_gui = import_wires_gui()
     wires_won = wires_gui.main(screen, clock)
+<<<<<<< HEAD
+>>>>>>> 71efed5e27033d32e6e9a58e77a0adcc3a76879d
+=======
 >>>>>>> 71efed5e27033d32e6e9a58e77a0adcc3a76879d
 
     # if wires fail, quit immediately
