@@ -135,7 +135,7 @@ def make_buzzer_sound(duration=0.5, sample_rate=44100, volume=0.35):
 # colors and screen dimensions 
 
 COLOR = (255, 255, 255)
-SURFACE_COLOR = (115, 147, 179) 
+SURFACE_COLOR = (0, 0, 0)
 WIDTH = 1024
 HEIGHT = 576
 
