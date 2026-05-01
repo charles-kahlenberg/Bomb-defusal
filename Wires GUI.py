@@ -29,8 +29,8 @@ from pygame import *
 from pygame.sprite import *
 import sys
 
-MINIGAME_WINDOW_X = 250
-MINIGAME_WINDOW_Y = 250
+MINIGAME_WINDOW_X = 300
+MINIGAME_WINDOW_Y = 240
 MINIGAME_WINDOW_W = 334
 MINIGAME_WINDOW_H = 251
 
