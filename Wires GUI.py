@@ -31,7 +31,7 @@ import sys
 
 MINIGAME_WINDOW_X = 300
 MINIGAME_WINDOW_Y = 240
-MINIGAME_WINDOW_W = 334
+MINIGAME_WINDOW_W = 400
 MINIGAME_WINDOW_H = 251
 
 try:
@@ -477,7 +477,7 @@ def main(screen=None, clock=None):
                     game_over = True
                     won = False
 
-        screen.fill(colors["black"])
+        screen.fill(colors["white"])
 
         # Top row input circles
         for circle_name, wire in [
