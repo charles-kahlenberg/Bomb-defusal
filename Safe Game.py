@@ -100,7 +100,7 @@ def make_whomp_sound(sample_rate=44100, volume=0.35):
     stereo = np.column_stack((audio, audio))
     return pygame.sndarray.make_sound(stereo)
 
-def make_button_press_sound(sample_rate=44100, volume=0.4):
+def make_button_press_sound(sample_rate=44100, volume=0.12):
     #Short keypad-style "beep" with a tiny mechanical click for a safe-button feel
     click_dur = 0.012
     beep_dur = 0.09
