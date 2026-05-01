@@ -247,10 +247,10 @@ def create_game_state():
     orange = (255, 165, 0)
 
     # Variables
-    circle_radius = 30
+    circle_radius = 28
 
-    circle_loc_top = [[80, 250], [240, 250], [400, 250], [560, 250], [720, 250]]
-    circle_loc_bottom = [[80, 550], [240, 550], [400, 550], [560, 550], [720, 550]]
+    circle_loc_top = [[112, 190], [312, 190], [512, 190], [712, 190], [912, 190]]
+    circle_loc_bottom = [[112, 430], [312, 430], [512, 430], [712, 430], [912, 430]]
 
     # random.shuffle(circle_loc_bottom)
 
@@ -374,7 +374,7 @@ def main():
     pygame.init()
     pygame.font.init()
 
-    screen = display.set_mode((800, 800))
+    screen = display.set_mode((1024, 576))
     display.set_caption("Wires GUI")
 
     strike_count = 0
@@ -518,7 +518,7 @@ def main():
             msg = "YOU WIN!" if won else "BOOM — YOU LOSE"
             msg_color = colors["green"] if won else colors["red"]
             end_text = big_font.render(msg, True, msg_color)
-            screen.blit(end_text, end_text.get_rect(center=(400, 400)))
+            screen.blit(end_text, end_text.get_rect(center=(512, 288)))
             pygame.display.flip()
             pygame.time.wait(1500)
             return won

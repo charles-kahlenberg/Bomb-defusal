@@ -141,8 +141,8 @@ def make_buzzer_sound(duration=0.5, sample_rate=44100, volume=0.35):
 
 COLOR = (255, 255, 255)
 SURFACE_COLOR = (115, 147, 179) 
-WIDTH = 800
-HEIGHT = 800
+WIDTH = 1024
+HEIGHT = 576
 
 # everything below is imported from https://www.geeksforgeeks.org/python/pygame-creating-sprites/ and modified to fit my game, I will be using sprites for the buttons that the user will press to play the melodies
 
@@ -206,23 +206,27 @@ def main():
     all_sprites_list = pygame.sprite.Group()
 
     # create objects
-    object1 = Sprite(RED, 20, 30)
-    object2 = Sprite(BLACK, 20, 30)
-    object3 = Sprite(RED, 20, 30)
-    object4 = Sprite(BLACK, 20, 30)
-    object5 = Sprite(RED, 20, 30)
+    object1 = Sprite(RED, 90, 110)
+    object2 = Sprite(BLACK, 90, 110)
+    object3 = Sprite(RED, 90, 110)
+    object4 = Sprite(BLACK, 90, 110)
+    object5 = Sprite(RED, 90, 110)
 
     # set the position of the objects
-    object1.rect.x = 100
-    object1.rect.y = 300
-    object2.rect.x = 200
-    object2.rect.y = 300
-    object3.rect.x = 300
-    object3.rect.y = 300
-    object4.rect.x = 400
-    object4.rect.y = 300
-    object5.rect.x = 500
-    object5.rect.y = 300
+    button_y = 300
+    button_spacing = 150
+    start_x = (WIDTH - (5 * 110 + 4 * (button_spacing - 110))) // 2
+
+    object1.rect.x = start_x
+    object1.rect.y = button_y
+    object2.rect.x = start_x + button_spacing
+    object2.rect.y = button_y
+    object3.rect.x = start_x + button_spacing * 2
+    object3.rect.y = button_y
+    object4.rect.x = start_x + button_spacing * 3
+    object4.rect.y = button_y
+    object5.rect.x = start_x + button_spacing * 4
+    object5.rect.y = button_y
 
     # add the objects to the list of sprites
     all_sprites_list.add(object1)
@@ -238,7 +242,7 @@ def main():
     print(clock)
 
     # timer text
-    timer_font = pygame.font.SysFont("Arial", 48, bold=True)
+    timer_font = pygame.font.SysFont("Arial", 42, bold=True)
     TIMER_COLOR = (255, 255, 255)
     game_start_ticks = pygame.time.get_ticks()
 
@@ -339,11 +343,12 @@ def main():
         screen.fill(SURFACE_COLOR)
         all_sprites_list.draw(screen)
 
+
         if rounds <= 4 and not game_over:
             round_text = timer_font.render(f"Round: {rounds}", True, TIMER_COLOR)
-            screen.blit(round_text, (WIDTH - round_text.get_width() - 20, 80))
+            screen.blit(round_text, (WIDTH - round_text.get_width() - 25, 90))
             strike_text = timer_font.render(f"Strikes: {strikes}/{max_strikes}", True, (255, 0, 0))
-            screen.blit(strike_text, (WIDTH - strike_text.get_width() - 20, 140))
+            screen.blit(strike_text, (WIDTH - strike_text.get_width() - 25, 145))
 
         elif rounds >= 4:
             if not game_over:

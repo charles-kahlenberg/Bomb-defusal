@@ -10,11 +10,12 @@ import random
 
 pygame.init()
 
-W, H = 800, 437
-win = pygame.display.set_mode((W,H))
+W, H = 1024, 576
+win = pygame.display.set_mode((W, H))
 pygame.display.set_caption('Side Scroller')
 
 bg = pygame.image.load(os.path.join('images', 'bg.png')).convert()
+bg = pygame.transform.scale(bg, (W, H))
 bgX = 0
 bgX2 = bg.get_width()
 
@@ -79,9 +80,10 @@ class player(object):
 
         #pygame.draw.rect(win, (255,0,0),self.hitbox, 2)
 def redrawGameWindow(): #draws background and objects (all drawings happen in one place)
-    win.blit(bg, (bgX,0))
-    win.blit(bg, (bgX2,0))
+    win.blit(bg, (bgX, 0))
+    win.blit(bg, (bgX2, 0))
     pygame.display.update()
+
 speed = 30 
 clock.tick(speed) #gets the FPS
 run = True
