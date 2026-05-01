@@ -359,4 +359,5 @@ def main(screen=None, clock=None):
 
 
 if __name__ == "__main__":
-    main()
+    result = main()
+    print("SwitchG result:", result)
