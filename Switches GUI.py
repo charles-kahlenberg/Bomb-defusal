@@ -16,7 +16,8 @@ from bomb_configs import *
 if RPi:
     from bomb_configs import component_toggles, component_button_state
 
-KEY_W, KEY_H = 80, 180
+SCREEN_W, SCREEN_H = 1024, 576
+KEY_W, KEY_H = 100, 230
 
 
 class Switch(pygame.sprite.Sprite):
@@ -53,13 +54,13 @@ class Switch(pygame.sprite.Sprite):
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((600, 420))
+    screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
     pygame.display.set_caption("Switches")
-    font  = pygame.font.SysFont(None, 28)
+    font = pygame.font.SysFont(None, 32)
     clock = pygame.time.Clock()
 
-    spacing = 120
-    start_x = (600 - (4 * KEY_W + 3 * (spacing - KEY_W))) // 2
+    spacing = 170
+    start_x = (SCREEN_W - (4 * KEY_W + 3 * (spacing - KEY_W))) // 2
     #creates switch objects
     switches = [
         Switch(start_x + 0 * spacing, 80, "SW1", 8, board.D12),
@@ -130,21 +131,23 @@ def main():
             sw.draw_labels(screen, font)
 
         hud = font.render(f"Target: {target}   Round: {rounds+1}/5   Strikes: {strikes}/3", True, (255, 255, 255))
-        screen.blit(hud, (10, 10))
+        screen.blit(hud, (20, 20))
 
         hint_text = "Flip switches | Press button to confirm" if RPi else "Click to toggle | Enter to confirm"
         hint = font.render(hint_text, True, (150, 150, 150))
-        screen.blit(hint, hint.get_rect(center=(300, 400)))
+        screen.blit(hint, hint.get_rect(center=(SCREEN_W // 2, SCREEN_H - 35)))
 
         if won:
-            screen.blit(font.render("You win!", True, (0, 255, 0)), (240, 370))
+            win_text = font.render("You win!", True, (0, 255, 0))
+            screen.blit(win_text, win_text.get_rect(center=(SCREEN_W // 2, SCREEN_H - 80)))
             pygame.display.flip()
             pygame.time.wait(1000)
             pygame.quit()
             return True
 
         elif game_over:
-            screen.blit(font.render("Game Over!", True, (255, 60, 60)), (230, 370))
+            lose_text = font.render("Game Over!", True, (255, 60, 60))
+            screen.blit(lose_text, lose_text.get_rect(center=(SCREEN_W // 2, SCREEN_H - 80)))
             pygame.display.flip()
             pygame.time.wait(1000)
             pygame.quit()

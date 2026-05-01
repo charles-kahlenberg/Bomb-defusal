@@ -12,6 +12,20 @@ from threading import Thread
 from time import sleep
 import os
 import sys
+pygame.init()
+
+SCREEN_W, SCREEN_H = 1024, 576
+screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
+pygame.display.set_caption("Rectangle Test")
+
+bg = pygame.image.load("base.png").convert()
+bg = pygame.transform.scale(bg, (SCREEN_W, SCREEN_H))
+
+rect_pos = pygame.Rect(0, 0, SCREEN_W, SCREEN_H)
+rect_pos2 = pygame.Rect(0, 240, SCREEN_W, 240)
+rect_surf = pygame.Surface((SCREEN_W, SCREEN_H), pygame.SRCALPHA)
+rect_surf.fill((0, 0, 0, 160))
+messages = ["You have put our name to question for too long.....",]
 import time as _time
 
 #########
@@ -44,15 +58,15 @@ class ButtonLike:
         self._destroyed = True
 
 class Lcd:
-    def __init__(self, size=(800, 480)):
+    def __init__(self, size=(1024, 576)):
         pygame.init()
         pygame.font.init()
         self.width, self.height = size
         self.screen = pygame.display.set_mode(size)
         pygame.display.set_caption("Defuse the Bomb")
         self.clock = pygame.time.Clock()
-        self.font_small = pygame.font.SysFont("Courier New", 14)
-        self.font_med = pygame.font.SysFont("Courier New", 18)
+        self.font_small = pygame.font.SysFont("Courier New", 16)
+        self.font_med = pygame.font.SysFont("Courier New", 22)
         self.bg = (0, 0, 0)
         self.fg = (0, 255, 0)
         self.white = (255, 255, 255)
@@ -94,8 +108,8 @@ class Lcd:
         self._lstrikes = LabelLike("Strikes left: ")
 
         if (SHOW_BUTTONS):
-            pause_rect = pygame.Rect(20, self.height - 60, 120, 40)
-            quit_rect = pygame.Rect(self.width - 140, self.height - 60, 120, 40)
+            pause_rect = pygame.Rect(30, self.height - 70, 140, 45)
+            quit_rect = pygame.Rect(self.width - 170, self.height - 70, 140, 45)
             self._bpause = ButtonLike("Pause", pause_rect, self.pause)
             self._bquit = ButtonLike("Quit", quit_rect, self.quit)
             self._ui_buttons.extend([self._bpause, self._bquit])
@@ -203,12 +217,12 @@ class Lcd:
 
         # main labels
         labels = [
-            (self._ltimer, 72),
-            (self._lkeypad, 104),
-            (self._lwires, 136),
-            (self._lbutton, 168),
-            (self._ltoggles, 200),
-            (self._lstrikes, 232),
+            (self._ltimer, 90),
+            (self._lkeypad, 130),
+            (self._lwires, 170),
+            (self._lbutton, 210),
+            (self._ltoggles, 250),
+            (self._lstrikes, 290),
         ]
         for lbl, y in labels:
             try:
@@ -216,7 +230,7 @@ class Lcd:
             except Exception:
                 text = str(lbl)
             surf = self.font_med.render(text, True, self.fg)
-            self.screen.blit(surf, (10, y))
+            self.screen.blit(surf, (16, y))
 
         # draw buttons
         for b in self._ui_buttons:

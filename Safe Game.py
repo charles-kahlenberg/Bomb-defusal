@@ -136,8 +136,8 @@ def make_buzzer_sound(duration=0.5, sample_rate=44100, volume=0.35):
 
 COLOR = (255, 255, 255)
 SURFACE_COLOR = (115, 147, 179) 
-WIDTH = 200
-HEIGHT = 300
+WIDTH = 1024
+HEIGHT = 576
 
 # everything below is imported from https://www.geeksforgeeks.org/python/pygame-creating-sprites/ and modified to fit my game, I will be using sprites for the buttons that the user will press to play the melodies
 
@@ -213,10 +213,16 @@ def main():
     BUTTON_H = 50
     BUTTON_GAP_X = 3
     BUTTON_GAP_Y = 2
+
+    keypad_panel_w = 200
+    keypad_panel_h = 300
+    keypad_origin_x = (WIDTH - keypad_panel_w) // 2
+    keypad_origin_y = (HEIGHT - keypad_panel_h) // 2
+
     grid_total_w = GRID_COLS * BUTTON_W + (GRID_COLS - 1) * BUTTON_GAP_X
     grid_total_h = GRID_ROWS * BUTTON_H + (GRID_ROWS - 1) * BUTTON_GAP_Y
-    grid_origin_x = (WIDTH - grid_total_w) // 2
-    grid_origin_y = 71
+    grid_origin_x = keypad_origin_x + (keypad_panel_w - grid_total_w) // 2
+    grid_origin_y = keypad_origin_y + 71
 
     sprite_objects = []
     for row in range(GRID_ROWS):
@@ -251,6 +257,7 @@ def main():
     won = False
 
     KeyBg = pygame.image.load("img_keys//KeypadFull.png").convert()
+    KeyBg = pygame.transform.scale(KeyBg, (keypad_panel_w, keypad_panel_h))
     melody = []
     player_melody = []
     final_melody = []
@@ -383,8 +390,11 @@ def main():
 
         all_sprites_list.update()
         screen.fill(SURFACE_COLOR)
-        screen.blit(KeyBg, (0, 0))
+        screen.blit(KeyBg, (keypad_origin_x, keypad_origin_y))
         all_sprites_list.draw(screen)
+
+        text_x = keypad_origin_x + 28
+        text_y = keypad_origin_y + 30
 
         if not game_over:
             round_text = timer_font.render(f"Round: {rounds + 1}", True, TIMER_COLOR)
@@ -392,20 +402,20 @@ def main():
 
             if striketime < 60:
                 striketime += 1
-                screen.blit(strike_text, (28, 30))
+                screen.blit(strike_text, (text_x, text_y))
             elif rounds != 4:
-                screen.blit(round_text, (28, 30))
+                screen.blit(round_text, (text_x, text_y))
 
             if state in ("final_input", "final_check"):
                 prompt_text = timer_font.render("Combination?", True, (255, 215, 0))
-                screen.blit(prompt_text, (28, 30))
+                screen.blit(prompt_text, (text_x, text_y))
 
         elif won:
             win_text = timer_font.render("Pass!", True, (0, 255, 0))
-            screen.blit(win_text, (28, 30))
+            screen.blit(win_text, (text_x, text_y))
         else:
             lost_text = timer_font.render("Game over..", True, (255, 0, 0))
-            screen.blit(lost_text, (28, 30))
+            screen.blit(lost_text, (text_x, text_y))
 
         pygame.display.flip()
         clock.tick(60)
