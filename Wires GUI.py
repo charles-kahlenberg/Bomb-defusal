@@ -337,50 +337,29 @@ def get_pressed_wire_from_rpi(previous_wire_values):
     return None
 
 
-def main():
+def main(screen=None, clock=None):
     """
     The `main` function initializes and runs a Pygame application for a wires-based GUI game.
     The game requires players to select and connect wires to their correct endpoints.
     Players win by successfully connecting all wires correctly, and lose if
     too many incorrect connection attempts (strikes) are made.
-
-    :raises SystemExit: When the game is exited.
-    :raises pygame.error: If Pygame initialization fails.
-    :return: 0 upon successful game termination.
-
-    Variables:
-        **screen** (*Surface*): The main Pygame display surface for the game window.
-        **strike_count** (*int*): Tracks the number of incorrect wire connection attempts.
-        **font** (*Font*): Font object for rendering small-sized text.
-        **big_font** (*Font*): Font object for rendering large-sized text.
-        **clock** (*Clock*): Pygame clock object used to control the game's framerate.
-        **state** (*dict*): A dictionary holding initial game state configuration.
-        **colors** (*dict*): A mapping of color keys to RGB color values.
-        **points** (*dict*): A mapping of circular input and output point identifiers to their positions.
-        **circle_radius** (*int*): The radius for the input and output circle graphics.
-        **red_wire** (*RedWire*): Instance of a wire connecting specific input and output points for red.
-        **blue_wire** (*BlueWire*): Instance of a wire connecting specific input and output points for blue.
-        **yellow_wire** (*YellowWire*): Instance of a wire connecting specific input and output points for yellow.
-        **green_wire** (*GreenWire*): Instance of a wire connecting specific input and output points for green.
-        **connected** (*dict*): A dictionary tracking which wires have been successfully connected.
-        **wire_map** (*dict*): Maps number keys 1-8 to their corresponding wire objects and circle names.
-        **selected_wire** (*WiresGUI or None*): The currently selected wire awaiting connection.
-        **selected_start** (*str or None*): The circle name of the selected wire's start point.
-        **selected_end** (*str or None*): The circle name of the selected wire's end point.
-        **game_over** (*bool*): Indicates whether the game has ended.
-        **won** (*bool*): Tracks whether the player has won the game.
-        **running** (*bool*): Controls whether the game loop continues execution.
     """
-    pygame.init()
+    if not pygame.get_init():
+        pygame.init()
     pygame.font.init()
 
-    screen = display.set_mode((1024, 576))
+    created_display = screen is None
+    if screen is None:
+        screen = display.set_mode((1024, 576))
+
     display.set_caption("Wires GUI")
 
     strike_count = 0
     font = pygame.font.SysFont(None, 36)
     big_font = pygame.font.SysFont(None, 72)
-    clock = pygame.time.Clock()
+
+    if clock is None:
+        clock = pygame.time.Clock()
 
     state = create_game_state()
     colors = state["colors"]
@@ -426,7 +405,9 @@ def main():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                if created_display:
+                    pygame.quit()
+                return False
 
             if event.type == pygame.KEYDOWN and not game_over:
                 if event.key in key_to_wire_index:
@@ -521,12 +502,18 @@ def main():
             screen.blit(end_text, end_text.get_rect(center=(512, 288)))
             pygame.display.flip()
             pygame.time.wait(1500)
+
+            if created_display:
+                pygame.quit()
+
             return won
 
         pygame.display.flip()
         clock.tick(60)
 
-    pygame.quit()
+    if created_display:
+        pygame.quit()
+
     return won
 
 

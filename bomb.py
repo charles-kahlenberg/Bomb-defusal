@@ -202,43 +202,56 @@ def turn_off():
 def main():
     #setup_phases()
 
-    # launch the wires GUI first
-    
-    pygame_intro = import_pygame_intro()
-    pygame_intro.main()
-    wires_gui = import_wires_gui()
-    wires_won = wires_gui.main()
+    pygame.init()
+    pygame.mixer.init()
 
+<<<<<<< HEAD
     # if intro is done, move on to wires GUI
     if pygame_intro.done:
         wires_gui = import_wires_gui()
         wires_won = wires_gui.main()
+        pygame.mixer.music.load("img.keys/Delirious.mp3")
+        pygame.mixer.music.play()
+=======
+    screen = pygame.display.set_mode((1024, 576))
+    pygame.display.set_caption("Defuse the Bomb")
+    clock = pygame.time.Clock()
+
+    # launch the pygame intro first
+    pygame_intro = import_pygame_intro()
+    intro_done = pygame_intro.main(screen, clock)
+
+    if not intro_done:
+        pygame.quit()
+        return False
+
+    # move on to wires GUI
+    wires_gui = import_wires_gui()
+    wires_won = wires_gui.main(screen, clock)
+>>>>>>> 71efed5e27033d32e6e9a58e77a0adcc3a76879d
 
     # if wires fail, quit immediately
     if not wires_won:
+        pygame.quit()
         return False
-    """
-    # if wires succeed, launch the melody game next
-    melody_game = import_melody_game()
-    melody_won = melody_game.main()
 
-    if not melody_won:
-        return False
-    """
-    # move on to safe game
+    # safe game
     safe_game = import_safe_game()
-    safe_won = safe_game.main()
+    safe_won = safe_game.main(screen, clock)
 
     if not safe_won:
+        pygame.quit()
         return False
 
-    # move on to switches game
+    # switches game
     switches_gui = import_switches_gui()
-    switches_won = switches_gui.main()
+    switches_won = switches_gui.main(screen, clock)
 
     if not switches_won:
+        pygame.quit()
         return False
 
+    pygame.quit()
     return True
 
 
