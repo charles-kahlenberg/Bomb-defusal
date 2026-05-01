@@ -23,7 +23,7 @@ messages = ["You have put our name to question for too long.....",
 activem = 0
 message = messages[activem]
 
-font = pygame.font.Font("img.keys//Baskic8.otf", 16)
+font = pygame.font.Font("img_keys/Baskic8.otf", 16)
 snip = font.render('', True, 'white')
 counter = 0
 done = False
