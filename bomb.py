@@ -200,7 +200,7 @@ def turn_off():
         pin.value = True
 
 def main():
-    #setup_phases()
+    setup_phases()
 
     pygame.init()
     pygame.mixer.init()
@@ -218,7 +218,7 @@ def main():
         return False
 
     pygame.mixer.music.load("img_keys/Delirious.mp3")
-    pygame.mixer.music.set_volume(0.2)
+    pygame.mixer.music.set_volume(0.15)
     pygame.mixer.music.play()
 
     # move on to wires GUI
