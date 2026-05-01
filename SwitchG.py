@@ -10,30 +10,30 @@ class Switch(pygame.sprite.Sprite):
     def __init__(self, x, y, label, value, key):
         super().__init__()
         self.down = pygame.transform.scale(
-            pygame.image.load("SwitchD.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys\SwitchD.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.up = pygame.transform.scale(
-            pygame.image.load("SwitchUp.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys\SwitchUp.png").convert_alpha(), (KEY_W, KEY_H)
         )
         
         self.fu1 = pygame.transform.scale(
-            pygame.image.load("SwitchFUp1.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys\SwitchFUp1.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.fu2 = pygame.transform.scale(
-            pygame.image.load("SwitchFUp2.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys\SwitchFUp2.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.fu3 = pygame.transform.scale(
-            pygame.image.load("SwitchFUp3.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys\SwitchFUp3.png").convert_alpha(), (KEY_W, KEY_H)
         )
         
         self.fd1 = pygame.transform.scale(
-            pygame.image.load("SwitchFD1.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys\SwitchFD1.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.fd2 = pygame.transform.scale(
-            pygame.image.load("SwitchFD2.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys\SwitchFD2.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.fd3= pygame.transform.scale(
-            pygame.image.load("SwitchFD3.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys\SwitchFD3.png").convert_alpha(), (KEY_W, KEY_H)
         )
         
         self.value = value
@@ -71,10 +71,10 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((616, 342))
     pygame.display.set_caption("Switches")
-    font  = pygame.font.Font("Baskic8.otf", 24)
+    font  = pygame.font.Font("img_keys\Baskic8.otf", 24)
     clock = pygame.time.Clock()
-    Bg = pygame.image.load("SwitchesBg.png").convert()
-    Door = pygame.image.load("Door.png").convert()
+    Bg = pygame.image.load("img_keys\SwitchesBg.png").convert()
+    Door = pygame.image.load("img_keys\Door.png").convert()
     
     spacing = 30
     start_x = (820 - (4 * KEY_W + 3 * (spacing - KEY_W))) // 2
@@ -123,22 +123,24 @@ def main():
 
 
     def confirm():
-        global tcounter
-        nonlocal rounds, strikes, game_over, won, target
+        nonlocal rounds, strikes, game_over, won, target, tcounter
+
         total = sum(sw.value for sw in switches if sw.on)
+
         if total == target:
             tcounter = 0
             rounds += 1
+
             if rounds >= 5:
                 won = True
                 game_over = True
             else:
-                tcounter = 0
                 print(tcounter)
                 target = random.randint(1, 15)
         else:
             tcounter = -100
             strikes += 1
+
             if strikes >= 3:
                 won = False
                 game_over = True
@@ -202,20 +204,21 @@ def main():
         screen.blit(Bg, (0, 0))
         screen.blit(Door, (29, 16))
         all_sprites.draw(screen)
-        if tcounter <= 0:
-            hud = font.render("Strikes: {strikes}/3", True, (255, 255, 255))
-        if 0 <= tcounter and tcounter <= 100:
-            hud = font.render(f"Round: {rounds+1}/5", True, (255,255,255))
+
+        if tcounter < 0:
+            hud = font.render(f"Strikes: {strikes}/3", True, (255, 255, 255))
             tcounter += 1
-        if tcounter > 100:
-            hud = font.render(f"Target: {target}", True, (255,255,255))
-        
+        elif tcounter <= 100:
+            hud = font.render(f"Round: {rounds + 1}/5", True, (255, 255, 255))
+            tcounter += 1
+        else:
+            hud = font.render(f"Target: {target}", True, (255, 255, 255))
+
         screen.blit(hud, (380, 40))
+
         total = sum(sw.value for sw in switches if sw.on)
-        tot = font.render(f"Total : {total}", True, (255,255,255))
+        tot = font.render(f"Total : {total}", True, (255, 255, 255))
         screen.blit(tot, (380, 290))
-        total = sum(sw.value for sw in switches if sw.on)
-        print(total)
 
         hint_text = "Flip switches | Press button to confirm" 
         hint = font.render(hint_text, True, (150, 150, 150))
