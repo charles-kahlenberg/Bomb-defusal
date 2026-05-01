@@ -203,6 +203,20 @@ def main():
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption("Melody Game")
 
+    main_screen = screen
+    game_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+    screen = game_surface
+
+    intro_bg = pygame.image.load("base.png").convert()
+    intro_bg = pygame.transform.scale(intro_bg, main_screen.get_size())
+    minigame_rect = pygame.Rect(260, 285, 505, 250)
+
+    def show_frame():
+        main_screen.blit(intro_bg, (0, 0))
+        scaled_game = pygame.transform.smoothscale(game_surface, minigame_rect.size)
+        main_screen.blit(scaled_game, minigame_rect)
+        pygame.display.flip()
+
     all_sprites_list = pygame.sprite.Group()
 
     # create objects
@@ -357,6 +371,7 @@ def main():
                 won = True
             win_text = timer_font.render("Congratulations! You won!", True, (0, 255, 0))
             screen.blit(win_text, ((WIDTH - win_text.get_width()) // 2, 100))
+            show_frame()
             break
 
         elif strikes >= 3:
@@ -389,7 +404,7 @@ def main():
         timer_surface = timer_font.render(timer_text, True, TIMER_COLOR)
         screen.blit(timer_surface, (WIDTH - timer_surface.get_width() - 20, 20))
 
-        pygame.display.flip()
+        show_frame()
         clock.tick(60)
 
     pygame.quit()

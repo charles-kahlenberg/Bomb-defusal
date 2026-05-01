@@ -62,6 +62,20 @@ def main(screen=None, clock=None):
 
     pygame.display.set_caption("Switches")
 
+    main_screen = screen
+    game_surface = pygame.Surface((SCREEN_W, SCREEN_H), pygame.SRCALPHA)
+    screen = game_surface
+
+    intro_bg = pygame.image.load("base.png").convert()
+    intro_bg = pygame.transform.scale(intro_bg, main_screen.get_size())
+    minigame_rect = pygame.Rect(260, 285, 505, 250)
+
+    def show_frame():
+        main_screen.blit(intro_bg, (0, 0))
+        scaled_game = pygame.transform.smoothscale(game_surface, minigame_rect.size)
+        main_screen.blit(scaled_game, minigame_rect)
+        pygame.display.flip()
+
     font = pygame.font.SysFont(None, 32)
 
     if clock is None:
@@ -164,7 +178,7 @@ def main(screen=None, clock=None):
         if won:
             win_text = font.render("You win!", True, (0, 255, 0))
             screen.blit(win_text, win_text.get_rect(center=(SCREEN_W // 2, SCREEN_H - 80)))
-            pygame.display.flip()
+            show_frame()
             pygame.time.wait(1000)
 
             if created_display:
@@ -175,7 +189,7 @@ def main(screen=None, clock=None):
         elif game_over:
             lose_text = font.render("Game Over!", True, (255, 60, 60))
             screen.blit(lose_text, lose_text.get_rect(center=(SCREEN_W // 2, SCREEN_H - 80)))
-            pygame.display.flip()
+            show_frame()
             pygame.time.wait(1000)
 
             if created_display:
@@ -183,7 +197,7 @@ def main(screen=None, clock=None):
 
             return False
 
-        pygame.display.flip()
+        show_frame()
         clock.tick(60)
 
     if created_display:

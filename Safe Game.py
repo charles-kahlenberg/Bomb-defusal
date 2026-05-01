@@ -211,6 +211,20 @@ def main(screen=None, clock=None):
 
     pygame.display.set_caption("Safe Game")
 
+    main_screen = screen
+    game_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+    screen = game_surface
+
+    intro_bg = pygame.image.load("base.png").convert()
+    intro_bg = pygame.transform.scale(intro_bg, main_screen.get_size())
+    minigame_rect = pygame.Rect(260, 285, 505, 250)
+
+    def show_frame():
+        main_screen.blit(intro_bg, (0, 0))
+        scaled_game = pygame.transform.smoothscale(game_surface, minigame_rect.size)
+        main_screen.blit(scaled_game, minigame_rect)
+        pygame.display.flip()
+
     all_sprites_list = pygame.sprite.Group()
 
     # 3 rows x 4 cols grid of buttons
@@ -427,7 +441,7 @@ def main(screen=None, clock=None):
         elif won:
             win_text = timer_font.render("Pass!", True, (0, 255, 0))
             screen.blit(win_text, (text_x, text_y))
-            pygame.display.flip()
+            show_frame()
             pygame.time.wait(1000)
 
             if created_display:
@@ -437,7 +451,7 @@ def main(screen=None, clock=None):
         else:
             lost_text = timer_font.render("Game over..", True, (255, 0, 0))
             screen.blit(lost_text, (text_x, text_y))
-            pygame.display.flip()
+            show_frame()
             pygame.time.wait(1000)
 
             if created_display:
@@ -445,7 +459,7 @@ def main(screen=None, clock=None):
 
             return won
 
-        pygame.display.flip()
+        show_frame()
         clock.tick(60)
 
     if created_display:

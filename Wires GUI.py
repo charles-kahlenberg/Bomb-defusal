@@ -364,6 +364,20 @@ def main(screen=None, clock=None):
 
     display.set_caption("Wires GUI")
 
+    main_screen = screen
+    game_surface = pygame.Surface((1024, 576), pygame.SRCALPHA)
+    screen = game_surface
+
+    intro_bg = pygame.image.load("base.png").convert()
+    intro_bg = pygame.transform.scale(intro_bg, main_screen.get_size())
+    minigame_rect = pygame.Rect(260, 285, 505, 250)
+
+    def show_frame():
+        main_screen.blit(intro_bg, (0, 0))
+        scaled_game = pygame.transform.smoothscale(game_surface, minigame_rect.size)
+        main_screen.blit(scaled_game, minigame_rect)
+        pygame.display.flip()
+
     strike_count = 0
     font = pygame.font.SysFont(None, 36)
     big_font = pygame.font.SysFont(None, 72)
@@ -518,7 +532,7 @@ def main(screen=None, clock=None):
             msg_color = colors["green"] if won else colors["red"]
             end_text = big_font.render(msg, True, msg_color)
             screen.blit(end_text, end_text.get_rect(center=(512, 288)))
-            pygame.display.flip()
+            show_frame()
             pygame.time.wait(1500)
 
             if created_display:
@@ -526,7 +540,7 @@ def main(screen=None, clock=None):
 
             return won
 
-        pygame.display.flip()
+        show_frame()
         clock.tick(60)
 
     if created_display:
