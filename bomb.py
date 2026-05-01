@@ -23,6 +23,9 @@ def import_game_module(module_name, file_name):
     spec.loader.exec_module(module)
     return module
 
+# import pygame intro module by file path
+def import_pygame_intro():
+    return import_game_module("pygame_intro", "pygameIntro (1).py")
 
 # import the wires GUI module by file path
 def import_wires_gui():
@@ -200,7 +203,9 @@ def main():
     #setup_phases()
 
     # launch the wires GUI first
-
+    
+    pygame_intro = import_pygame_intro()
+    pygame_intro.main()
     wires_gui = import_wires_gui()
     wires_won = wires_gui.main()
 
