@@ -351,6 +351,11 @@ def main(screen=None, clock=None):
         show_frame()
         clock.tick(60)
 
+        if created_display:
+            pygame.quit()
+
+        return False
+
     if created_display:
         pygame.quit()
 
