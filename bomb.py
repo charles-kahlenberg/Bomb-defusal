@@ -202,34 +202,48 @@ def turn_off():
 def main():
     #setup_phases()
 
+    pygame.init()
+    pygame.mixer.init()
+
+    screen = pygame.display.set_mode((1024, 576))
+    pygame.display.set_caption("Defuse the Bomb")
+    clock = pygame.time.Clock()
+
     # launch the pygame intro first
     pygame_intro = import_pygame_intro()
-    intro_done = pygame_intro.main()
+    intro_done = pygame_intro.main(screen, clock)
 
     if not intro_done:
+        pygame.quit()
         return False
 
     # move on to wires GUI
     wires_gui = import_wires_gui()
-    wires_won = wires_gui.main()
+    wires_won = wires_gui.main(screen, clock)
 
     # if wires fail, quit immediately
     if not wires_won:
+        pygame.quit()
         return False
 
     # safe game
     safe_game = import_safe_game()
-    safe_won = safe_game.main()
+    safe_won = safe_game.main(screen, clock)
 
     if not safe_won:
+        pygame.quit()
         return False
 
     # switches game
     switches_gui = import_switches_gui()
-    switches_won = switches_gui.main()
+    switches_won = switches_gui.main(screen, clock)
 
     if not switches_won:
+        pygame.quit()
         return False
+
+    pygame.quit()
+    return True
 
 
 ######

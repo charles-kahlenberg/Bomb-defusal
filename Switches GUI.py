@@ -52,12 +52,20 @@ class Switch(pygame.sprite.Sprite):
         screen.blit(state_surf, state_surf.get_rect(center=(self.rect.centerx, self.rect.bottom + 20)))
 
 
-def main():
-    pygame.init()
-    screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
+def main(screen=None, clock=None):
+    if not pygame.get_init():
+        pygame.init()
+
+    created_display = screen is None
+    if screen is None:
+        screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
+
     pygame.display.set_caption("Switches")
+
     font = pygame.font.SysFont(None, 32)
-    clock = pygame.time.Clock()
+
+    if clock is None:
+        clock = pygame.time.Clock()
 
     spacing = 170
     start_x = (SCREEN_W - (4 * KEY_W + 3 * (spacing - KEY_W))) // 2
@@ -68,6 +76,7 @@ def main():
         Switch(start_x + 2 * spacing, 80, "SW3", 2, board.D20),
         Switch(start_x + 3 * spacing, 80, "SW4", 1, board.D21),
     ]
+
     all_sprites = pygame.sprite.Group(*switches)
 
     # constants
@@ -80,9 +89,12 @@ def main():
 
     def confirm():
         nonlocal rounds, strikes, game_over, won, target
+
         total = sum(sw.value for sw in switches if sw.on)
+
         if total == target:
             rounds += 1
+
             if rounds >= 5:
                 won = True
                 game_over = True
@@ -90,14 +102,17 @@ def main():
                 for sw in switches:
                     if sw.on:
                         sw.toggle()
+
                 target = random.randint(1, 15)
         else:
             strikes += 1
+
             if strikes >= 3:
                 won = False
                 game_over = True
 
     running = True
+
     while running:
         # mirror physical toggle switches onto the GUI
         if RPi and not game_over and not won:
@@ -107,7 +122,9 @@ def main():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                if created_display:
+                    pygame.quit()
+                return False
 
             elif event.type == pygame.MOUSEBUTTONDOWN and not RPi and not game_over:
                 for sw in switches:
@@ -120,17 +137,24 @@ def main():
         # pushbutton confirm (rising edge)
         if RPi and not game_over and not won:
             btn = component_button_state.value
+
             if btn and not prev_btn:
                 confirm()
+
             prev_btn = btn
 
         # draw the screen
         screen.fill((30, 30, 30))
         all_sprites.draw(screen)
+
         for sw in switches:
             sw.draw_labels(screen, font)
 
-        hud = font.render(f"Target: {target}   Round: {rounds+1}/5   Strikes: {strikes}/3", True, (255, 255, 255))
+        hud = font.render(
+            f"Target: {target}   Round: {rounds + 1}/5   Strikes: {strikes}/3",
+            True,
+            (255, 255, 255)
+        )
         screen.blit(hud, (20, 20))
 
         hint_text = "Flip switches | Press button to confirm" if RPi else "Click to toggle | Enter to confirm"
@@ -142,7 +166,10 @@ def main():
             screen.blit(win_text, win_text.get_rect(center=(SCREEN_W // 2, SCREEN_H - 80)))
             pygame.display.flip()
             pygame.time.wait(1000)
-            pygame.quit()
+
+            if created_display:
+                pygame.quit()
+
             return True
 
         elif game_over:
@@ -150,15 +177,16 @@ def main():
             screen.blit(lose_text, lose_text.get_rect(center=(SCREEN_W // 2, SCREEN_H - 80)))
             pygame.display.flip()
             pygame.time.wait(1000)
-            pygame.quit()
+
+            if created_display:
+                pygame.quit()
+
             return False
 
         pygame.display.flip()
         clock.tick(60)
 
-    pygame.quit()
+    if created_display:
+        pygame.quit()
+
     return False
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
