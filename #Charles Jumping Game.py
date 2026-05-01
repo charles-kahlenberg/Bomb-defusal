@@ -51,24 +51,24 @@ class player(object):
                 self.jumping = False
                 self.runCount = 0
             self.hitbox = (self.x+ 4, self.y, self.width-24, self.height-10)
-        elif self.sliding or self.slideUp:
-            if self.slideCount < 20:
-                self.y += 1
-                self.hitbox = (self.x+ 4, self.y, self.width-24, self.height-10)
-            elif self.slideCount == 80:
-                self.y -= 19
-                self.sliding = False
-                self.slideUp = True
-            elif self.slideCount > 20 and self.slideCount < 80:
-                self.hitbox = (self.x, self.y+3, self.width-8, self.height-35)
+        # elif self.sliding or self.slideUp:
+        #     if self.slideCount < 20:
+        #         self.y += 1
+        #         self.hitbox = (self.x+ 4, self.y, self.width-24, self.height-10)
+        #     elif self.slideCount == 80:
+        #         self.y -= 19
+        #         self.sliding = False
+        #         self.slideUp = True
+        #     elif self.slideCount > 20 and self.slideCount < 80:
+        #         self.hitbox = (self.x, self.y+3, self.width-8, self.height-35)
 
-            if self.slideCount >= 110:
-                self.slideCount = 0
-                self.runCount = 0
-                self.slideUp = False
-                self.hitbox = (self.x+ 4, self.y, self.width-24, self.height-10)
-            win.blit(self.slide[self.slideCount//10], (self.x, self.y))
-            self.slideCount += 1
+        #     if self.slideCount >= 110:
+        #         self.slideCount = 0
+        #         self.runCount = 0
+        #         self.slideUp = False
+        #         self.hitbox = (self.x+ 4, self.y, self.width-24, self.height-10)
+            # win.blit(self.slide[self.slideCount//10], (self.x, self.y))
+            # self.slideCount += 1
 
         else:
             if self.runCount > 42:
