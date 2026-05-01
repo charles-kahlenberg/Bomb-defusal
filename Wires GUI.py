@@ -29,6 +29,11 @@ from pygame import *
 from pygame.sprite import *
 import sys
 
+MINIGAME_WINDOW_X = 250
+MINIGAME_WINDOW_Y = 250
+MINIGAME_WINDOW_W = 334
+MINIGAME_WINDOW_H = 251
+
 try:
     from bomb_configs import RPi, component_wires
 except ImportError:
@@ -370,7 +375,12 @@ def main(screen=None, clock=None):
 
     intro_bg = pygame.image.load("base.png").convert()
     intro_bg = pygame.transform.scale(intro_bg, main_screen.get_size())
-    minigame_rect = pygame.Rect(233, 192, 334, 251)
+    minigame_rect = pygame.Rect(
+        MINIGAME_WINDOW_X,
+        MINIGAME_WINDOW_Y,
+        MINIGAME_WINDOW_W,
+        MINIGAME_WINDOW_H
+    )
 
     def show_frame():
         main_screen.blit(intro_bg, (0, 0))

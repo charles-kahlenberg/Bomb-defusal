@@ -139,6 +139,11 @@ SURFACE_COLOR = (115, 147, 179)
 WIDTH = 1024
 HEIGHT = 576
 
+MINIGAME_WINDOW_X = 233
+MINIGAME_WINDOW_Y = 192
+MINIGAME_WINDOW_W = 334
+MINIGAME_WINDOW_H = 251
+
 # everything below is imported from https://www.geeksforgeeks.org/python/pygame-creating-sprites/ and modified to fit my game, I will be using sprites for the buttons that the user will press to play the melodies
 
 # make Sprites
@@ -215,9 +220,14 @@ def main(screen=None, clock=None):
     game_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
     screen = game_surface
 
-    intro_bg = pygame.image.load("base.png").convert()
+    intro_bg = pygame.image.load("img_keys//base.png").convert()
     intro_bg = pygame.transform.scale(intro_bg, main_screen.get_size())
-    minigame_rect = pygame.Rect(233, 192, 334, 251)
+    minigame_rect = pygame.Rect(
+    MINIGAME_WINDOW_X,
+    MINIGAME_WINDOW_Y,
+    MINIGAME_WINDOW_W,
+    MINIGAME_WINDOW_H
+)
 
     def show_frame():
         main_screen.blit(intro_bg, (0, 0))
