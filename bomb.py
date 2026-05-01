@@ -42,9 +42,9 @@ def import_safe_game():
     return import_game_module("safe_game", "Safe Game.py")
 
 
-# import the switches GUI module by file path
-def import_switches_gui():
-    return import_game_module("switches_gui", "Switches GUI.py")
+# import the switchG module by file path
+def import_switch_g():
+    return import_game_module("switch_g", "SwitchG.py")
 
 ###########
 # functions
@@ -238,16 +238,16 @@ def main():
         pygame.quit()
         return False
 
-    # switches game
-    switches_gui = import_switches_gui()
-    switches_won = switches_gui.main(screen, clock)
+        # switch game
+        switch_g = import_switch_g()
+        switches_won = switch_g.main(screen, clock)
 
-    if not switches_won:
+        if not switches_won:
+            pygame.quit()
+            return False
+
         pygame.quit()
-        return False
-
-    pygame.quit()
-    return True
+        return True
 
 
 ######

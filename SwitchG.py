@@ -1,39 +1,45 @@
-
 import pygame
 import sys
 import random
 
 KEY_W, KEY_H = 34, 144
 
+SCREEN_W, SCREEN_H = 1024, 576
+
+MINIGAME_WINDOW_X = 300
+MINIGAME_WINDOW_Y = 232
+MINIGAME_WINDOW_W = 425
+MINIGAME_WINDOW_H = 299
+
 
 class Switch(pygame.sprite.Sprite):
     def __init__(self, x, y, label, value, key):
         super().__init__()
         self.down = pygame.transform.scale(
-            pygame.image.load("SwitchD.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys//SwitchD.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.up = pygame.transform.scale(
-            pygame.image.load("SwitchUp.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys//SwitchUp.png").convert_alpha(), (KEY_W, KEY_H)
         )
         
         self.fu1 = pygame.transform.scale(
-            pygame.image.load("SwitchFUp1.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys//SwitchFUp1.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.fu2 = pygame.transform.scale(
-            pygame.image.load("SwitchFUp2.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys//SwitchFUp2.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.fu3 = pygame.transform.scale(
-            pygame.image.load("SwitchFUp3.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys//SwitchFUp3.png").convert_alpha(), (KEY_W, KEY_H)
         )
         
         self.fd1 = pygame.transform.scale(
-            pygame.image.load("SwitchFD1.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys//SwitchFD1.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.fd2 = pygame.transform.scale(
-            pygame.image.load("SwitchFD2.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys//SwitchFD2.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.fd3= pygame.transform.scale(
-            pygame.image.load("SwitchFD3.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys//SwitchFD3.png").convert_alpha(), (KEY_W, KEY_H)
         )
         
         self.value = value
@@ -82,14 +88,46 @@ def randomval(first):
     values = [valu1, valu2, valu3, valu4]
     return values
     
-def main():
-    pygame.init()
-    screen = pygame.display.set_mode((616, 342))
+def main(screen=None, clock=None):
+    if not pygame.get_init():
+        pygame.init()
+
+    pygame.font.init()
+
+    created_display = screen is None
+    if screen is None:
+        screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
+
     pygame.display.set_caption("Switches")
-    font  = pygame.font.Font("Baskic8.otf", 24)
-    clock = pygame.time.Clock()
-    Bg = pygame.image.load("SwitchesBg.png").convert()
-    Door = pygame.image.load("Door.png").convert()
+
+    main_screen = screen
+    game_surface = pygame.Surface((616, 342), pygame.SRCALPHA)
+    screen = game_surface
+
+    if clock is None:
+        clock = pygame.time.Clock()
+
+    font = pygame.font.Font("img_keys//Baskic8.otf", 24)
+
+    intro_bg = pygame.image.load("base.png").convert()
+    intro_bg = pygame.transform.scale(intro_bg, main_screen.get_size())
+
+    minigame_rect = pygame.Rect(
+        MINIGAME_WINDOW_X,
+        MINIGAME_WINDOW_Y,
+        MINIGAME_WINDOW_W,
+        MINIGAME_WINDOW_H
+    )
+
+    def show_frame():
+        main_screen.blit(intro_bg, (0, 0))
+        scaled_game = pygame.transform.smoothscale(game_surface, minigame_rect.size)
+        main_screen.blit(scaled_game, minigame_rect)
+        pygame.display.flip()
+
+    Bg = pygame.image.load("img_keys//SwitchesBg.png").convert()
+    Bg = pygame.transform.scale(Bg, (616, 342))
+    Door = pygame.image.load("img_keys//Door.png").convert()
     
     spacing = 30
     start_x = (820 - (4 * KEY_W + 3 * (spacing - KEY_W))) // 2
@@ -271,26 +309,34 @@ def main():
         screen.blit(hint, hint.get_rect(center=(300, 400)))
 
         if won:
-            screen.blit(font.render("You win!", True, (0, 255, 0)), (240, 370))
-            pygame.display.flip()
+            screen.blit(font.render("You win!", True, (0, 255, 0)), (240, 270))
+            show_frame()
             pygame.time.wait(1000)
-            pygame.quit()
+
+            if created_display:
+                pygame.quit()
+
             return True
 
         elif game_over:
-            screen.blit(font.render("Game Over!", True, (255, 60, 60)), (230, 370))
-            pygame.display.flip()
+            screen.blit(font.render("Game Over!", True, (255, 60, 60)), (230, 270))
+            show_frame()
             pygame.time.wait(1000)
-            pygame.quit()
+
+            if created_display:
+                pygame.quit()
+
             return False
 
-        pygame.display.flip()
+        show_frame()
         clock.tick(60)
 
-    pygame.quit()
+    if created_display:
+        pygame.quit()
+
     return False
+
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
