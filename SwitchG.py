@@ -359,4 +359,5 @@ def main(screen=None, clock=None):
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    result = main()
+    raise SystemExit(0 if result else 1)
