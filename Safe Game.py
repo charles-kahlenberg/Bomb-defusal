@@ -413,11 +413,11 @@ def main():
         elif won:
             win_text = timer_font.render("Pass!", True, (0, 255, 0))
             screen.blit(win_text, (text_x, text_y))
-            break
+            return won
         else:
             lost_text = timer_font.render("Game over..", True, (255, 0, 0))
             screen.blit(lost_text, (text_x, text_y))
-            break
+            return won
 
         pygame.display.flip()
         clock.tick(60)

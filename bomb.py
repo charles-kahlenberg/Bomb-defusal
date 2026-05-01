@@ -217,6 +217,20 @@ def main():
     if not wires_won:
         return False
 
+    # safe game
+    safe_game = import_safe_game()
+    safe_won = safe_game.main()
+
+    if not safe_won:
+        return False
+
+    # switches game
+    switches_gui = import_switches_gui()
+    switches_won = switches_gui.main()
+
+    if not switches_won:
+        return False
+
 
 ######
 # MAIN
