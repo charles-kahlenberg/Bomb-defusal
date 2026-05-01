@@ -24,7 +24,7 @@ def main(screen=None, clock=None):
 
     rect_pos = pygame.Rect(0, 0, screen_width, screen_height)
     rect_surf = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
-    rect_surf.fill((0, 0, 0, 255))
+    rect_surf.fill((0, 0, 0, 0))
 
     messages = [
         "You have put our name to question for too long.....",
