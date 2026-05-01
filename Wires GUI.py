@@ -477,7 +477,7 @@ def main(screen=None, clock=None):
                     game_over = True
                     won = False
 
-        screen.fill(colors["black"])
+        screen.fill(colors["white"])
 
         # Top row input circles
         for circle_name, wire in [
@@ -487,10 +487,6 @@ def main(screen=None, clock=None):
             ("circle4", green_wire),
             ("circle5", orange_wire),
         ]:
-            if connected[wire.color] or wire == current_target_wire:
-                color_name = wire.color
-            else:
-                color_name = "white"
 
             pygame.draw.circle(screen, colors[color_name], points[circle_name], circle_radius)
             draw_text_centered(screen, font, "", colors["black"], points[circle_name])
