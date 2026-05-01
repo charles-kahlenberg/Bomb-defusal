@@ -82,14 +82,17 @@ class player(object):
 def redrawGameWindow(): #draws background and objects (all drawings happen in one place)
     win.blit(bg, (bgX, 0))
     win.blit(bg, (bgX2, 0))
+    charles_runner.draw(win)
     pygame.display.update()
 
-speed = 30 
+charles_runner = player(200, 420, 64,64) #64 x 64 Sprite
+
+pygame.time.set_timer(USEREVENT+1, 500)
+speed = 80 
 clock.tick(speed) #gets the FPS
 run = True
 while run: #while game is running
     redrawGameWindow()
-    clock.tick(speed) #sets the FPS
     bgX -= 1.4
     bgX2 -= 1.4
     if bgX < bg.get_width() * -1: #first background image starts at 0 , 0 then start maoving backwwards then gets to the negative width, so it is off the screen
@@ -100,4 +103,16 @@ while run: #while game is running
         if event.type == pygame.QUIT:
             run = False
             pygame.quit()
+        if event.type == USEREVENT+1:
+            speed += 1
+            
+    keys = pygame.key.get_pressed()
+    
+    if keys[pygame.K_SPACE]:
+        if not (charles_runner.jumping):
+            charles_runner.jumping = True
+    
+    
+    
+    clock.tick(speed) #sets the FPS
 
