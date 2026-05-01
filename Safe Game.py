@@ -139,10 +139,10 @@ SURFACE_COLOR = (115, 147, 179)
 WIDTH = 1024
 HEIGHT = 576
 
-MINIGAME_WINDOW_X = 233
-MINIGAME_WINDOW_Y = 192
-MINIGAME_WINDOW_W = 334
-MINIGAME_WINDOW_H = 251
+MINIGAME_WINDOW_X = 300
+MINIGAME_WINDOW_Y = 232
+MINIGAME_WINDOW_W = 425
+MINIGAME_WINDOW_H = 299
 
 # everything below is imported from https://www.geeksforgeeks.org/python/pygame-creating-sprites/ and modified to fit my game, I will be using sprites for the buttons that the user will press to play the melodies
 
