@@ -218,6 +218,7 @@ def main():
         return False
 
     pygame.mixer.music.load("img_keys/Delirious.mp3")
+    pygame.mixer.music.set_volume(0.2)
     pygame.mixer.music.play()
 
     # move on to wires GUI
