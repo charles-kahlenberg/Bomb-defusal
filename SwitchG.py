@@ -1,6 +1,10 @@
 import pygame
 import sys
 import random
+from bomb_configs import *
+
+if RPi:
+    from bomb_configs import component_toggles, component_button_state
 
 KEY_W, KEY_H = 34, 144
 
@@ -228,57 +232,73 @@ def main(screen=None, clock=None):
                 won = False
                 game_over = True
 
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
+        running = True
+        while running:
+            # mirror physical toggle switches onto the GUI
+            if RPi and not game_over and not won and not flipping:
+                for sw, pin in zip(switches, component_toggles):
+                    if sw.on != pin.value:
+                        sw.toggle()
+                        flipswitch = sw
+                        flipping = True
+                        break
 
-            elif event.type == pygame.MOUSEBUTTONDOWN and not game_over:
-                if flipping == False:
-                    for sw in switches:
-                        worked = sw.handle_click(event.pos)
-                        if worked == True:
-                            flipswitch = sw
-                            flipping = True
-                    
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
 
-            elif event.type == pygame.KEYDOWN and not game_over:
-                if event.key == pygame.K_RETURN:
+                elif event.type == pygame.MOUSEBUTTONDOWN and not RPi and not game_over:
+                    if flipping == False:
+                        for sw in switches:
+                            worked = sw.handle_click(event.pos)
+                            if worked == True:
+                                flipswitch = sw
+                                flipping = True
+
+                elif event.type == pygame.KEYDOWN and not game_over:
+                    if event.key == pygame.K_RETURN:
+                        confirm()
+
+            # pushbutton confirm using rising edge
+            if RPi and not game_over and not won:
+                btn = component_button_state.value
+
+                if btn and not prev_btn:
                     confirm()
 
-        # pushbutton confirm (rising edge)
-        # draw the screen
+                prev_btn = btn
 
-        if flipping:
-            if flipswitch.flipup == True:
-                if counter == 0:
-                    counter += 1
-                    flipswitch.image = flipswitch.fu1
-                if counter <= 6:
-                    counter += 1
-                    flipswitch.image = flipswitch.fu2
-                if counter <= 9:
-                    counter += 1
-                    flipswitch.image = flipswitch.fu3
-                if counter > 9:
-                    counter = 0
-                    flipping = False
-                    flipswitch.image = flipswitch.up
-            else:
-                if counter == 0:
-                    counter += 1
-                    flipswitch.image = flipswitch.fd1
-                if counter <= 6:
-                    counter += 1
-                    flipswitch.image = flipswitch.fd2
-                if counter <= 9:
-                    counter += 1
-                    flipswitch.image = flipswitch.fd3
-                if counter > 9:
-                    counter = 0
-                    flipping = False
-                    flipswitch.image = flipswitch.down
+            # draw the screen
+
+            if flipping:
+                if flipswitch.flipup == True:
+                    if counter == 0:
+                        counter += 1
+                        flipswitch.image = flipswitch.fu1
+                    if counter <= 6:
+                        counter += 1
+                        flipswitch.image = flipswitch.fu2
+                    if counter <= 9:
+                        counter += 1
+                        flipswitch.image = flipswitch.fu3
+                    if counter > 9:
+                        counter = 0
+                        flipping = False
+                        flipswitch.image = flipswitch.up
+                else:
+                    if counter == 0:
+                        counter += 1
+                        flipswitch.image = flipswitch.fd1
+                    if counter <= 6:
+                        counter += 1
+                        flipswitch.image = flipswitch.fd2
+                    if counter <= 9:
+                        counter += 1
+                        flipswitch.image = flipswitch.fd3
+                    if counter > 9:
+                        counter = 0
+                        flipping = False
+                        flipswitch.image = flipswitch.down
                     
                     
                     
@@ -304,7 +324,7 @@ def main(screen=None, clock=None):
         total = sum(sw.value for sw in switches if sw.on)
         
         
-        hint_text = "Flip switches | Press button to confirm" 
+        hint_text = "Flip switches | Press button to confirm" if RPi else "Click switches | Press Enter to confirm"
         hint = font.render(hint_text, True, (150, 150, 150))
         screen.blit(hint, hint.get_rect(center=(300, 400)))
 
