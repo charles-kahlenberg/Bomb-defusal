@@ -318,6 +318,16 @@ def draw_text_centered(surface, font, text, color, center):
     surface.blit(text_surface, text_surface.get_rect(center=center))
 
 
+def get_current_wire_values():
+    """
+    Returns the current physical connected/disconnected state for each RPi wire.
+    """
+    if not RPi:
+        return []
+
+    return [pin.value for pin in component_wires]
+
+
 def get_pressed_wire_from_rpi(previous_wire_values):
     """
     Returns the index of the newly connected RPi wire, or None if no new wire was connected.
@@ -401,6 +411,14 @@ def main(screen=None, clock=None):
 
     running = True
     while running:
+        current_wire_values = get_current_wire_values()
+
+        if RPi and not game_over:
+            for index, wire in enumerate(wire_order):
+                if connected[wire.color] and not current_wire_values[index]:
+                    connected[wire.color] = False
+                    current_target_wire = wire
+
         pressed_wire_index = get_pressed_wire_from_rpi(previous_wire_values)
 
         for event in pygame.event.get():
