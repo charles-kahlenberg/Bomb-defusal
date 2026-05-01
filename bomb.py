@@ -209,6 +209,11 @@ def main():
     wires_gui = import_wires_gui()
     wires_won = wires_gui.main()
 
+    # if intro is done, move on to wires GUI
+    if pygame_intro.done:
+        wires_gui = import_wires_gui()
+        wires_won = wires_gui.main()
+
     # if wires fail, quit immediately
     if not wires_won:
         return False
