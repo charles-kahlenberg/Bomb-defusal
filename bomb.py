@@ -202,44 +202,20 @@ def turn_off():
 def main():
     #setup_phases()
 
-    # launch the wires GUI first
-    
+    # launch the pygame intro first
     pygame_intro = import_pygame_intro()
-    pygame_intro.main()
+    intro_done = pygame_intro.main()
+
+    if not intro_done:
+        return False
+
+    # move on to wires GUI
     wires_gui = import_wires_gui()
     wires_won = wires_gui.main()
-
-    # if intro is done, move on to wires GUI
-    if pygame_intro.done:
-        wires_gui = import_wires_gui()
-        wires_won = wires_gui.main()
 
     # if wires fail, quit immediately
     if not wires_won:
         return False
-    """
-    # if wires succeed, launch the melody game next
-    melody_game = import_melody_game()
-    melody_won = melody_game.main()
-
-    if not melody_won:
-        return False
-    """
-    # move on to safe game
-    safe_game = import_safe_game()
-    safe_won = safe_game.main()
-
-    if not safe_won:
-        return False
-
-    # move on to switches game
-    switches_gui = import_switches_gui()
-    switches_won = switches_gui.main()
-
-    if not switches_won:
-        return False
-
-    return True
 
 
 ######
