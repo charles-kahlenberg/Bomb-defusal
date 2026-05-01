@@ -209,7 +209,7 @@ def main():
 
     intro_bg = pygame.image.load("base.png").convert()
     intro_bg = pygame.transform.scale(intro_bg, main_screen.get_size())
-    minigame_rect = pygame.Rect(260, 285, 505, 250)
+    minigame_rect = pygame.Rect(260, 265, 505, 250)
 
     def show_frame():
         main_screen.blit(intro_bg, (0, 0))
