@@ -25,7 +25,7 @@ def import_game_module(module_name, file_name):
 
 # import pygame intro module by file path
 def import_pygame_intro():
-    return import_game_module("pygame_intro", "pygameIntro (1).py")
+    return import_game_module("pygame_intro", "pygameIntro.py")
 
 # import the wires GUI module by file path
 def import_wires_gui():
