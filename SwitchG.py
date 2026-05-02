@@ -1,4 +1,3 @@
-
 import pygame
 import sys
 import random
@@ -6,6 +5,13 @@ from bomb_configs import *
 
 if RPi:
     from bomb_configs import component_toggles, component_button_state
+
+GAME_W, GAME_H = 616, 342
+
+MINIGAME_WINDOW_X = 300
+MINIGAME_WINDOW_Y = 232
+MINIGAME_WINDOW_W = 425
+MINIGAME_WINDOW_H = 299
 
 KEY_W, KEY_H = 34, 144
 
@@ -104,15 +110,51 @@ def main(screen=None, clock=None):
     created_display = screen is None
 
     if screen is None:
-        screen = pygame.display.set_mode((616, 342))
+        screen = pygame.display.set_mode((1024, 576))
 
     pygame.display.set_caption("Switches")
+
+    main_screen = screen
+    game_surface = pygame.Surface((GAME_W, GAME_H), pygame.SRCALPHA)
+    screen = game_surface
+
+    if clock is None:
+        clock = pygame.time.Clock()
+
+    intro_bg = pygame.image.load("base.png").convert()
+    intro_bg = pygame.transform.scale(intro_bg, main_screen.get_size())
+
+    minigame_rect = pygame.Rect(
+        MINIGAME_WINDOW_X,
+        MINIGAME_WINDOW_Y,
+        MINIGAME_WINDOW_W,
+        MINIGAME_WINDOW_H
+    )
+
+    def show_frame():
+        main_screen.blit(intro_bg, (0, 0))
+        scaled_game = pygame.transform.smoothscale(game_surface, minigame_rect.size)
+        main_screen.blit(scaled_game, minigame_rect)
+        pygame.display.flip()
+
+    def screen_pos_to_game_pos(pos):
+        if not minigame_rect.collidepoint(pos):
+            return None
+
+        rel_x = pos[0] - minigame_rect.x
+        rel_y = pos[1] - minigame_rect.y
+
+        game_x = int(rel_x * GAME_W / minigame_rect.w)
+        game_y = int(rel_y * GAME_H / minigame_rect.h)
+
+        return game_x, game_y
 
     if clock is None:
         clock = pygame.time.Clock()
 
     font = pygame.font.Font("img_keys/Baskic8.otf", 24)
     Bg = pygame.image.load("img_keys/SwitchesBg.png").convert()
+    Bg = pygame.transform.scale(Bg, (GAME_W, GAME_H))
     Door = pygame.image.load("img_keys/Door.png").convert()
 
     spacing = 30
@@ -228,9 +270,11 @@ def main(screen=None, clock=None):
                 return False
 
             elif event.type == pygame.MOUSEBUTTONDOWN and not RPi and not game_over:
-                if not flipping:
+                game_pos = screen_pos_to_game_pos(event.pos)
+
+                if game_pos is not None and not flipping:
                     for sw in switches:
-                        worked = sw.handle_click(event.pos)
+                        worked = sw.handle_click(game_pos)
 
                         if worked:
                             flipswitch = sw
@@ -301,13 +345,13 @@ def main(screen=None, clock=None):
         tot = font.render(f"Total : {total}", True, (255, 255, 255))
         screen.blit(tot, (380, 290))
 
-        hint_text = "Flip switches | Press button to confirm" if RPi else "Click switches | Press Enter to confirm"
-        hint = font.render(hint_text, True, (150, 150, 150))
-        screen.blit(hint, hint.get_rect(center=(300, 325)))
+        hint_text = "Flip switches, Press button to confirm" if RPi else "Click switches | Press Enter to confirm"
+        #hint = font.render(hint_text, True, (150, 150, 150))
+        #screen.blit(hint, hint.get_rect(center=(300, 325)))
 
         if won:
             screen.blit(font.render("You win!", True, (0, 255, 0)), (240, 270))
-            pygame.display.flip()
+            show_frame()
             pygame.time.wait(1000)
 
             if created_display:
@@ -317,7 +361,7 @@ def main(screen=None, clock=None):
 
         elif game_over:
             screen.blit(font.render("Game Over!", True, (255, 60, 60)), (230, 270))
-            pygame.display.flip()
+            show_frame()
             pygame.time.wait(1000)
 
             if created_display:
@@ -325,7 +369,7 @@ def main(screen=None, clock=None):
 
             return False
 
-        pygame.display.flip()
+        show_frame()
         clock.tick(60)
 
     if created_display:
