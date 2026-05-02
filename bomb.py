@@ -209,7 +209,7 @@ def main():
     pygame.display.set_caption("Defuse the Bomb")
     clock = pygame.time.Clock()
 
-    """
+
     # launch the pygame intro first
     pygame_intro = import_pygame_intro()
     intro_done = pygame_intro.main(screen, clock)
@@ -238,7 +238,7 @@ def main():
     if not safe_won:
         pygame.quit()
         return False
-    """
+    
     # switch game
     switch_g = import_switch_g()
     switches_won = switch_g.main(screen, clock)
