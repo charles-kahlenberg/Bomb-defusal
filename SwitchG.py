@@ -14,30 +14,30 @@ class Switch(pygame.sprite.Sprite):
     def __init__(self, x, y, label, value, key):
         super().__init__()
         self.down = pygame.transform.scale(
-            pygame.image.load("img_keys\SwitchD.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys/SwitchD.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.up = pygame.transform.scale(
-            pygame.image.load("img_keys\SwitchUp.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys/SwitchUp.png").convert_alpha(), (KEY_W, KEY_H)
         )
         
         self.fu1 = pygame.transform.scale(
-            pygame.image.load("img_keys\SwitchFUp1.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys/SwitchFUp1.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.fu2 = pygame.transform.scale(
-            pygame.image.load("img_keys\SwitchFUp2.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys/SwitchFUp2.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.fu3 = pygame.transform.scale(
-            pygame.image.load("img_keys\SwitchFUp3.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys/SwitchFUp3.png").convert_alpha(), (KEY_W, KEY_H)
         )
         
         self.fd1 = pygame.transform.scale(
-            pygame.image.load("img_keys\SwitchFD1.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys/SwitchFD1.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.fd2 = pygame.transform.scale(
-            pygame.image.load("img_keys\SwitchFD2.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys/SwitchFD2.png").convert_alpha(), (KEY_W, KEY_H)
         )
         self.fd3= pygame.transform.scale(
-            pygame.image.load("img_keys\SwitchFD3.png").convert_alpha(), (KEY_W, KEY_H)
+            pygame.image.load("img_keys/SwitchFD3.png").convert_alpha(), (KEY_W, KEY_H)
         )
         
         self.value = value
@@ -104,9 +104,9 @@ def main(screen=None, clock=None):
     if clock is None:
         clock = pygame.time.Clock()
 
-    font = pygame.font.Font("img_keys\Baskic8.otf", 24)
-    Bg = pygame.image.load("img_keys\SwitchesBg.png").convert()
-    Door = pygame.image.load("img_keys\Door.png").convert()
+    font = pygame.font.Font("img_keys/Baskic8.otf", 24)
+    Bg = pygame.image.load("img_keys/SwitchesBg.png").convert()
+    Door = pygame.image.load("img_keys/Door.png").convert()
 
     spacing = 30
     start_x = (820 - (4 * KEY_W + 3 * (spacing - KEY_W))) // 2
