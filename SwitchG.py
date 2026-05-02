@@ -59,6 +59,13 @@ class Switch(pygame.sprite.Sprite):
             self.flipdown = True
             self.flipup = False
 
+    def set_state(self, new_state):
+        if self.on != new_state:
+            self.toggle()
+            return True
+
+        return False
+
     def handle_click(self, pos):
         worked = False
         if self.rect.collidepoint(pos):
