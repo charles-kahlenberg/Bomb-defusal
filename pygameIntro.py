@@ -53,7 +53,7 @@ def main(screen=None, clock=None):
     final_message_done_time = None
 
     pygame.mixer.music.load("intro.mp3")
-    pygame.mixer.music.set_volume(0.7)
+    pygame.mixer.music.set_volume(10.00)
     started = False
     notplayed = True
 
