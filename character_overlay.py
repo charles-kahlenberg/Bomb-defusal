@@ -4,6 +4,7 @@ import pygame
 BC1_FRAME_PATHS = [
     "img_keys/1C1.png",
     "img_keys/1C2.png",
+    "img_keys/1C3.png",
 ]
 
 BC2_FRAME_PATHS = [
@@ -17,15 +18,15 @@ BC2_FRAME_TIME_MS = 700
 
 # Adjust these to move/resize BC1 everywhere.
 BC1_X = 36
-BC1_Y = 68
-BC1_WIDTH = 175
-BC1_HEIGHT = 185
+BC1_Y = 53
+BC1_WIDTH = 180
+BC1_HEIGHT = 200
 
 # Adjust these to move/resize BC2 everywhere.
-BC2_X = 805
-BC2_Y = 68
-BC2_WIDTH = 175
-BC2_HEIGHT = 185
+BC2_X = 803
+BC2_Y = 50
+BC2_WIDTH = 182
+BC2_HEIGHT = 200
 
 
 _cached_bc1_frames = None
