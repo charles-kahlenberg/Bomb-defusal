@@ -1,25 +1,3 @@
-#Pseudocode:
-#Create wire class that allows me set an end position for
-#1,2,3,4 wires are the input wires that  cannot be modified
-#5,6,7,8 wires are the end points of the wires
-#Game starts with the user having to move Wire 1 to Output 5, if they fail, add a strike
-#Next the user has to move Wire 2 to Output 9, if they fail, add a strike
-#Next the user has to move Wire 3 to Output 7, if they fail, add a strike
-#Next the user has to move Wire 4 to Output 8, if they fail, add a strike
-#If the user gets 3 strikes, they lose. If they get all 4 wires correct, they win and get a winning screen
-#Pygame for GUI
-#2x4 grid of circles, with the top row being the input wires and the bottom row being the output wires. Each circle will have a letter in it that corresponds to the color of the wire. The user will have to press the corresponding key to cut the wire and move it to the correct output. If they cut the wrong wire, they get a strike. If they get 3 strikes, they lose. If they get all 4 wires correct, they win and get a winning screen.
-#When the correct wire is attached, the wire will be drawn on the screen connecting the input and output circles. When the wrong wire is attached, a strike will be added and the wire will not be drawn. The user will have to press the corresponding key to cut the wire and move it to the correct output. If they cut the wrong wire, they get a strike. If they get 3 strikes, they lose. If they get all 4 wires correct, they win and get a winning screen.
-#Circles for the start positions and output positons
-#If button is pressed and gave is not over, check if the button pressed corresponds with correct place
-#else, add to strike counter
-#If all buttons are in the correct place, print win statement
-#If strike counter >= 3, print lose statement and quit game
-
-
-
-
-
 import abc
 import random
 #random.seed(1)
@@ -453,32 +431,32 @@ def main(screen=None, clock=None):
     connected_wire_settings = {
         "blue": {
             "image_path": "img_keys/Wire1.png",
-            "center_x": 512,
-            "center_y": 218,
-            "scale": 2.0,
+            "center_x": 125,
+            "center_y": 300,
+            "scale": 2.2,
         },
         "red": {
             "image_path": "img_keys/Wire2.png",
-            "center_x": 512,
+            "center_x": 322,
             "center_y": 288,
-            "scale": 2.0,
+            "scale": 2.4,
         },
         "yellow": {
             "image_path": "img_keys/Wire3.png",
-            "center_x": 512,
-            "center_y": 288,
-            "scale": 2.0,
+            "center_x": 500,
+            "center_y": 290,
+            "scale": 2.2,
         },
         "green": {
             "image_path": "img_keys/Wire4.png",
-            "center_x": 512,
-            "center_y": 288,
-            "scale": 2.0,
+            "center_x": 718,
+            "center_y": 300,
+            "scale": 2.4,
         },
         "orange": {
             "image_path": "img_keys/Wire5.png",
-            "center_x": 512,
-            "center_y": 288,
+            "center_x": 900,
+            "center_y": 263,
             "scale": 2.0,
         },
     }
@@ -638,32 +616,32 @@ def main(screen=None, clock=None):
                     (settings["center_x"], settings["center_y"])
                 )
 
-            if not game_over:
-                textbox_lines = [
-                    f"Strikes: {strike_count}/3",
-                    f"Connect {wire_display_names[current_target_wire.color]}"
-                ]
+        if not game_over:
+            textbox_lines = [
+                f"Strikes: {strike_count}/3",
+                f"Connect {wire_display_names[current_target_wire.color]}"
+            ]
 
-            # Win / lose overlay
-            if game_over:
-                msg = "YOU WIN!" if won else "BOOM — YOU LOSE"
-                msg_color = colors["green"] if won else colors["red"]
-                textbox_lines = [
-                    f"Strikes: {strike_count}/3",
-                    msg
-                ]
-                end_text = big_font.render(msg, True, msg_color)
-                screen.blit(end_text, end_text.get_rect(center=(512, 288)))
-                show_frame()
-                pygame.time.wait(1500)
-
-                if created_display:
-                    pygame.quit()
-
-                return won
-
+        # Win / lose overlay
+        if game_over:
+            msg = "YOU WIN!" if won else "BOOM — YOU LOSE"
+            msg_color = colors["green"] if won else colors["red"]
+            textbox_lines = [
+                f"Strikes: {strike_count}/3",
+                msg
+            ]
+            end_text = big_font.render(msg, True, msg_color)
+            screen.blit(end_text, end_text.get_rect(center=(512, 288)))
             show_frame()
-            clock.tick(60)
+            pygame.time.wait(1500)
+
+            if created_display:
+                pygame.quit()
+
+            return won
+
+        show_frame()
+        clock.tick(60)
 
 
 if __name__ == "__main__":
