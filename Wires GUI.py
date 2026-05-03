@@ -442,6 +442,55 @@ def main(screen=None, clock=None):
         "circle10": load_wire_circle_image("img_keys/W5B.png"),
     }
 
+    def load_connected_wire_image(path, scale):
+        image = pygame.image.load(path).convert_alpha()
+        new_size = (
+            int(image.get_width() * scale),
+            int(image.get_height() * scale)
+        )
+        return pygame.transform.smoothscale(image, new_size)
+
+    connected_wire_settings = {
+        "blue": {
+            "image_path": "img_keys/Wire1.png",
+            "center_x": 512,
+            "center_y": 218,
+            "scale": 2.0,
+        },
+        "red": {
+            "image_path": "img_keys/Wire2.png",
+            "center_x": 512,
+            "center_y": 288,
+            "scale": 2.0,
+        },
+        "yellow": {
+            "image_path": "img_keys/Wire3.png",
+            "center_x": 512,
+            "center_y": 288,
+            "scale": 2.0,
+        },
+        "green": {
+            "image_path": "img_keys/Wire4.png",
+            "center_x": 512,
+            "center_y": 288,
+            "scale": 2.0,
+        },
+        "orange": {
+            "image_path": "img_keys/Wire5.png",
+            "center_x": 512,
+            "center_y": 288,
+            "scale": 2.0,
+        },
+    }
+
+    connected_wire_images = {
+        wire_color: load_connected_wire_image(
+            settings["image_path"],
+            settings["scale"]
+        )
+        for wire_color, settings in connected_wire_settings.items()
+    }
+
     minigame_rect = pygame.Rect(
         MINIGAME_WINDOW_X,
         MINIGAME_WINDOW_Y,
@@ -491,6 +540,13 @@ def main(screen=None, clock=None):
     }
 
     wire_order = [blue_wire, red_wire, yellow_wire, green_wire, orange_wire]
+    wire_display_names = {
+        "blue": "Wire 1",
+        "red": "Wire 2",
+        "yellow": "Wire 3",
+        "green": "Wire 4",
+        "orange": "Wire 5",
+    }
     current_target_wire = random.choice(wire_order)
 
     key_to_wire_index = {
@@ -572,22 +628,20 @@ def main(screen=None, clock=None):
         ]:
             draw_image_centered(screen, wire_circle_images[circle_name], points[circle_name])
 
-        # Draw connected wires
-        if connected["red"]:
-            red_wire.draw(screen)
-        if connected["blue"]:
-            blue_wire.draw(screen)
-        if connected["yellow"]:
-            yellow_wire.draw(screen)
-        if connected["green"]:
-            green_wire.draw(screen)
-        if connected["orange"]:
-            orange_wire.draw(screen)
+        # Draw connected wire images after all circles are drawn
+        for wire_color, is_connected in connected.items():
+            if is_connected:
+                settings = connected_wire_settings[wire_color]
+                draw_image_centered(
+                    screen,
+                    connected_wire_images[wire_color],
+                    (settings["center_x"], settings["center_y"])
+                )
 
             if not game_over:
                 textbox_lines = [
                     f"Strikes: {strike_count}/3",
-                    f"Connect the {current_target_wire.color} wire"
+                    f"Connect {wire_display_names[current_target_wire.color]}"
                 ]
 
             # Win / lose overlay
@@ -603,15 +657,13 @@ def main(screen=None, clock=None):
                 show_frame()
                 pygame.time.wait(1500)
 
-            return won
+                if created_display:
+                    pygame.quit()
 
-        show_frame()
-        clock.tick(60)
+                return won
 
-    if created_display:
-        pygame.quit()
-
-    return won
+            show_frame()
+            clock.tick(60)
 
 
 if __name__ == "__main__":
