@@ -99,8 +99,19 @@ def main(screen=None, clock=None):
                     elif now - final_message_done_time >= 3000:
                         running = False
 
+        text_box = pygame.Surface((610, 70), pygame.SRCALPHA)
+        text_box.fill((0, 0, 0, 180))
+        screen.blit(text_box, (205, 25))
+
+        border_rect = pygame.Rect(205, 25, 610, 70)
+        pygame.draw.rect(screen, (255, 255, 255), border_rect, 2)
+
         snip = font.render(message[0:counter // speed], True, "white")
         screen.blit(snip, (223, 41))
+
+        if done and activem < len(messages) - 1:
+            prompt = font.render("Press Enter", True, (180, 180, 180))
+            screen.blit(prompt, (223, 70))
 
         pygame.display.flip()
         clock.tick(24)
