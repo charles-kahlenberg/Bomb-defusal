@@ -5,16 +5,16 @@ BC1_IMAGE_PATH = "img_keys/BC1.png"
 BC2_IMAGE_PATH = "img_keys/BC2.png"
 
 # Adjust these to move/resize BC1 everywhere.
-BC1_X = 360
-BC1_Y = 255
-BC1_WIDTH = 180
-BC1_HEIGHT = 220
+BC1_X = 40
+BC1_Y = 73
+BC1_WIDTH = 175
+BC1_HEIGHT = 180
 
 # Adjust these to move/resize BC2 everywhere.
-BC2_X = 440
-BC2_Y = 300
-BC2_WIDTH = 145
-BC2_HEIGHT = 145
+BC2_X = 840
+BC2_Y = 73
+BC2_WIDTH = 175
+BC2_HEIGHT = 180
 
 
 _cached_bc1_image = None
