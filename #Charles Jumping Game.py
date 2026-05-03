@@ -52,25 +52,6 @@ class player(object):
                 self.jumping = False
                 self.runCount = 0
             self.hitbox = (self.x+ 4, self.y, self.width-24, self.height-10)
-        # elif self.sliding or self.slideUp:
-        #     if self.slideCount < 20:
-        #         self.y += 1
-        #         self.hitbox = (self.x+ 4, self.y, self.width-24, self.height-10)
-        #     elif self.slideCount == 80:
-        #         self.y -= 19
-        #         self.sliding = False
-        #         self.slideUp = True
-        #     elif self.slideCount > 20 and self.slideCount < 80:
-        #         self.hitbox = (self.x, self.y+3, self.width-8, self.height-35)
-
-        #     if self.slideCount >= 110:
-        #         self.slideCount = 0
-        #         self.runCount = 0
-        #         self.slideUp = False
-        #         self.hitbox = (self.x+ 4, self.y, self.width-24, self.height-10)
-            # win.blit(self.slide[self.slideCount//10], (self.x, self.y))
-            # self.slideCount += 1
-
         else:
             if self.runCount > 42:
                 self.runCount = 0
@@ -79,6 +60,26 @@ class player(object):
             self.hitbox = (self.x+ 4, self.y, self.width-24, self.height-13)
 
         #pygame.draw.rect(win, (255,0,0),self.hitbox, 2)
+
+    class rock(object):
+        img = (pygame.image.load(os.path.join('images'), 'SAW0'))
+        def __init__(self, x, y, width, height):
+            self.x = x
+            self.y = y
+            self.width = width
+            self.height = height
+            self.hitbox = (x,y,width, height)
+            self.count = 0
+        
+        def draw(self, win):
+            self.hitbox = ()
+            if self.count >= 8:
+                self.count = 0
+            win.blit(self.img[self.count//2], (self.x,self.y))
+            pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
+
+    
+
 def redrawGameWindow(): #draws background and objects (all drawings happen in one place)
     win.blit(bg, (bgX, 0))
     win.blit(bg, (bgX2, 0))
