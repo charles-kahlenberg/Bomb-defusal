@@ -224,7 +224,7 @@ def main():
         return False
 
     pygame.mixer.music.load("img_keys/NIN-AT.mp3")
-    pygame.mixer.music.set_volume(0.30)
+    pygame.mixer.music.set_volume(1.00)
     pygame.mixer.music.play()
 
     # move on to wires GUI
