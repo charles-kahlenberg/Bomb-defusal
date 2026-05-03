@@ -24,9 +24,9 @@ BC1_WIDTH = 175
 BC1_HEIGHT = 180
 
 # Adjust these to move/resize the animated top layer for BC1.
-BC1_TOP_X = 40
-BC1_TOP_Y = 73
-BC1_TOP_WIDTH = 175
+BC1_TOP_X = 41
+BC1_TOP_Y = 64
+BC1_TOP_WIDTH = 170
 BC1_TOP_HEIGHT = 180
 
 # Adjust these to move/resize BC2 everywhere.
@@ -37,8 +37,8 @@ BC2_HEIGHT = 180
 
 # Adjust these to move/resize the animated top layer for BC2.
 BC2_TOP_X = 840
-BC2_TOP_Y = 73
-BC2_TOP_WIDTH = 175
+BC2_TOP_Y = 64
+BC2_TOP_WIDTH = 170
 BC2_TOP_HEIGHT = 180
 
 
