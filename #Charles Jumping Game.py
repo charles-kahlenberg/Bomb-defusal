@@ -9,6 +9,7 @@ import os
 import random
 import math
 import sys
+import time
 
 pygame.init()
 
@@ -53,7 +54,7 @@ class player(object):
             self.hitbox = (self.x+ 4, self.y, self.width-24, self.height-10)
 
         elif self.falling: #draw hitbox for falling
-            win.blit(fall, (self.x, self.y + 30))
+            win.blit(self.fall, (self.x, self.y + 30))
 
         else:
             if self.runCount > 42:
@@ -62,7 +63,7 @@ class player(object):
             self.runCount += 1
             self.hitbox = (self.x+ 4, self.y, self.width-24, self.height-13)
 
-        pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
+        pygame.draw.rect(win, (255,0,0), self.hitbox, 2) #Remind to delete this
 
         #pygame.draw.rect(win, (255,0,0),self.hitbox, 2)
 
@@ -83,6 +84,12 @@ class rock(object):
         win.blit(pygame.transform.scale(self.img[self.count//2], (64,64)), (self.x, self.y))
         pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
 
+    def collide(self, rect):
+        if rect[0] + rect[2] > self.hitbox[0] and rect[0] < self.hitbox[0] + self.hitbox[2]:
+            if rect[1] + rect[3] > self.hitbox[1]: #check if feet is below the hitbox of saw
+                return True
+            return False
+
     
 
 def redrawGameWindow(): #draws background and objects (all drawings happen in one place)
@@ -91,7 +98,26 @@ def redrawGameWindow(): #draws background and objects (all drawings happen in on
     charles_runner.draw(win)
     for x in objects: #randomly draw image
         x.draw(win)
+    font = pygame.font.SysFont('comicsans', 30)
+    text = font.render('Timer:' + str(currentTimer), 1 , (255,255,255))
+    win.blit(text, (700, 10))
     pygame.display.update()
+
+
+
+def endScreen(): #if collide, reset game
+    run = True
+    while run:
+        pygame.time.delay(100)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                pygame.quit()
+        win.blit(bg, (0,0))
+        largeFont = pygame.font.SysFont('comicsans', 80)    
+        #finishedTimer = largeFont.render('Timer: timer', 1, (255,255,255))
+        #pygame.display.update()
+            
 
 rocky = rock(300, 410, 64, 64)
 charles_runner = player(200, 420, 64,64) #64 x 64 Sprite
@@ -101,12 +127,34 @@ pygame.time.set_timer(USEREVENT+2, random.randrange(2000, 3500))
 speed = 80 
 clock.tick(speed) #gets the FPS
 run = True
+pause = 0
+won = False
+fallSpeed = 0
 
 objects = []
-while run: #while game is running
-    redrawGameWindow()
+start_ticks = pygame.time.get_ticks()
+while run:
+    currentTimer = max(0, 30 - (pygame.time.get_ticks() - start_ticks) // 1000)
 
-    for objectt in objects:
+    if currentTimer <= 0:
+        won = True
+        endScreen()
+
+    #currentTime = clock.ticks()
+    #if currentTime 
+    if pause > 0:
+        pause += 1
+        if pause > fallSpeed * 2:
+            endScreen()
+
+    for objectt in objects: 
+        if objectt.collide(charles_runner.hitbox):
+            charles_runner.falling = True
+
+            if pause == 0: #pause game
+                fallSpeed = speed
+                pause = 1
+
         objectt.x -= 1.4
         if objectt.x < -objectt.width * -1:
             objects.pop(objects.index(objectt))
@@ -138,6 +186,6 @@ while run: #while game is running
             charles_runner.jumping = True
     
     
-    
     clock.tick(speed) #sets the FPS
+    redrawGameWindow()
 
