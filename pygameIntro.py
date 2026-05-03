@@ -1,5 +1,7 @@
 import pygame
 
+from character_overlay import draw_character
+
 try:
     from bomb_configs import RPi, component_button_state
 except ImportError:
@@ -106,6 +108,7 @@ def main(screen=None, clock=None):
         screen.fill((255, 255, 255))
 
         screen.blit(bg, (0, 0))
+        draw_character(screen)
         screen.blit(rect_surf, (0, 0))
         pygame.draw.rect(screen, rect_color, rect_pos)
 

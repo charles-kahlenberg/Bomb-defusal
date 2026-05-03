@@ -28,17 +28,15 @@ import pygame
 from pygame import *
 from pygame.sprite import *
 import sys
+import numpy as np
+from character_overlay import draw_character
 
 MINIGAME_WINDOW_X = 300
 MINIGAME_WINDOW_Y = 232
 MINIGAME_WINDOW_W = 425
 MINIGAME_WINDOW_H = 299
 
-try:
-    from bomb_configs import RPi, component_wires
-except ImportError:
-    RPi = False
-    component_wires = []
+from bomb_configs import *
 
 
 class WiresGUI(metaclass=abc.ABCMeta):
@@ -384,10 +382,12 @@ def main(screen=None, clock=None):
 
     def show_frame():
         main_screen.blit(intro_bg, (0, 0))
+        draw_character(main_screen)
         scaled_game = pygame.transform.smoothscale(game_surface, minigame_rect.size)
         main_screen.blit(scaled_game, minigame_rect)
         pygame.display.flip()
 
+    all_sprites_list = pygame.sprite.Group()
     strike_count = 0
     font = pygame.font.SysFont(None, 36)
     big_font = pygame.font.SysFont(None, 72)

@@ -1,5 +1,7 @@
 import pygame
 
+from character_overlay import draw_character
+
 try:
     from bomb_configs import RPi, component_button_state
 except ImportError:
@@ -88,6 +90,7 @@ def main(screen=None, clock=None):
             prev_btn = btn
 
         screen.blit(bg, (0, 0))
+        draw_character(screen)
 
         if counter < speed * len(message):
             counter += 1

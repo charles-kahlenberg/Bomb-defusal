@@ -2,6 +2,7 @@ import pygame
 import sys
 import random
 from bomb_configs import *
+from character_overlay import draw_character
 
 if RPi:
     from bomb_configs import component_toggles, component_button_state
@@ -133,6 +134,7 @@ def main(screen=None, clock=None):
 
     def show_frame():
         main_screen.blit(intro_bg, (0, 0))
+        draw_character(main_screen)
         scaled_game = pygame.transform.smoothscale(game_surface, minigame_rect.size)
         main_screen.blit(scaled_game, minigame_rect)
         pygame.display.flip()
