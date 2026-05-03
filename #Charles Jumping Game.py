@@ -114,9 +114,15 @@ def endScreen(): #if collide, reset game
                 run = False
                 pygame.quit()
         win.blit(bg, (0,0))
-        largeFont = pygame.font.SysFont('comicsans', 80)    
-        #finishedTimer = largeFont.render('Timer: timer', 1, (255,255,255))
-        #pygame.display.update()
+        largeFont = pygame.font.SysFont('comicsans', 80)
+
+        if won:
+            text = largeFont.render('YOU ARE THE REAL CHARLES', 1, (255, 255, 255))
+        else:
+            text = largeFont.render('YOU LOST', 1, (255, 255, 255))
+
+        win.blit(text, ((W - text.get_width()) // 2, (H - text.get_height()) // 2))
+        pygame.display.update()
             
 
 rocky = rock(300, 410, 64, 64)
@@ -174,7 +180,7 @@ while run:
         if event.type == USEREVENT+2:  #
             r = random.randrange(0,2)
             if r == 0:
-                objects.append(rock(810,410,64,64))
+                objects.append(rock(810,410,20,20))
             #else: Put in the other object
             #   objects.append(name())
 
