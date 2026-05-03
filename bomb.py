@@ -42,6 +42,11 @@ def import_safe_game():
     return import_game_module("safe_game", "Safe Game.py")
 
 
+# import the keypad intro module by file path
+def import_keypad_intro():
+    return import_game_module("keypad_intro", "keypad_intro.py")
+
+
 # import the switchG module by file path
 def import_switch_g():
     return import_game_module("switch_g", "SwitchG.py")
@@ -228,6 +233,14 @@ def main():
 
     # if wires fail, quit immediately
     if not wires_won:
+        pygame.quit()
+        return False
+
+    # keypad intro
+    keypad_intro = import_keypad_intro()
+    keypad_intro_done = keypad_intro.main(screen, clock)
+
+    if not keypad_intro_done:
         pygame.quit()
         return False
 
