@@ -30,13 +30,13 @@ BC1_TOP_WIDTH = 170
 BC1_TOP_HEIGHT = 180
 
 # Adjust these to move/resize BC2 everywhere.
-BC2_X = 840
+BC2_X = 810
 BC2_Y = 73
 BC2_WIDTH = 175
 BC2_HEIGHT = 180
 
 # Adjust these to move/resize the animated top layer for BC2.
-BC2_TOP_X = 840
+BC2_TOP_X = 810
 BC2_TOP_Y = 64
 BC2_TOP_WIDTH = 170
 BC2_TOP_HEIGHT = 180
