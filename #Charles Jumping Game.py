@@ -129,7 +129,7 @@ rocky = rock(300, 410, 64, 64)
 charles_runner = player(200, 420, 64,64) #64 x 64 Sprite
 
 pygame.time.set_timer(USEREVENT+1, 500)
-pygame.time.set_timer(USEREVENT+2, random.randrange(2000, 3500))
+pygame.time.set_timer(USEREVENT+2, random.randrange(2000, 3500)) #change rate at which objects spawn ehre
 speed = 80 
 clock.tick(speed) #gets the FPS
 run = True
@@ -178,9 +178,9 @@ while run:
         if event.type == USEREVENT+1: #increase the spedd of character
             speed += 1
         if event.type == USEREVENT+2:  #
-            r = random.randrange(0,2)
+            r = random.randrange(0,2) #chose which objects spawn here
             if r == 0:
-                objects.append(rock(810,410,20,20))
+                objects.append(rock(810,410,64,64)) #adjust hit box here
             #else: Put in the other object
             #   objects.append(name())
 
