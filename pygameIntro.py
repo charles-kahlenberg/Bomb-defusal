@@ -75,17 +75,15 @@ def main(screen=None, clock=None):
         screen.blit(rect_surf, (0, 0))
         pygame.draw.rect(screen, rect_color, rect_pos)
 
-        if count < 250:
+        if rect_pos.bottom > 0:
             rect_pos.move_ip(0, -2)
-            count += 1
             started = True
+        else:
+            doorup = True
 
         if started and notplayed:
             notplayed = False
             pygame.mixer.music.play()
-
-        if count == 249:
-            doorup = True
 
         if doorup:
             if counter < speed * len(message):
@@ -99,19 +97,19 @@ def main(screen=None, clock=None):
                     elif now - final_message_done_time >= 3000:
                         running = False
 
-        text_box = pygame.Surface((610, 70), pygame.SRCALPHA)
-        text_box.fill((0, 0, 0, 180))
-        screen.blit(text_box, (205, 25))
+            text_box = pygame.Surface((610, 70), pygame.SRCALPHA)
+            text_box.fill((0, 0, 0, 180))
+            screen.blit(text_box, (205, 25))
 
-        border_rect = pygame.Rect(205, 25, 610, 70)
-        pygame.draw.rect(screen, (255, 255, 255), border_rect, 2)
+            border_rect = pygame.Rect(205, 25, 610, 70)
+            pygame.draw.rect(screen, (255, 255, 255), border_rect, 2)
 
-        snip = font.render(message[0:counter // speed], True, "white")
-        screen.blit(snip, (223, 41))
+            snip = font.render(message[0:counter // speed], True, "white")
+            screen.blit(snip, (223, 41))
 
-        if done and activem < len(messages) - 1:
-            prompt = font.render("Press Enter", True, (180, 180, 180))
-            screen.blit(prompt, (223, 70))
+            if done and activem < len(messages) - 1:
+                prompt = font.render("Press Enter", True, (180, 180, 180))
+                screen.blit(prompt, (223, 70))
 
         pygame.display.flip()
         clock.tick(24)
