@@ -31,6 +31,9 @@ import sys
 import numpy as np
 from character_overlay import draw_character
 
+GAME_W = 1024
+GAME_H = 576
+
 MINIGAME_WINDOW_X = 300
 MINIGAME_WINDOW_Y = 232
 MINIGAME_WINDOW_W = 425
@@ -368,11 +371,15 @@ def main(screen=None, clock=None):
     display.set_caption("Wires GUI")
 
     main_screen = screen
-    game_surface = pygame.Surface((1024, 576), pygame.SRCALPHA)
+    game_surface = pygame.Surface((GAME_W, GAME_H), pygame.SRCALPHA)
     screen = game_surface
 
     intro_bg = pygame.image.load("img_keys/base.png").convert()
     intro_bg = pygame.transform.scale(intro_bg, main_screen.get_size())
+
+    wire_bg = pygame.image.load("img_keys/WireBG.png").convert()
+    wire_bg = pygame.transform.scale(wire_bg, game_surface.get_size())
+
     minigame_rect = pygame.Rect(
         MINIGAME_WINDOW_X,
         MINIGAME_WINDOW_Y,
@@ -428,7 +435,7 @@ def main(screen=None, clock=None):
         K_5: 4,
     }
 
-    previous_wire_values = [False for _ in component_wires]
+    previous_wire_values = [False for _ in component_wires] if RPi else [False] * len(wire_order)
 
     game_over = False
     won = False
@@ -477,7 +484,7 @@ def main(screen=None, clock=None):
                     game_over = True
                     won = False
 
-        screen.fill(colors["black"])
+        screen.blit(wire_bg, (0, 0))
 
         # Top row input circles
         for circle_name, wire in [
