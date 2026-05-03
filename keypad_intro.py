@@ -32,7 +32,7 @@ def main(screen=None, clock=None):
 
     pygame.display.set_caption("Keypad Intro")
 
-    bg = pygame.image.load("base.png").convert()
+    bg = pygame.image.load("img_keys/base.png").convert()
     bg = pygame.transform.scale(bg, screen.get_size())
 
     messages = [

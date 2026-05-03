@@ -371,7 +371,7 @@ def main(screen=None, clock=None):
     game_surface = pygame.Surface((1024, 576), pygame.SRCALPHA)
     screen = game_surface
 
-    intro_bg = pygame.image.load("base.png").convert()
+    intro_bg = pygame.image.load("img_keys/base.png").convert()
     intro_bg = pygame.transform.scale(intro_bg, main_screen.get_size())
     minigame_rect = pygame.Rect(
         MINIGAME_WINDOW_X,
