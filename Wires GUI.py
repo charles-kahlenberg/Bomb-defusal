@@ -39,6 +39,15 @@ MINIGAME_WINDOW_Y = 232
 MINIGAME_WINDOW_W = 425
 MINIGAME_WINDOW_H = 299
 
+TEXTBOX_X = 277
+TEXTBOX_Y = 42
+TEXTBOX_WIDTH = 471
+TEXTBOX_HEIGHT = 132
+TEXTBOX_ALPHA = 180
+TEXT_PADDING_X = 18
+TEXT_PADDING_Y = 16
+TEXT_LINE_SPACING = 30
+
 from bomb_configs import *
 
 
@@ -254,9 +263,11 @@ def create_game_state():
 
     # Variables
     circle_radius = 28
+    top_wire_y = 170
+    bottom_wire_y = 400
 
-    circle_loc_top = [[112, 190], [312, 190], [512, 190], [712, 190], [912, 190]]
-    circle_loc_bottom = [[112, 430], [312, 430], [512, 430], [712, 430], [912, 430]]
+    circle_loc_top = [[112, top_wire_y+14], [312, top_wire_y-27], [512, top_wire_y-18], [712, top_wire_y-2], [912, top_wire_y-56]]
+    circle_loc_bottom = [[112, bottom_wire_y+50], [312, bottom_wire_y+16], [512, bottom_wire_y+30], [712, bottom_wire_y+28], [912, bottom_wire_y+18]]
 
     # random.shuffle(circle_loc_bottom)
 
@@ -324,6 +335,35 @@ def draw_text_centered(surface, font, text, color, center):
     surface.blit(text_surface, text_surface.get_rect(center=center))
 
 
+def draw_image_centered(surface, image, center):
+    """
+    Draws an image centered at the given position.
+    """
+    surface.blit(image, image.get_rect(center=center))
+
+
+def draw_status_textbox(surface, font, lines):
+    """
+    Draws a textbox in the top text area and displays the given status lines.
+    """
+    text_box = pygame.Surface((TEXTBOX_WIDTH, TEXTBOX_HEIGHT), pygame.SRCALPHA)
+    text_box.fill((0, 0, 0, TEXTBOX_ALPHA))
+    surface.blit(text_box, (TEXTBOX_X, TEXTBOX_Y))
+
+    border_rect = pygame.Rect(TEXTBOX_X, TEXTBOX_Y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT)
+    pygame.draw.rect(surface, (255, 255, 255), border_rect, 2)
+
+    for index, line in enumerate(lines):
+        rendered_line = font.render(line, True, "white")
+        surface.blit(
+            rendered_line,
+            (
+                TEXTBOX_X + TEXT_PADDING_X,
+                TEXTBOX_Y + TEXT_PADDING_Y + index * TEXT_LINE_SPACING
+            )
+        )
+
+
 def get_current_wire_values():
     """
     Returns the current physical connected/disconnected state for each RPi wire.
@@ -380,6 +420,28 @@ def main(screen=None, clock=None):
     wire_bg = pygame.image.load("img_keys/WireBG.png").convert()
     wire_bg = pygame.transform.scale(wire_bg, game_surface.get_size())
 
+    def load_wire_circle_image(path):
+        image = pygame.image.load(path).convert_alpha()
+        wire_image_scale = 2.25
+        new_size = (
+            int(image.get_width() * wire_image_scale),
+            int(image.get_height() * wire_image_scale)
+        )
+        return pygame.transform.smoothscale(image, new_size)
+
+    wire_circle_images = {
+        "circle1": load_wire_circle_image("img_keys/W1T.png"),
+        "circle2": load_wire_circle_image("img_keys/W2T.png"),
+        "circle3": load_wire_circle_image("img_keys/W3T.png"),
+        "circle4": load_wire_circle_image("img_keys/W4T.png"),
+        "circle5": load_wire_circle_image("img_keys/W5T.png"),
+        "circle6": load_wire_circle_image("img_keys/W1B.png"),
+        "circle7": load_wire_circle_image("img_keys/W2B.png"),
+        "circle8": load_wire_circle_image("img_keys/W3B.png"),
+        "circle9": load_wire_circle_image("img_keys/W4B.png"),
+        "circle10": load_wire_circle_image("img_keys/W5B.png"),
+    }
+
     minigame_rect = pygame.Rect(
         MINIGAME_WINDOW_X,
         MINIGAME_WINDOW_Y,
@@ -387,9 +449,13 @@ def main(screen=None, clock=None):
         MINIGAME_WINDOW_H
     )
 
+    textbox_font = pygame.font.Font("img_keys/Baskic8.otf", 16)
+    textbox_lines = []
+
     def show_frame():
         main_screen.blit(intro_bg, (0, 0))
         draw_character(main_screen)
+        draw_status_textbox(main_screen, textbox_font, textbox_lines)
         scaled_game = pygame.transform.smoothscale(game_surface, minigame_rect.size)
         main_screen.blit(scaled_game, minigame_rect)
         pygame.display.flip()
@@ -494,13 +560,7 @@ def main(screen=None, clock=None):
             ("circle4", green_wire),
             ("circle5", orange_wire),
         ]:
-            if connected[wire.color] or wire == current_target_wire:
-                color_name = wire.color
-            else:
-                color_name = "white"
-
-            pygame.draw.circle(screen, colors[color_name], points[circle_name], circle_radius)
-            draw_text_centered(screen, font, "", colors["black"], points[circle_name])
+            draw_image_centered(screen, wire_circle_images[circle_name], points[circle_name])
 
         # Bottom row output circles
         for circle_name, wire in [
@@ -510,13 +570,7 @@ def main(screen=None, clock=None):
             ("circle9", green_wire),
             ("circle10", orange_wire),
         ]:
-            if connected[wire.color] or wire == current_target_wire:
-                color_name = wire.color
-            else:
-                color_name = "white"
-
-            pygame.draw.circle(screen, colors[color_name], points[circle_name], circle_radius)
-            draw_text_centered(screen, font, "", colors["black"], points[circle_name])
+            draw_image_centered(screen, wire_circle_images[circle_name], points[circle_name])
 
         # Draw connected wires
         if connected["red"]:
@@ -530,30 +584,24 @@ def main(screen=None, clock=None):
         if connected["orange"]:
             orange_wire.draw(screen)
 
-        # Strike counter
-        strike_text = font.render(f"Strikes: {strike_count}/3", True, colors["white"])
-        screen.blit(strike_text, (10, 10))
+            if not game_over:
+                textbox_lines = [
+                    f"Strikes: {strike_count}/3",
+                    f"Connect the {current_target_wire.color} wire"
+                ]
 
-        # Wire prompt
-        if not game_over:
-            prompt = font.render(
-                f"Connect the {current_target_wire.color} wire",
-                True,
-                colors["white"]
-            )
-            screen.blit(prompt, (10, 50))
-
-        # Win / lose overlay
-        if game_over:
-            msg = "YOU WIN!" if won else "BOOM — YOU LOSE"
-            msg_color = colors["green"] if won else colors["red"]
-            end_text = big_font.render(msg, True, msg_color)
-            screen.blit(end_text, end_text.get_rect(center=(512, 288)))
-            show_frame()
-            pygame.time.wait(1500)
-
-            if created_display:
-                pygame.quit()
+            # Win / lose overlay
+            if game_over:
+                msg = "YOU WIN!" if won else "BOOM — YOU LOSE"
+                msg_color = colors["green"] if won else colors["red"]
+                textbox_lines = [
+                    f"Strikes: {strike_count}/3",
+                    msg
+                ]
+                end_text = big_font.render(msg, True, msg_color)
+                screen.blit(end_text, end_text.get_rect(center=(512, 288)))
+                show_frame()
+                pygame.time.wait(1500)
 
             return won
 
