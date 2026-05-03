@@ -223,7 +223,7 @@ def main():
         pygame.quit()
         return False
 
-    pygame.mixer.music.load("img_keys/NIN-AT.mp3")
+    pygame.mixer.music.load("img_keys/10. Aphex Twin - Mt Saint Michel + Saint Michaels Mount.mp3")
     pygame.mixer.music.set_volume(10.00)
     pygame.mixer.music.play()
 

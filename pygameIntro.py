@@ -1,5 +1,11 @@
 import pygame
 
+try:
+    from bomb_configs import RPi, component_button_state
+except ImportError:
+    RPi = False
+    component_button_state = None
+
 
 TEXTBOX_X = 277
 TEXTBOX_Y = 42
@@ -61,8 +67,92 @@ def main(screen=None, clock=None):
     count = 0
     speed = 1
     doorup = False
+    prev_btn = False
 
     running = True
+
+    while running:
+        now = pygame.time.get_ticks()
+
+        def advance_message():
+            nonlocal activem, done, final_message_done_time, message, counter, running
+
+            if done:
+                if activem < len(messages) - 1:
+                    activem += 1
+                    done = False
+                    final_message_done_time = None
+                    message = messages[activem]
+                    counter = 0
+                else:
+                    running = False
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN and not RPi:
+                    advance_message()
+
+        if RPi and component_button_state is not None and doorup:
+            btn = component_button_state.value
+
+            if btn and not prev_btn:
+                advance_message()
+
+            prev_btn = btn
+
+        screen.fill((255, 255, 255))
+
+        screen.blit(bg, (0, 0))
+        screen.blit(rect_surf, (0, 0))
+        pygame.draw.rect(screen, rect_color, rect_pos)
+
+        if rect_pos.bottom > 0:
+            rect_pos.move_ip(0, -2)
+            started = True
+        else:
+            doorup = True
+
+        if started and notplayed:
+            notplayed = False
+            pygame.mixer.music.play()
+
+        if doorup:
+            if counter < speed * len(message):
+                counter += 1
+            else:
+                done = True
+
+                if activem == len(messages) - 1:
+                    if final_message_done_time is None:
+                        final_message_done_time = now
+                    elif now - final_message_done_time >= 3000:
+                        running = False
+
+            text_box = pygame.Surface((TEXTBOX_WIDTH, TEXTBOX_HEIGHT), pygame.SRCALPHA)
+            text_box.fill((0, 0, 0, TEXTBOX_ALPHA))
+            screen.blit(text_box, (TEXTBOX_X, TEXTBOX_Y))
+
+            border_rect = pygame.Rect(TEXTBOX_X, TEXTBOX_Y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT)
+            pygame.draw.rect(screen, (255, 255, 255), border_rect, 2)
+
+            snip = font.render(message[0:counter // speed], True, "white")
+            screen.blit(snip, (TEXTBOX_X + TEXT_PADDING_X, TEXTBOX_Y + TEXT_PADDING_Y))
+
+            if done and activem < len(messages) - 1:
+                prompt_text = "Press Button" if RPi else "Press Enter"
+                prompt = font.render(prompt_text, True, (180, 180, 180))
+                screen.blit(prompt, (TEXTBOX_X + TEXT_PADDING_X, TEXTBOX_Y + PROMPT_OFFSET_Y))
+
+        pygame.display.flip()
+        clock.tick(24)
+
+    if created_display:
+        pygame.quit()
+
+    return True
 
     while running:
         now = pygame.time.get_ticks()

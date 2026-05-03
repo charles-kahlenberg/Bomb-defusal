@@ -1,5 +1,11 @@
 import pygame
 
+try:
+    from bomb_configs import RPi, component_button_state
+except ImportError:
+    RPi = False
+    component_button_state = None
+
 
 TEXTBOX_X = 277
 TEXTBOX_Y = 42
@@ -45,26 +51,41 @@ def main(screen=None, clock=None):
     speed = 1
     done = False
     final_message_done_time = None
+    prev_btn = False
 
     running = True
 
     while running:
         now = pygame.time.get_ticks()
 
+        def advance_message():
+            nonlocal active_message, message, counter, done, final_message_done_time, running
+
+            if done:
+                if active_message < len(messages) - 1:
+                    active_message += 1
+                    message = messages[active_message]
+                    counter = 0
+                    done = False
+                    final_message_done_time = None
+                else:
+                    running = False
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN and done:
-                    if active_message < len(messages) - 1:
-                        active_message += 1
-                        message = messages[active_message]
-                        counter = 0
-                        done = False
-                        final_message_done_time = None
-                    else:
-                        running = False
+                if event.key == pygame.K_RETURN and not RPi:
+                    advance_message()
+
+        if RPi and component_button_state is not None:
+            btn = component_button_state.value
+
+            if btn and not prev_btn:
+                advance_message()
+
+            prev_btn = btn
 
         screen.blit(bg, (0, 0))
 
@@ -79,8 +100,8 @@ def main(screen=None, clock=None):
                 elif now - final_message_done_time >= 3000:
                     running = False
 
-        text_box = pygame.Surface((610, 70), pygame.SRCALPHA)
-        text_box.fill((0, 0, 0, 180))
+        text_box = pygame.Surface((TEXTBOX_WIDTH, TEXTBOX_HEIGHT), pygame.SRCALPHA)
+        text_box.fill((0, 0, 0, TEXTBOX_ALPHA))
         screen.blit(text_box, (TEXTBOX_X, TEXTBOX_Y))
 
         border_rect = pygame.Rect(TEXTBOX_X, TEXTBOX_Y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT)
@@ -90,7 +111,8 @@ def main(screen=None, clock=None):
         screen.blit(snip, (TEXTBOX_X + TEXT_PADDING_X, TEXTBOX_Y + TEXT_PADDING_Y))
 
         if done and active_message < len(messages) - 1:
-            prompt = font.render("Press Enter", True, (180, 180, 180))
+            prompt_text = "Press Button" if RPi else "Press Enter"
+            prompt = font.render(prompt_text, True, (180, 180, 180))
             screen.blit(prompt, (TEXTBOX_X + TEXT_PADDING_X, TEXTBOX_Y + PROMPT_OFFSET_Y))
 
         pygame.display.flip()
