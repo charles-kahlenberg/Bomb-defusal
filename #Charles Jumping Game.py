@@ -7,6 +7,8 @@ import pygame
 from pygame.locals import *
 import os
 import random
+import math
+import sys
 
 pygame.init()
 
@@ -33,12 +35,9 @@ class player(object):
         self.width = width
         self.height = height
         self.jumping = False
-        self.sliding = False
         self.falling = False
-        self.slideCount = 0
         self.jumpCount = 0
         self.runCount = 0
-        self.slideUp = False
 
     def draw(self, win):
         if self.falling:
@@ -52,6 +51,10 @@ class player(object):
                 self.jumping = False
                 self.runCount = 0
             self.hitbox = (self.x+ 4, self.y, self.width-24, self.height-10)
+
+        elif self.falling: #draw hitbox for falling
+            win.blit(fall, (self.x, self.y + 30))
+
         else:
             if self.runCount > 42:
                 self.runCount = 0
@@ -59,24 +62,26 @@ class player(object):
             self.runCount += 1
             self.hitbox = (self.x+ 4, self.y, self.width-24, self.height-13)
 
+        pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
+
         #pygame.draw.rect(win, (255,0,0),self.hitbox, 2)
 
-    class rock(object):
-        img = (pygame.image.load(os.path.join('images'), 'SAW0'))
-        def __init__(self, x, y, width, height):
-            self.x = x
-            self.y = y
-            self.width = width
-            self.height = height
-            self.hitbox = (x,y,width, height)
+class rock(object):
+    img = [pygame.image.load(os.path.join('images', f'SAW{x}.png')) for x in range(4)]
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.hitbox = (x, y, width, height)
+        self.count = 0
+
+    def draw(self, win):
+        if self.count >= 8:
             self.count = 0
-        
-        def draw(self, win):
-            self.hitbox = ()
-            if self.count >= 8:
-                self.count = 0
-            win.blit(self.img[self.count//2], (self.x,self.y))
-            pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
+        self.hitbox = (self.x, self.y, self.width, self.height)
+        win.blit(pygame.transform.scale(self.img[self.count//2], (64,64)), (self.x, self.y))
+        pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
 
     
 
@@ -84,16 +89,28 @@ def redrawGameWindow(): #draws background and objects (all drawings happen in on
     win.blit(bg, (bgX, 0))
     win.blit(bg, (bgX2, 0))
     charles_runner.draw(win)
+    for x in objects: #randomly draw image
+        x.draw(win)
     pygame.display.update()
 
+rocky = rock(300, 410, 64, 64)
 charles_runner = player(200, 420, 64,64) #64 x 64 Sprite
 
 pygame.time.set_timer(USEREVENT+1, 500)
+pygame.time.set_timer(USEREVENT+2, random.randrange(2000, 3500))
 speed = 80 
 clock.tick(speed) #gets the FPS
 run = True
+
+objects = []
 while run: #while game is running
     redrawGameWindow()
+
+    for objectt in objects:
+        objectt.x -= 1.4
+        if objectt.x < -objectt.width * -1:
+            objects.pop(objects.index(objectt))
+
     bgX -= 1.4
     bgX2 -= 1.4
     if bgX < bg.get_width() * -1: #first background image starts at 0 , 0 then start maoving backwwards then gets to the negative width, so it is off the screen
@@ -104,8 +121,15 @@ while run: #while game is running
         if event.type == pygame.QUIT:
             run = False
             pygame.quit()
-        if event.type == USEREVENT+1:
+        if event.type == USEREVENT+1: #increase the spedd of character
             speed += 1
+        if event.type == USEREVENT+2:  #
+            r = random.randrange(0,2)
+            if r == 0:
+                objects.append(rock(810,410,64,64))
+            #else: Put in the other object
+            #   objects.append(name())
+
             
     keys = pygame.key.get_pressed()
     
