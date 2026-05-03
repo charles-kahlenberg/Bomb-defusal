@@ -44,7 +44,7 @@ class player(object):
         if self.falling:
             win.blit(self.fall, (self.x, self.y + 30))
         elif self.jumping:
-            self.y -= self.jumpList[self.jumpCount] * 1.3
+            self.y -= self.jumpList[self.jumpCount] * 1.2
             win.blit(self.jump[self.jumpCount//18], (self.x, self.y))
             self.jumpCount += 1
             if self.jumpCount > 108:
@@ -81,7 +81,7 @@ class rock(object):
         if self.count >= 8:
             self.count = 0
         self.hitbox = (self.x, self.y, self.width, self.height)
-        win.blit(pygame.transform.scale(self.img[self.count//2], (64,64)), (self.x, self.y))
+        win.blit(pygame.transform.scale(self.img[self.count//2], (52,52)), (self.x, self.y))
         pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
 
     def collide(self, rect):
@@ -129,8 +129,8 @@ rocky = rock(300, 410, 64, 64)
 charles_runner = player(200, 420, 64,64) #64 x 64 Sprite
 
 pygame.time.set_timer(USEREVENT+1, 500)
-pygame.time.set_timer(USEREVENT+2, random.randrange(2000, 3500)) #change rate at which objects spawn ehre
-speed = 80 
+pygame.time.set_timer(USEREVENT+2, random.randrange(2000, 4000)) #change rate at which objects spawn ehre
+speed = 100
 clock.tick(speed) #gets the FPS
 run = True
 pause = 0
@@ -176,13 +176,11 @@ while run:
             run = False
             pygame.quit()
         if event.type == USEREVENT+1: #increase the spedd of character
-            speed += 1
+            speed += 2
         if event.type == USEREVENT+2:  #
-            r = random.randrange(0,2) #chose which objects spawn here
-            if r == 0:
-                objects.append(rock(810,410,64,64)) #adjust hit box here
+            objects.append(rock(810,425,32,32)) #adjust hit box here
             #else: Put in the other object
-            #   objects.append(name())
+              #objects.append(name())
 
             
     keys = pygame.key.get_pressed()
