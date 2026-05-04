@@ -136,14 +136,22 @@ def make_buzzer_sound(duration=0.5, sample_rate=44100, volume=10.00):
 # colors and screen dimensions 
 
 COLOR = (255, 255, 255)
-SURFACE_COLOR = (0, 0, 0)
+SURFACE_COLOR = (0, 0, 0, 0)
 WIDTH = 1024
 HEIGHT = 576
 
-MINIGAME_WINDOW_X = 300
-MINIGAME_WINDOW_Y = 232
-MINIGAME_WINDOW_W = 425
-MINIGAME_WINDOW_H = 299
+MINIGAME_WINDOW_X = 409
+MINIGAME_WINDOW_Y = 249
+MINIGAME_WINDOW_W = 200
+MINIGAME_WINDOW_H = 268
+
+KEYPAD_PANEL_W = 200
+KEYPAD_PANEL_H = 300
+
+WIRE_BG_X = 300
+WIRE_BG_Y = 232
+WIRE_BG_WIDTH = 425
+WIRE_BG_HEIGHT = 299
 
 TEXTBOX_X = 277
 TEXTBOX_Y = 42
@@ -224,11 +232,17 @@ def main(screen=None, clock=None):
     pygame.display.set_caption("Safe Game")
 
     main_screen = screen
-    game_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+    game_surface = pygame.Surface((KEYPAD_PANEL_W, KEYPAD_PANEL_H), pygame.SRCALPHA)
     screen = game_surface
 
     intro_bg = pygame.image.load("img_keys/base.png").convert()
     intro_bg = pygame.transform.scale(intro_bg, main_screen.get_size())
+
+    wire_bg = pygame.image.load("img_keys/WireBG.png").convert()
+    wire_bg = pygame.transform.smoothscale(
+        wire_bg,
+        (WIRE_BG_WIDTH, WIRE_BG_HEIGHT)
+    )
     minigame_rect = pygame.Rect(
         MINIGAME_WINDOW_X,
         MINIGAME_WINDOW_Y,
@@ -239,6 +253,7 @@ def main(screen=None, clock=None):
     def show_frame():
         main_screen.blit(intro_bg, (0, 0))
         draw_character(main_screen)
+        main_screen.blit(wire_bg, (WIRE_BG_X, WIRE_BG_Y))
 
         text_box = pygame.Surface((TEXTBOX_WIDTH, TEXTBOX_HEIGHT), pygame.SRCALPHA)
         text_box.fill((0, 0, 0, TEXTBOX_ALPHA))
@@ -262,10 +277,10 @@ def main(screen=None, clock=None):
     BUTTON_GAP_X = 3
     BUTTON_GAP_Y = 2
 
-    keypad_panel_w = 200
-    keypad_panel_h = 300
-    keypad_origin_x = (WIDTH - keypad_panel_w) // 2
-    keypad_origin_y = (HEIGHT - keypad_panel_h) // 2
+    keypad_panel_w = KEYPAD_PANEL_W
+    keypad_panel_h = KEYPAD_PANEL_H
+    keypad_origin_x = 0
+    keypad_origin_y = 0
 
     grid_total_w = GRID_COLS * BUTTON_W + (GRID_COLS - 1) * BUTTON_GAP_X
     grid_total_h = GRID_ROWS * BUTTON_H + (GRID_ROWS - 1) * BUTTON_GAP_Y
@@ -307,7 +322,8 @@ def main(screen=None, clock=None):
     game_over = False
     won = False
 
-    KeyBg = pygame.image.load("img_keys//KeypadFull.png").convert()
+    KeyBg = pygame.image.load("img_keys//KeypadFull.png").convert_alpha()
+    KeyBg.set_colorkey((0, 0, 0))
     KeyBg = pygame.transform.scale(KeyBg, (keypad_panel_w, keypad_panel_h))
     melody = []
     player_melody = []
