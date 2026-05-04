@@ -57,6 +57,11 @@ def import_fling_test():
     return import_game_module("fling_test", "flingtest.py")
 
 
+# import the wires intro module by file path
+def import_wires_intro():
+    return import_game_module("wires_intro", "wires_intro.py")
+
+
 # import the switchG module by file path
 def import_switch_g():
     return import_game_module("switch_g", "SwitchG.py")
@@ -242,6 +247,22 @@ def main():
     vent_intro_done = vent_intro.main(screen, clock)
 
     if not vent_intro_done:
+        pygame.quit()
+        return False
+
+    # vent minigame
+    fling_test = import_fling_test()
+    fling_won = fling_test.main(screen, clock)
+
+    if not fling_won:
+        pygame.quit()
+        return False
+
+    # wires intro
+    wires_intro = import_wires_intro()
+    wires_intro_done = wires_intro.main(screen, clock)
+
+    if not wires_intro_done:
         pygame.quit()
         return False
 
