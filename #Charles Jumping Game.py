@@ -126,11 +126,11 @@ def endScreen(): #if collide, reset game
             
 
 rocky = rock(300, 410, 64, 64)
-charles_runner = player(200, 420, 64,64) #64 x 64 Sprite
+charles_runner = player(200, 330, 64,64) #64 x 64 Sprite
 
 pygame.time.set_timer(USEREVENT+1, 500)
 pygame.time.set_timer(USEREVENT+2, random.randrange(2000, 4000)) #change rate at which objects spawn ehre
-speed = 24
+speed = 50
 clock.tick(speed) #gets the FPS
 run = True
 pause = 0
