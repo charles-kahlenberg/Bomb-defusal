@@ -556,6 +556,7 @@ def main(screen=None, clock=None):
 
     game_over = False
     won = False
+    wiresfx = pygame.mixer.Sound("img_keys/WireSfxF.mp3")
 
     running = True
     while running:
@@ -630,6 +631,7 @@ def main(screen=None, clock=None):
                 draw_image_centered(
                     screen,
                     connected_wire_images[wire_color],
+                    wiresfx.play()
                     (settings["center_x"], settings["center_y"])
                 )
 
