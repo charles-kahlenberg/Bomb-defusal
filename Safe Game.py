@@ -160,6 +160,8 @@ TEXTBOX_WIDTH = 471
 TEXTBOX_HEIGHT = 132
 TEXTBOX_ALPHA = 180
 
+SAFE_GAME_VOLUME = 0.30
+
 # everything below is imported from https://www.geeksforgeeks.org/python/pygame-creating-sprites/ and modified to fit my game, I will be using sprites for the buttons that the user will press to play the melodies
 
 # make Sprites
@@ -308,11 +310,11 @@ def main(screen=None, clock=None):
     TIMER_COLOR = (255, 255, 255)
     game_start_ticks = pygame.time.get_ticks()
 
-    hooray_sound = make_hooray_sound()
-    anthem_sound = make_anthem_sound()
-    buzzer_sound = make_buzzer_sound()
-    whomp_sound = make_whomp_sound()
-    button_press_sound = make_button_press_sound()
+    hooray_sound = make_hooray_sound(volume=SAFE_GAME_VOLUME)
+    anthem_sound = make_anthem_sound(volume=SAFE_GAME_VOLUME)
+    buzzer_sound = make_buzzer_sound(volume=SAFE_GAME_VOLUME)
+    whomp_sound = make_whomp_sound(volume=SAFE_GAME_VOLUME)
+    button_press_sound = make_button_press_sound(volume=SAFE_GAME_VOLUME)
 
     # constants and variables for game state
     total_pattern_rounds = 8
