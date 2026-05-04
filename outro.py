@@ -75,6 +75,18 @@ FINAL_MESSAGE_WAIT_MS = 3000
 # Change these if you want the outro to use a different background or font.
 BACKGROUND_PATH = "img_keys/base.png"
 FONT_PATH = "img_keys/Baskic8.otf"
+WIRE_BACKGROUND_PATH = "img_keys/WireBG.png"
+
+
+# ---------------------------------------------------------------------------
+# WIRE BACKGROUND SETTINGS
+# ---------------------------------------------------------------------------
+# These control where the wire background appears during the outro.
+# Change X/Y to move it. Change WIDTH/HEIGHT to resize it.
+WIRE_BACKGROUND_X = 300
+WIRE_BACKGROUND_Y = 232
+WIRE_BACKGROUND_WIDTH = 425
+WIRE_BACKGROUND_HEIGHT = 299
 
 
 # ---------------------------------------------------------------------------
@@ -227,6 +239,18 @@ def main(screen=None, clock=None):
     # Load shared background.
     background = pygame.image.load(BACKGROUND_PATH).convert()
     background = pygame.transform.scale(background, screen.get_size())
+
+    # Load the wire background/panel image.
+    # Its position and size are controlled by the WIRE_BACKGROUND constants above.
+    wire_background = pygame.image.load(WIRE_BACKGROUND_PATH).convert()
+    wire_background = pygame.transform.smoothscale(
+        wire_background,
+        (
+            WIRE_BACKGROUND_WIDTH,
+            WIRE_BACKGROUND_HEIGHT
+        )
+    )
+
     rect_surf = pygame.Surface((1200,1200), pygame.SRCALPHA)
     transp = 0
 
@@ -258,6 +282,10 @@ def main(screen=None, clock=None):
     steps2 = pygame.mixer.Sound("img_keys/Steps2.mp3")
     vro = pygame.mixer.Sound("img_keys/endingopen.mp3")
     endmus = pygame.mixer.Sound("img_keys/Watashino Uso.mp3")
+    talking_sound = pygame.mixer.Sound("img_keys/C2Talking.mp3")
+    talking_channel = pygame.mixer.Channel(0)
+    effects_channel = pygame.mixer.Channel(1)
+
     stepped = False
     stepped2 = False
     vroa = False
@@ -322,29 +350,29 @@ def main(screen=None, clock=None):
             escount += 1
             if escount <= 85:
                 transp += 3
-            rect_surf.fill((255, 255, 255, transp)) 
+            rect_surf.fill((255, 255, 255, transp))
             if escount > 90 and stepped == False:
-                steps1.play()
+                effects_channel.play(steps1)
                 stepped = True
-            if escount == 130:
-                steps2.play()
+            if escount == 130 and stepped2 == False:
+                effects_channel.play(steps2)
+                stepped2 = True
             if escount == 400:
                 running = False
+
         # -------------------------------------------------------------------
         # TEXT TYPING LOGIC
         # -------------------------------------------------------------------
         # The message reveals one character at a time.
-        talking_sound = pygame.mixer.Sound("img_keys/C2Talking.mp3")
-        
         if counter < TYPE_SPEED * len(message):
             counter += 1
             if tcounter == 0:
-                 talking_sound.play()
+                talking_channel.play(talking_sound)
             tcounter += 1
         else:
             done = True
             tcounter = 0
-            pygame.mixer.stop()
+            talking_channel.stop()
 
             # The final message automatically ends after a short wait.
             if active_message == len(MESSAGES) - 1:
@@ -364,8 +392,8 @@ def main(screen=None, clock=None):
         # 3. Optional future outro objects/effects
         # 4. Textbox
         screen.blit(background, (0, 0))
+        screen.blit(wire_background, (WIRE_BACKGROUND_X, WIRE_BACKGROUND_Y))
         draw_character(screen)
-        
 
         # Add future outro-specific images/animations here.
         # Example:

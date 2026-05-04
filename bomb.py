@@ -128,6 +128,10 @@ class BombTimerThread(threading.Thread):
         with self.lock:
             self.running = False
 
+    def pause(self):
+        with self.lock:
+            self.paused = True
+
     def get_time_left(self):
         with self.lock:
             return self.seconds_left
@@ -374,6 +378,9 @@ def main():
 
             pygame.quit()
             return False
+
+        if program_name == "Switch Game":
+            bomb_timer.pause()
 
     bomb_timer.stop()
     pygame.quit()
