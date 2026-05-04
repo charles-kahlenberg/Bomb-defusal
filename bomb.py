@@ -177,7 +177,7 @@ def setup_phases():
     global timer, keypad, wires, button, toggles
     
     # setup the timer thread
-    timer = Timer(component_7seg, COUNTDOWN)
+    timer = Timer(component_7seg, COUNTDOWN);
     # bind the 7-segment display to the LCD GUI so that it can be paused/unpaused from the GUI
     # gui.setTimer(timer)
     # setup the keypad thread
@@ -366,6 +366,16 @@ def main():
             bomb_timer
         )
 
+        if DEBUG and death_on_fail:
+            print(f"DEBUG mode: forcing {program_name} to return True")
+            program_result = True
+
+        if program_result and program_name == "Switch Game":
+            bomb_timer.pause()
+
+            if RPi and "timer" in globals() and not timer._paused:
+                timer.pause()
+
         if bomb_timer.is_expired():
             bomb_timer.stop()
             return show_game_over(screen, clock)
@@ -379,12 +389,9 @@ def main():
             pygame.quit()
             return False
 
-        if program_name == "Switch Game":
-            bomb_timer.pause()
-
-    bomb_timer.stop()
-    pygame.quit()
-    return True
+        bomb_timer.stop()
+        pygame.quit()
+        return True
 
 if __name__ == "__main__":
     raise SystemExit(main())
