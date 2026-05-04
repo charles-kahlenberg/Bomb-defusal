@@ -62,6 +62,7 @@ def main(screen=None, clock=None):
     final_message_done_time = None
     pygame.mixer.music.load("intro.mp3")
     pygame.mixer.music.set_volume(10.00)
+    talking = pygame.mixer.Channel
     started = False
     notplayed = True
 
@@ -70,6 +71,8 @@ def main(screen=None, clock=None):
     rect_color = (0, 0, 0)
     count = 0
     speed = 1
+    tcounter = 0
+    
     doorup = False
     pon = False
     prev_btn = False
@@ -117,7 +120,7 @@ def main(screen=None, clock=None):
         screen.blit(rect_pos, dpos)
 
         if dpos.y > -600:
-            dpos.y -= 2
+            dpos.y -= 3
             started = True
         else:
             doorup = True
@@ -129,7 +132,7 @@ def main(screen=None, clock=None):
                 pygame.mixer.Sound.set_volume(sswitch, 1.0)
                 sswitch.play()
                 sswa = True
-            if count > 65:
+            if count > 55:
                 rect_surf.fill((0, 0, 0, 0))
             if count > 125:
                 pon = True
@@ -137,13 +140,22 @@ def main(screen=None, clock=None):
         if started and notplayed:
             notplayed = False
             pygame.mixer.music.play()
-
+        c1t = pygame.mixer.Sound("img_keys/C1Talking.mp3")
+        pygame.mixer.Sound.set_volume(c1t, 1.0)
+        
         if pon:
             if counter < speed * len(message):
                 counter += 1
+                if tcounter == 0:
+                    c1t.play()
+                tcounter +=1
+                if tcounter > 20:
+                    tcounter == 0
             else:
                 done = True
-
+                tcounter = 0
+                pygame.mixer.stop()
+                
                 if activem == len(messages) - 1:
                     if final_message_done_time is None:
                         final_message_done_time = now
