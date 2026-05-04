@@ -41,6 +41,7 @@ def main(screen=None, clock=None):
     screen_width, screen_height = screen.get_size()
 
     rect_pos = pygame.image.load('img_keys/DoorM.png').convert_alpha()
+    rect_pos = pygame.transform.scale(rect_pos, screen.get_size())
     rect_surf = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
     rect_surf.fill((0, 0, 0, 255))
 
@@ -59,16 +60,18 @@ def main(screen=None, clock=None):
     counter = 0
     done = False
     final_message_done_time = None
-
     pygame.mixer.music.load("intro.mp3")
     pygame.mixer.music.set_volume(10.00)
     started = False
     notplayed = True
 
+    dpos = rect_pos.get_rect()
+    dpos.center = (510, 280)
     rect_color = (0, 0, 0)
     count = 0
     speed = 1
     doorup = False
+    pon = False
     prev_btn = False
 
     running = True
@@ -110,19 +113,29 @@ def main(screen=None, clock=None):
         screen.blit(bg, (0, 0))
         draw_character(screen)
         screen.blit(rect_surf, (0, 0))
-        pygame.draw.rect(screen, rect_color, rect_pos)
+        screen.blit(rect_pos, dpos)
 
-        if rect_pos.bottom > 0:
-            rect_pos.move_ip(0, -2)
+        if dpos.y > -600:
+            dpos.y -= 2
             started = True
         else:
             doorup = True
+
+        if doorup:
+            count += 1
+            ss = pygame.mixer.music.load("img_keys/Switch.mp3")
+            pygame.mixer.music.play()
+            pygame.mixer.set_volume(1.0)
+            if count > 95:
+                rect_surf.fill((0, 0, 0, 255))
+            if count > 250:
+                pon = True
 
         if started and notplayed:
             notplayed = False
             pygame.mixer.music.play()
 
-        if doorup:
+        if pon:
             if counter < speed * len(message):
                 counter += 1
             else:
