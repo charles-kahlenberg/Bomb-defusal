@@ -296,7 +296,7 @@ def main(screen=None, clock=None):
 
         screen.fill((255, 255, 255))
         screen.blit(bg, (0, 0))
-        draw_character(screen)
+        draw_character(screen, intro_mode=True)
         screen.blit(vent_panel, (VENT_PANEL_X, VENT_PANEL_Y))
 
         if overlay_alpha > 0:
