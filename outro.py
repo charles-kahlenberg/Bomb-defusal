@@ -314,7 +314,8 @@ def main(screen=None, clock=None):
     talking_channel = pygame.mixer.Channel(0)
     effects_channel = pygame.mixer.Channel(1)
 
-  
+
+    pygame.mixer.stop()
 
     stepped = False
     stepped2 = False
