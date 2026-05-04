@@ -631,8 +631,8 @@ def main(screen=None, clock=None):
                 draw_image_centered(
                     screen,
                     connected_wire_images[wire_color],
-                    wiresfx.play()
                     (settings["center_x"], settings["center_y"])
+                    wiresfx.play()
                 )
 
         if not game_over:
