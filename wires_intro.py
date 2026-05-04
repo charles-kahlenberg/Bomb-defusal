@@ -182,6 +182,7 @@ def main(screen=None, clock=None):
 
         pygame.display.flip()
 
+    tcounter = 0
     running = True
 
     while running:
@@ -223,10 +224,19 @@ def main(screen=None, clock=None):
         for circle_name, position in circle_positions.items():
             draw_image_centered(screen, wire_circle_images[circle_name], position)
 
+        c2t = pygame.mixer.Sound("img_keys/C2Talking.mp3")
+        
         if counter < speed * len(message):
-            counter += 1
+             counter += 1
+             if tcounter == 0:
+                c2t.play()
+             tcounter +=1
+             if tcounter > 20:
+                tcounter == 0
         else:
             done = True
+            tcounter = 0
+            pygame.mixer.stop()
 
             if active_message == len(messages) - 1:
                 if final_message_done_time is None:
