@@ -47,6 +47,16 @@ def import_keypad_intro():
     return import_game_module("keypad_intro", "keypad_intro.py")
 
 
+# import the vent intro module by file path
+def import_vent_intro():
+    return import_game_module("vent_intro", "ventintro.py")
+
+
+# import the vent minigame module by file path
+def import_fling_test():
+    return import_game_module("fling_test", "flingtest.py")
+
+
 # import the switchG module by file path
 def import_switch_g():
     return import_game_module("switch_g", "SwitchG.py")
@@ -226,6 +236,14 @@ def main():
     pygame.mixer.music.load("img_keys/10. Aphex Twin - Mt Saint Michel + Saint Michaels Mount.mp3")
     pygame.mixer.music.set_volume(10.00)
     pygame.mixer.music.play()
+
+    # vent intro
+    vent_intro = import_vent_intro()
+    vent_intro_done = vent_intro.main(screen, clock)
+
+    if not vent_intro_done:
+        pygame.quit()
+        return False
 
     # move on to wires GUI
     wires_gui = import_wires_gui()
