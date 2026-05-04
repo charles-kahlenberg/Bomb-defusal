@@ -584,10 +584,10 @@ def main(screen=None, clock=None):
 
         if pressed_wire_index is not None and not game_over:
             pressed_wire = wire_order[pressed_wire_index]
-            zap = False
 
             if pressed_wire == current_target_wire and not connected[pressed_wire.color]:
                 connected[pressed_wire.color] = True
+                zap = False
 
                 if all(connected.values()):
                     game_over = True
