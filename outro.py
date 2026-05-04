@@ -1,10 +1,28 @@
+"""
+outro.py
+
+A simple ending/story sequence for the bomb defusal game.
+
+How to edit this file:
+1. Add or change dialogue in the MESSAGES list.
+2. Adjust textbox position/size using the TEXTBOX constants.
+3. Adjust typing speed using TYPE_SPEED.
+4. Add extra images, sounds, or animations inside the main loop where marked.
+
+This file is designed to be called from bomb.py using:
+
+    module.main(screen, clock)
+
+It can also be run directly for testing.
+"""
+
 import pygame
-import threading
-import time
 
 from character_overlay import draw_character
 from display_utils import create_fullscreen_display
 
+# Try to import Raspberry Pi controls.
+# If the game is running on a normal computer, these will safely fall back.
 try:
     from bomb_configs import RPi, component_button_state
 except ImportError:
@@ -12,328 +30,320 @@ except ImportError:
     component_button_state = None
 
 
+# ---------------------------------------------------------------------------
+# TEXTBOX SETTINGS
+# ---------------------------------------------------------------------------
+# These control where the dialogue box appears and how it looks.
+# Increase/decrease X and Y to move it around the screen.
 TEXTBOX_X = 277
 TEXTBOX_Y = 42
 TEXTBOX_WIDTH = 471
 TEXTBOX_HEIGHT = 132
 TEXTBOX_ALPHA = 180
+
+# Padding controls how far the text sits inside the box.
 TEXT_PADDING_X = 18
 TEXT_PADDING_Y = 16
-PROMPT_OFFSET_Y = 45
 
-VENT_PANEL_X = 300
-VENT_PANEL_Y = 232
-VENT_PANEL_WIDTH = 425
-VENT_PANEL_HEIGHT = 299
+# Where the "Press Enter" / "Press Button" prompt appears inside the textbox.
+PROMPT_OFFSET_Y = 90
 
-
-class IntroState:
-    def __init__(self, screen_size, messages):
-        self.lock = threading.Lock()
-        self.running = True
-        self.result = True
-
-        self.screen_width, self.screen_height = screen_size
-        self.messages = messages
-        self.active_message = 0
-        self.message = messages[0]
-        self.counter = 0
-        self.speed = 1
-        self.done = False
-        self.final_message_done_time = None
-
-        self.door_y = 0
-        self.door_center_x = 510
-        self.door_center_y = 280
-        self.door_started = False
-        self.door_up = False
-        self.door_count = 0
-        self.overlay_alpha = 255
-        self.panel_on = False
-        self.switch_sound_played = False
-
-        self.music_started = False
-        self.music_played = False
-
-        self.text_sound_counter = 0
-        self.advance_requested = False
+# Distance between wrapped text lines.
+TEXT_LINE_SPACING = 24
 
 
-class DoorThread(threading.Thread):
-    def __init__(self, state):
-        super().__init__(daemon=True)
-        self.state = state
+# ---------------------------------------------------------------------------
+# TIMING SETTINGS
+# ---------------------------------------------------------------------------
+# Lower TYPE_SPEED means faster typing.
+# Current behavior:
+#   TYPE_SPEED = 1 means 1 character appears per frame.
+#
+# If you want slower text, increase TYPE_SPEED and change the counter logic.
+TYPE_SPEED = 1
 
-    def run(self):
-        while True:
-            with self.state.lock:
-                if not self.state.running:
-                    break
+# The outro runs at 24 FPS to match the intro-style sequences.
+FPS = 24
 
-                if self.state.door_y > -600:
-                    self.state.door_y -= 3
-                    self.state.door_started = True
-                else:
-                    self.state.door_up = True
-
-                if self.state.door_up:
-                    self.state.door_count += 1
-
-                    if self.state.door_count > 55:
-                        self.state.overlay_alpha = 0
-
-                    if self.state.door_count > 125:
-                        self.state.panel_on = True
-
-            time.sleep(1 / 24)
+# How long the final message stays onscreen before the outro ends.
+FINAL_MESSAGE_WAIT_MS = 3000
 
 
-class CharacterThread(threading.Thread):
-    def __init__(self, state):
-        super().__init__(daemon=True)
-        self.state = state
-
-    def run(self):
-        while True:
-            with self.state.lock:
-                if not self.state.running:
-                    break
-                # Character animation itself is handled by character_overlay using pygame ticks.
-                # This thread exists to keep character timing/state separate if more animation
-                # state is added later.
-            time.sleep(1 / 24)
+# ---------------------------------------------------------------------------
+# ASSET PATHS
+# ---------------------------------------------------------------------------
+# Change these if you want the outro to use a different background or font.
+BACKGROUND_PATH = "img_keys/base.png"
+FONT_PATH = "img_keys/Baskic8.otf"
 
 
-class TextThread(threading.Thread):
-    def __init__(self, state):
-        super().__init__(daemon=True)
-        self.state = state
-
-    def run(self):
-        while True:
-            with self.state.lock:
-                if not self.state.running:
-                    break
-
-                now = pygame.time.get_ticks()
-
-                if self.state.advance_requested and self.state.done:
-                    self.state.advance_requested = False
-
-                    if self.state.active_message < len(self.state.messages) - 1:
-                        self.state.active_message += 1
-                        self.state.message = self.state.messages[self.state.active_message]
-                        self.state.counter = 0
-                        self.state.done = False
-                        self.state.final_message_done_time = None
-                    else:
-                        self.state.running = False
-                        break
-
-                if self.state.panel_on:
-                    if self.state.counter < self.state.speed * len(self.state.message):
-                        self.state.counter += 1
-                        self.state.text_sound_counter += 1
-
-                        if self.state.text_sound_counter > 20:
-                            self.state.text_sound_counter = 0
-                    else:
-                        self.state.done = True
-                        self.state.text_sound_counter = 0
-
-                        if self.state.active_message == len(self.state.messages) - 1:
-                            if self.state.final_message_done_time is None:
-                                self.state.final_message_done_time = now
-                            elif now - self.state.final_message_done_time >= 3000:
-                                self.state.running = False
-                                break
-
-            time.sleep(1 / 24)
+# ---------------------------------------------------------------------------
+# OUTRO DIALOGUE
+# ---------------------------------------------------------------------------
+# Add, remove, or edit lines here to change the outro sequence.
+#
+# Each string is one message.
+# The player must press Enter/Button to advance after each message finishes.
+# The final message automatically exits after FINAL_MESSAGE_WAIT_MS.
+#
+# Use "\n" inside a string to force a line break.
+MESSAGES = [
+    "The final switch clicks into place.",
+    "The bomb goes silent.",
+    "Charles exhales, realizing he made it out alive.",
+    "For now...",
+]
 
 
-class AudioThread(threading.Thread):
-    def __init__(self, state):
-        super().__init__(daemon=True)
-        self.state = state
-        self.switch_sound = pygame.mixer.Sound("img_keys/Switch.mp3")
-        self.talking_sound = pygame.mixer.Sound("img_keys/C1Talking.mp3")
-        pygame.mixer.Sound.set_volume(self.switch_sound, 1.0)
-        pygame.mixer.Sound.set_volume(self.talking_sound, 1.0)
+def draw_wrapped_text(surface, font, text, color, x, y, max_width):
+    """
+    Draws text onto the screen and wraps it so it stays inside the textbox.
 
-    def run(self):
-        while True:
-            play_switch = False
-            play_talking = False
-            stop_talking = False
-            play_music = False
+    Args:
+        surface: The pygame Surface to draw on.
+        font: The pygame Font used for rendering.
+        text: The text to draw.
+        color: Text color, such as "white" or (255, 255, 255).
+        x: Starting x-position.
+        y: Starting y-position.
+        max_width: Maximum line width before wrapping.
 
-            with self.state.lock:
-                if not self.state.running:
-                    break
+    Notes:
+        This supports manual line breaks using "\\n".
+    """
+    lines = []
 
-                if self.state.door_started and not self.state.music_played:
-                    self.state.music_played = True
-                    play_music = True
+    # Split into paragraphs first so "\n" creates intentional line breaks.
+    for paragraph in text.split("\n"):
+        words = paragraph.split(" ")
+        current_line = ""
 
-                if self.state.door_up and not self.state.switch_sound_played:
-                    self.state.switch_sound_played = True
-                    play_switch = True
+        for word in words:
+            test_line = word if current_line == "" else current_line + " " + word
 
-                if self.state.panel_on and not self.state.done:
-                    if self.state.text_sound_counter == 1:
-                        play_talking = True
+            # If the test line fits, keep building it.
+            if font.size(test_line)[0] <= max_width:
+                current_line = test_line
+            else:
+                # If it does not fit, save the current line and start a new one.
+                if current_line:
+                    lines.append(current_line)
 
-                if self.state.done:
-                    stop_talking = True
+                current_line = word
 
-            if play_music:
-                pygame.mixer.music.play()
+        if current_line:
+            lines.append(current_line)
 
-            if play_switch:
-                self.switch_sound.play()
+    # Draw every wrapped line.
+    for index, line in enumerate(lines):
+        rendered_line = font.render(line, True, color)
+        surface.blit(
+            rendered_line,
+            (
+                x,
+                y + index * TEXT_LINE_SPACING
+            )
+        )
 
-            if play_talking:
-                self.talking_sound.play()
 
-            if stop_talking:
-                pygame.mixer.stop()
+def draw_textbox(surface, font, typed_text, done, active_message):
+    """
+    Draws the dialogue textbox, the current typed text, and the advance prompt.
 
-            time.sleep(1 / 24)
+    Args:
+        surface: The pygame Surface to draw on.
+        font: The pygame Font used for rendering.
+        typed_text: The portion of the message currently visible.
+        done: True when the current message is fully typed.
+        active_message: Index of the current message in MESSAGES.
+    """
+    # Create a transparent textbox surface.
+    text_box = pygame.Surface((TEXTBOX_WIDTH, TEXTBOX_HEIGHT), pygame.SRCALPHA)
+    text_box.fill((0, 0, 0, TEXTBOX_ALPHA))
+    surface.blit(text_box, (TEXTBOX_X, TEXTBOX_Y))
+
+    # Draw the white border around the textbox.
+    border_rect = pygame.Rect(TEXTBOX_X, TEXTBOX_Y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT)
+    pygame.draw.rect(surface, (255, 255, 255), border_rect, 2)
+
+    # Draw the dialogue text inside the box.
+    draw_wrapped_text(
+        surface,
+        font,
+        typed_text,
+        "white",
+        TEXTBOX_X + TEXT_PADDING_X,
+        TEXTBOX_Y + TEXT_PADDING_Y,
+        TEXTBOX_WIDTH - TEXT_PADDING_X * 2
+    )
+
+    # Show a prompt only after the text finishes, and only if more messages remain.
+    if done and active_message < len(MESSAGES) - 1:
+        prompt_text = "Press Button" if RPi else "Press Enter"
+        prompt = font.render(prompt_text, True, (180, 180, 180))
+        surface.blit(
+            prompt,
+            (
+                TEXTBOX_X + TEXT_PADDING_X,
+                TEXTBOX_Y + PROMPT_OFFSET_Y
+            )
+        )
 
 
 def main(screen=None, clock=None):
+    """
+    Runs the outro sequence.
+
+    Args:
+        screen: Optional shared pygame display Surface.
+                bomb.py passes this in so all programs use the same window.
+        clock: Optional shared pygame Clock.
+               bomb.py passes this in for consistent frame timing.
+
+    Returns:
+        True if the outro completes normally.
+        False if the player closes the window.
+    """
+    # Initialize pygame if this file is run directly.
     if not pygame.get_init():
         pygame.init()
 
+    # Initialize audio in case sounds/music are added later.
     if not pygame.mixer.get_init():
         pygame.mixer.init()
 
+    # If no screen was passed in, create one.
+    # This makes outro.py easy to test by itself.
     created_display = screen is None
+
     if screen is None:
-        screen = create_fullscreen_display("Defuse the Bomb")
+        screen = create_fullscreen_display("Outro")
 
     if clock is None:
         clock = pygame.time.Clock()
 
-    bg = pygame.image.load("img_keys/base.png").convert()
-    bg = pygame.transform.scale(bg, screen.get_size())
+    pygame.display.set_caption("Outro")
 
-    screen_width, screen_height = screen.get_size()
+    # Load shared background.
+    background = pygame.image.load(BACKGROUND_PATH).convert()
+    background = pygame.transform.scale(background, screen.get_size())
 
-    vent_panel = pygame.image.load("img_keys/vent.png").convert_alpha()
-    vent_panel = pygame.transform.smoothscale(
-        vent_panel,
-        (VENT_PANEL_WIDTH, VENT_PANEL_HEIGHT)
-    )
+    # Load font used for dialogue.
+    font = pygame.font.Font(FONT_PATH, 16)
 
-    door_image = pygame.image.load("img_keys/DoorM.png").convert_alpha()
-    door_image = pygame.transform.scale(door_image, screen.get_size())
-
-    font = pygame.font.Font("img_keys/Baskic8.otf", 16)
-
-    pygame.mixer.music.load("intro.mp3")
-    pygame.mixer.music.set_volume(10.00)
-
-    messages = [
-        "You have put our name to question for too long.....",
-        "For this you shall die!",
-        "There's a bomb strapped to your chair!",
-        "MWAJAHAHAHAHAHAHA!",
-        "Good luck getting out of this!",
-    ]
-
-    state = IntroState(screen.get_size(), messages)
-
-    threads = [
-        DoorThread(state),
-        CharacterThread(state),
-        TextThread(state),
-        AudioThread(state),
-    ]
-
-    for thread in threads:
-        thread.start()
-
+    # -----------------------------------------------------------------------
+    # SEQUENCE STATE
+    # -----------------------------------------------------------------------
+    # active_message: which message in MESSAGES is currently showing.
+    # counter: controls the typing effect.
+    # done: True when the current message has finished typing.
+    # final_message_done_time: used to auto-exit after the final message.
+    # prev_btn: used to detect a fresh RPi button press instead of holding.
+    # running: controls the main loop.
+    # result: returned to bomb.py.
+    active_message = 0
+    counter = 0
+    done = False
+    final_message_done_time = None
     prev_btn = False
+    running = True
+    result = True
 
-    while True:
-        with state.lock:
-            running = state.running
-            door_up = state.door_up
+    while running:
+        now = pygame.time.get_ticks()
+        message = MESSAGES[active_message]
 
-        if not running:
-            break
+        def advance_message():
+            """
+            Moves to the next message, but only after the current text is done.
 
+            This prevents accidentally skipping text before it finishes typing.
+            """
+            nonlocal active_message
+            nonlocal counter
+            nonlocal done
+            nonlocal final_message_done_time
+            nonlocal running
+
+            # Do not advance until the full message is visible.
+            if not done:
+                return
+
+            # Move to the next message if one exists.
+            if active_message < len(MESSAGES) - 1:
+                active_message += 1
+                counter = 0
+                done = False
+                final_message_done_time = None
+            else:
+                # If this was the final message, end the outro.
+                running = False
+
+        # -------------------------------------------------------------------
+        # INPUT HANDLING
+        # -------------------------------------------------------------------
+        # PC: Enter advances dialogue.
+        # RPi: physical button advances dialogue.
+        # Closing the window exits and returns False.
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                with state.lock:
-                    state.running = False
-                    state.result = False
-                break
+                running = False
+                result = False
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN and not RPi:
-                    with state.lock:
-                        state.advance_requested = True
+                    advance_message()
 
-        if RPi and component_button_state is not None and door_up:
+        # Raspberry Pi button support.
+        if RPi and component_button_state is not None:
             btn = component_button_state.value
 
+            # Only advance on a new press, not while holding the button down.
             if btn and not prev_btn:
-                with state.lock:
-                    state.advance_requested = True
+                advance_message()
 
             prev_btn = btn
 
-        with state.lock:
-            door_y = state.door_y
-            overlay_alpha = state.overlay_alpha
-            panel_on = state.panel_on
-            typed_text = state.message[0:state.counter // state.speed]
-            done = state.done
-            active_message = state.active_message
-            result = state.result
+        # -------------------------------------------------------------------
+        # TEXT TYPING LOGIC
+        # -------------------------------------------------------------------
+        # The message reveals one character at a time.
+        if counter < TYPE_SPEED * len(message):
+            counter += 1
+        else:
+            done = True
 
-        screen.fill((255, 255, 255))
-        screen.blit(bg, (0, 0))
+            # The final message automatically ends after a short wait.
+            if active_message == len(MESSAGES) - 1:
+                if final_message_done_time is None:
+                    final_message_done_time = now
+                elif now - final_message_done_time >= FINAL_MESSAGE_WAIT_MS:
+                    running = False
+
+        typed_text = message[0:counter // TYPE_SPEED]
+
+        # -------------------------------------------------------------------
+        # DRAWING
+        # -------------------------------------------------------------------
+        # Basic draw order:
+        # 1. Background
+        # 2. Characters
+        # 3. Optional future outro objects/effects
+        # 4. Textbox
+        screen.blit(background, (0, 0))
         draw_character(screen)
-        screen.blit(vent_panel, (VENT_PANEL_X, VENT_PANEL_Y))
 
-        if overlay_alpha > 0:
-            rect_surf = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
-            rect_surf.fill((0, 0, 0, overlay_alpha))
-            screen.blit(rect_surf, (0, 0))
+        # Add future outro-specific images/animations here.
+        # Example:
+        #   screen.blit(my_image, (x, y))
 
-        door_rect = door_image.get_rect()
-        door_rect.center = (510, 280)
-        door_rect.y = door_y
-        screen.blit(door_image, door_rect)
-
-        if panel_on:
-            text_box = pygame.Surface((TEXTBOX_WIDTH, TEXTBOX_HEIGHT), pygame.SRCALPHA)
-            text_box.fill((0, 0, 0, TEXTBOX_ALPHA))
-            screen.blit(text_box, (TEXTBOX_X, TEXTBOX_Y))
-
-            border_rect = pygame.Rect(TEXTBOX_X, TEXTBOX_Y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT)
-            pygame.draw.rect(screen, (255, 255, 255), border_rect, 2)
-
-            snip = font.render(typed_text, True, "white")
-            screen.blit(snip, (TEXTBOX_X + TEXT_PADDING_X, TEXTBOX_Y + TEXT_PADDING_Y))
-
-            if done and active_message < len(messages) - 1:
-                prompt_text = "Press Button" if RPi else "Press Enter"
-                prompt = font.render(prompt_text, True, (180, 180, 180))
-                screen.blit(prompt, (TEXTBOX_X + TEXT_PADDING_X, TEXTBOX_Y + PROMPT_OFFSET_Y))
+        draw_textbox(screen, font, typed_text, done, active_message)
 
         pygame.display.flip()
-        clock.tick(24)
+        clock.tick(FPS)
 
-    with state.lock:
-        state.running = False
-
-    for thread in threads:
-        thread.join(timeout=0.5)
-
+    # Only quit pygame if this file created its own display.
+    # If bomb.py passed in the display, bomb.py handles quitting later.
     if created_display:
         pygame.quit()
 

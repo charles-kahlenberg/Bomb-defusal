@@ -86,6 +86,11 @@ def import_switch_g():
     return import_game_module("switch_g", "SwitchG.py")
 
 
+# import the outro module by file path
+def import_outro():
+    return import_game_module("outro", "outro.py")
+
+
 # import the game over screen module by file path
 def import_gameover():
     return import_game_module("gameover", "gameover.py")
@@ -336,6 +341,7 @@ def main():
         ("Safe Game", import_safe_game, True),
         ("Switch Intro", import_switch_intro, False),
         ("Switch Game", import_switch_g, True),
+        ("Outro", import_outro, False),
     ]
 
     for program_name, module_loader, death_on_fail in game_sequence:
