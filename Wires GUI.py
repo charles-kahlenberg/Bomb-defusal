@@ -646,16 +646,10 @@ def main(screen=None, clock=None):
                 f"Connect {wire_display_names[current_target_wire.color]}"
             ]
 
-        # Win / lose overlay
         if game_over:
-            msg = "YOU WIN!" if won else "BOOM — YOU LOSE"
-            msg_color = colors["green"] if won else colors["red"]
             textbox_lines = [
-                f"Strikes: {strike_count}/3",
-                msg
+                f"Strikes: {strike_count}/3"
             ]
-            end_text = big_font.render(msg, True, msg_color)
-            screen.blit(end_text, end_text.get_rect(center=(512, 288)))
             show_frame()
             pygame.time.wait(1500)
 
