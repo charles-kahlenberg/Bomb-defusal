@@ -632,8 +632,8 @@ def main(screen=None, clock=None):
                     screen,
                     connected_wire_images[wire_color],
                     (settings["center_x"], settings["center_y"]),
-                    wiresfx.play()
                 )
+                wiresfx.play()
 
         if not game_over:
             textbox_lines = [
