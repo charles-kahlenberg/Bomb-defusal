@@ -51,14 +51,14 @@ PROMPT_OFFSET_Y = 90
 # Distance between wrapped text lines.
 TEXT_LINE_SPACING = 24
 
-WIN_TEXT = "Charles 2 is better than Charles 1...."
+WIN_TEXT = "Charles \"2\" lives on..."
 QUIT_TEXT_RPI = "Press Button to Quit"
 QUIT_TEXT_PC = "Press Enter to Quit"
 
-WIN_COLOR = (255, 255, 255)
+WIN_COLOR = (0, 255, 0)
 QUIT_COLOR = (150, 150, 150)
 
-WIN_FONT_SIZE = 80
+WIN_FONT_SIZE = 60
 QUIT_FONT_SIZE = 24
 
 WIN_FADE_MS = 2500
@@ -305,6 +305,7 @@ def main(screen=None, clock=None):
     scb = 255
     scg = 255
     wintime = False
+    win_start_time = None
 
     steps1 = pygame.mixer.Sound("img_keys/Steps1.mp3")
     vro = pygame.mixer.Sound("img_keys/realendmus.mp3")
@@ -407,13 +408,15 @@ def main(screen=None, clock=None):
                 scb -= 3
                 scg -= 3
             if escount > 324:
-                if notfix:
-                    now = 0
-                    notfix == False
+                if win_start_time is None:
+                    win_start_time = now
+
                 wintime = True
-                win_alpha = min(255, int((elapsed / WIN_FADE_MS) * 255))
-                if quit_text_ready:
-                    quit_elapsed = elapsed - WAIT_BEFORE_QUIT_TEXT_MS
+                win_elapsed = now - win_start_time
+                win_alpha = min(255, int((win_elapsed / WIN_FADE_MS) * 255))
+
+                if win_elapsed >= WAIT_BEFORE_QUIT_TEXT_MS:
+                    quit_elapsed = win_elapsed - WAIT_BEFORE_QUIT_TEXT_MS
                     quit_alpha = min(255, int((quit_elapsed / QUIT_TEXT_FADE_MS) * 255))
                 else:
                     quit_alpha = 0
@@ -480,7 +483,29 @@ def main(screen=None, clock=None):
             screen.blit(wire_background, (WIRE_BACKGROUND_X, WIRE_BACKGROUND_Y))
             draw_character(screen)
             draw_textbox(screen, font, typed_text, done, active_message)
+
         screen.blit(rect_surf, (0,0))
+
+        if wintime:
+            draw_centered_text(
+                screen,
+                win_font,
+                WIN_TEXT,
+                WIN_COLOR,
+                win_alpha,
+                (screen.get_width() // 2, screen.get_height() // 2 - 40)
+            )
+
+            quit_text = QUIT_TEXT_RPI if RPi else QUIT_TEXT_PC
+            draw_centered_text(
+                screen,
+                quit_font,
+                quit_text,
+                QUIT_COLOR,
+                quit_alpha,
+                (screen.get_width() // 2, screen.get_height() // 2 + 55)
+            )
+
         pygame.display.flip()
         clock.tick(FPS)
 
