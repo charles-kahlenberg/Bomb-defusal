@@ -489,17 +489,12 @@ def main(screen=None, clock=None):
             if created_display:
                 pygame.quit()
 
-            return won
+            return True
         else:
-            lost_text = timer_font.render("Game over..", True, (255, 0, 0))
-            screen.blit(lost_text, (text_x, text_y))
-            show_frame()
-            pygame.time.wait(1000)
-
             if created_display:
                 pygame.quit()
 
-            return won
+            return False
 
         show_frame()
         clock.tick(60)
