@@ -1,6 +1,8 @@
 import pygame
-import sys
 import random
+import threading
+import time
+
 from bomb_configs import *
 from character_overlay import draw_character
 from display_utils import create_fullscreen_display
@@ -88,21 +90,124 @@ class Switch(pygame.sprite.Sprite):
         screen.blit(label_surf, label_surf.get_rect(center=(self.rect.centerx, self.rect.top - 20)))
 
 
-def randomval(first):
-    baby = random.randint(0, 3)
-    valu1 = first[baby]
-    first.remove(first[baby])
+def randomval(values):
+    values = values[:]
+    random.shuffle(values)
+    return values[:4]
 
-    baby2 = random.randint(0, 2)
-    valu2 = first[baby2]
-    first.remove(first[baby2])
 
-    baby3 = random.randint(0, 1)
-    valu3 = first[baby3]
-    first.remove(first[baby3])
-    valu4 = first[0]
-    values = [valu1, valu2, valu3, valu4]
-    return values
+class SwitchGameState:
+    def __init__(self):
+        self.lock = threading.RLock()
+        self.running = True
+
+        self.rounds = 0
+        self.strikes = 0
+        self.target = random.randint(1, 15)
+
+        self.game_over = False
+        self.won = False
+
+        self.prev_btn = False
+
+        self.flipping = False
+        self.flipswitch_index = None
+        self.flip_counter = 0
+
+        self.tcounter = 0
+        self.hud_text = "Round: 1/5"
+        self.hud_color = (255, 255, 255)
+        self.total = 0
+
+
+class SwitchTextThread(threading.Thread):
+    def __init__(self, state):
+        super().__init__(daemon=True)
+        self.state = state
+
+    def run(self):
+        while True:
+            with self.state.lock:
+                if not self.state.running:
+                    break
+
+                if self.state.rounds < 5:
+                    if self.state.tcounter <= 0:
+                        self.state.hud_text = f"Strikes: {self.state.strikes}/3"
+                        self.state.hud_color = (255, 255, 255)
+                        self.state.tcounter += 1
+                    elif self.state.tcounter <= 100:
+                        self.state.hud_text = f"Round: {self.state.rounds + 1}/5"
+                        self.state.hud_color = (255, 255, 255)
+                        self.state.tcounter += 1
+                    else:
+                        self.state.hud_text = f"Target: {self.state.target}"
+                        self.state.hud_color = (255, 255, 255)
+                else:
+                    self.state.hud_text = "You win!"
+                    self.state.hud_color = (255, 255, 255)
+
+            time.sleep(1 / 60)
+
+
+class SwitchesThread(threading.Thread):
+    def __init__(self, state, switches):
+        super().__init__(daemon=True)
+        self.state = state
+        self.switches = switches
+
+    def run(self):
+        while True:
+            with self.state.lock:
+                if not self.state.running:
+                    break
+
+                if RPi and not self.state.game_over and not self.state.won:
+                    for index, pin in enumerate(component_toggles):
+                        sw = self.switches[index]
+
+                        if not self.state.flipping and sw.set_state(pin.value):
+                            self.state.flipswitch_index = index
+                            self.state.flipping = True
+                            break
+
+                if self.state.flipping and self.state.flipswitch_index is not None:
+                    flipswitch = self.switches[self.state.flipswitch_index]
+
+                    if flipswitch.flipup:
+                        if self.state.flip_counter == 0:
+                            self.state.flip_counter += 1
+                            flipswitch.image = flipswitch.fu1
+                        elif self.state.flip_counter <= 6:
+                            self.state.flip_counter += 1
+                            flipswitch.image = flipswitch.fu2
+                        elif self.state.flip_counter <= 9:
+                            self.state.flip_counter += 1
+                            flipswitch.image = flipswitch.fu3
+                        else:
+                            self.state.flip_counter = 0
+                            self.state.flipping = False
+                            self.state.flipswitch_index = None
+                            flipswitch.image = flipswitch.up
+                    else:
+                        if self.state.flip_counter == 0:
+                            self.state.flip_counter += 1
+                            flipswitch.image = flipswitch.fd1
+                        elif self.state.flip_counter <= 6:
+                            self.state.flip_counter += 1
+                            flipswitch.image = flipswitch.fd2
+                        elif self.state.flip_counter <= 9:
+                            self.state.flip_counter += 1
+                            flipswitch.image = flipswitch.fd3
+                        else:
+                            self.state.flip_counter = 0
+                            self.state.flipping = False
+                            self.state.flipswitch_index = None
+                            flipswitch.image = flipswitch.down
+
+                self.state.total = sum(sw.value for sw in self.switches if sw.on)
+
+            time.sleep(1 / 60)
 
 
 def main(screen=None, clock=None):
@@ -152,19 +257,17 @@ def main(screen=None, clock=None):
 
         return game_x, game_y
 
-    if clock is None:
-        clock = pygame.time.Clock()
-
     font = pygame.font.Font("img_keys/Baskic8.otf", 24)
-    Bg = pygame.image.load("img_keys/SwitchesBg.png").convert()
-    Bg = pygame.transform.scale(Bg, (GAME_W, GAME_H))
-    Door = pygame.image.load("img_keys/Door.png").convert()
+
+    bg = pygame.image.load("img_keys/SwitchesBg.png").convert()
+    bg = pygame.transform.scale(bg, (GAME_W, GAME_H))
+
+    door = pygame.image.load("img_keys/Door.png").convert()
 
     spacing = 30
     start_x = (820 - (4 * KEY_W + 3 * (spacing - KEY_W))) // 2
 
-    first = [1, 2, 4, 8]
-    randomvals = randomval(first)
+    randomvals = randomval([1, 2, 4, 8])
 
     switches = [
         Switch(start_x + 0 * spacing, 110, "", randomvals[0], pygame.K_SPACE),
@@ -175,98 +278,102 @@ def main(screen=None, clock=None):
 
     all_sprites = pygame.sprite.Group(*switches)
 
-    target = random.randint(1, 15)
-    rounds = 0
-    strikes = 0
-    game_over = False
-    won = False
-    prev_btn = False
-    flipping = False
-    flipswitch = None
-    counter = 0
-    tcounter = 0
+    state = SwitchGameState()
+
+    text_thread = SwitchTextThread(state)
+    switches_thread = SwitchesThread(state, switches)
+
+    text_thread.start()
+    switches_thread.start()
 
     def reset_switches_to_off():
-        nonlocal flipping, flipswitch, counter
+        with state.lock:
+            for sw in switches:
+                if sw.on:
+                    sw.on = False
+                    sw.flipup = False
+                    sw.flipdown = True
+                    sw.image = sw.down
 
-        for sw in switches:
-            if sw.on:
-                sw.on = False
-                sw.flipup = False
-                sw.flipdown = True
-                sw.image = sw.down
-
-        flipping = False
-        flipswitch = None
-        counter = 0
+            state.flipping = False
+            state.flipswitch_index = None
+            state.flip_counter = 0
+            state.total = 0
 
     def confirm():
-        nonlocal rounds, strikes, game_over, won, target, tcounter
+        with state.lock:
+            total = sum(sw.value for sw in switches if sw.on)
 
-        total = sum(sw.value for sw in switches if sw.on)
+            if total == state.target:
+                state.tcounter = 0
+                state.rounds += 1
 
-        if total == target:
-            tcounter = 0
-            rounds += 1
+                if state.rounds >= 5:
+                    state.won = True
+                    state.game_over = True
+                    return
 
-            if rounds >= 5:
-                won = True
-                game_over = True
-            else:
                 first = [1, 2, 4, 8]
                 second = [16, 4, 32, 8, 64]
                 third = [128, 256, 64, 32, 16, 512]
                 fourth = [413, 27, 31, 93]
 
-                if rounds <= 1:
-                    target = random.randint(1, 15)
+                if state.rounds <= 1:
+                    state.target = random.randint(1, 15)
                     randomvals = randomval(first)
-
-                elif rounds == 2:
+                elif state.rounds == 2:
                     randomvals = randomval(second)
-                    target = 0
+                    state.target = 0
+
                     for r in randomvals:
                         if random.randint(0, 1) == 1:
-                            target += r
-
-                elif rounds == 3:
+                            state.target += r
+                elif state.rounds == 3:
                     randomvals = randomval(third)
-                    target = 0
+                    state.target = 0
+
                     for r in randomvals:
                         if random.randint(0, 1) == 1:
-                            target += r
-
+                            state.target += r
                 else:
                     randomvals = randomval(fourth)
-                    target = 0
+                    state.target = 0
+
                     for r in randomvals:
                         if random.randint(0, 1) == 1:
-                            target += r
+                            state.target += r
 
                 for i, sw in enumerate(switches):
                     sw.value = randomvals[i]
+            else:
+                state.tcounter = -100
+                state.strikes += 1
 
-                reset_switches_to_off()
-        else:
-            tcounter = -100
-            strikes += 1
+                if state.strikes >= 3:
+                    state.won = False
+                    state.game_over = True
 
-            if strikes >= 3:
-                won = False
-                game_over = True
+        with state.lock:
+            should_reset = not state.game_over
+
+        if should_reset:
+            reset_switches_to_off()
 
     running = True
 
     while running:
-        if RPi and not game_over and not won:
-            for sw, pin in zip(switches, component_toggles):
-                if not flipping and sw.set_state(pin.value):
-                    flipswitch = sw
-                    flipping = True
-                    break
+        with state.lock:
+            game_over = state.game_over
+            won = state.won
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                with state.lock:
+                    state.running = False
+
+                text_thread.join(timeout=0.5)
+                switches_thread.join(timeout=0.5)
+
                 if created_display:
                     pygame.quit()
 
@@ -275,14 +382,16 @@ def main(screen=None, clock=None):
             elif event.type == pygame.MOUSEBUTTONDOWN and not RPi and not game_over:
                 game_pos = screen_pos_to_game_pos(event.pos)
 
-                if game_pos is not None and not flipping:
-                    for sw in switches:
-                        worked = sw.handle_click(game_pos)
+                if game_pos is not None:
+                    with state.lock:
+                        if not state.flipping:
+                            for index, sw in enumerate(switches):
+                                worked = sw.handle_click(game_pos)
 
-                        if worked:
-                            flipswitch = sw
-                            flipping = True
-                            break
+                                if worked:
+                                    state.flipswitch_index = index
+                                    state.flipping = True
+                                    break
 
             elif event.type == pygame.KEYDOWN and not game_over:
                 if event.key == pygame.K_RETURN and not RPi:
@@ -290,82 +399,60 @@ def main(screen=None, clock=None):
 
         if RPi and not game_over and not won:
             btn = component_button_state.value
+            should_confirm = False
 
-            if btn and not prev_btn:
+            with state.lock:
+                if btn and not state.prev_btn:
+                    should_confirm = True
+
+                state.prev_btn = btn
+
+            if should_confirm:
                 confirm()
 
-            prev_btn = btn
-
-        if flipping and flipswitch is not None:
-            if flipswitch.flipup:
-                if counter == 0:
-                    counter += 1
-                    flipswitch.image = flipswitch.fu1
-                elif counter <= 6:
-                    counter += 1
-                    flipswitch.image = flipswitch.fu2
-                elif counter <= 9:
-                    counter += 1
-                    flipswitch.image = flipswitch.fu3
-                else:
-                    counter = 0
-                    flipping = False
-                    flipswitch.image = flipswitch.up
-            else:
-                if counter == 0:
-                    counter += 1
-                    flipswitch.image = flipswitch.fd1
-                elif counter <= 6:
-                    counter += 1
-                    flipswitch.image = flipswitch.fd2
-                elif counter <= 9:
-                    counter += 1
-                    flipswitch.image = flipswitch.fd3
-                else:
-                    counter = 0
-                    flipping = False
-                    flipswitch.image = flipswitch.down
-
-        screen.blit(Bg, (0, 0))
-        screen.blit(Door, (29, 16))
+        screen.blit(bg, (0, 0))
+        screen.blit(door, (29, 16))
         all_sprites.draw(screen)
 
-        if rounds < 5:
-            if tcounter <= 0:
-                hud = font.render(f"Strikes: {strikes}/3", True, (255, 255, 255))
-                tcounter += 1
-            elif 0 <= tcounter <= 100:
-                hud = font.render(f"Round: {rounds + 1}/5", True, (255, 255, 255))
-                tcounter += 1
-            else:
-                hud = font.render(f"Target: {target}", True, (255, 255, 255))
-        else:
-            hud = font.render("You win!", True, (255, 255, 255))
+        with state.lock:
+            hud_text = state.hud_text
+            hud_color = state.hud_color
+            total_value = state.total
+            won = state.won
+            game_over = state.game_over
 
+        hud = font.render(hud_text, True, hud_color)
         screen.blit(hud, (380, 40))
 
-        total = sum(sw.value for sw in switches if sw.on)
-        tot = font.render(f"Total : {total}", True, (255, 255, 255))
-        screen.blit(tot, (380, 290))
-
-        hint_text = "Flip switches, Press button to confirm" if RPi else "Click switches | Press Enter to confirm"
-        #hint = font.render(hint_text, True, (150, 150, 150))
-        #screen.blit(hint, hint.get_rect(center=(300, 325)))
+        total_text = font.render(f"Total : {total_value}", True, (255, 255, 255))
+        screen.blit(total_text, (380, 290))
 
         if won:
             screen.blit(font.render("You win!", True, (0, 255, 0)), (240, 270))
             show_frame()
             pygame.time.wait(1000)
 
+            with state.lock:
+                state.running = False
+
+            text_thread.join(timeout=0.5)
+            switches_thread.join(timeout=0.5)
+
             if created_display:
                 pygame.quit()
 
             return True
 
-        elif game_over:
+        if game_over:
             screen.blit(font.render("Game Over!", True, (255, 60, 60)), (230, 270))
             show_frame()
             pygame.time.wait(1000)
+
+            with state.lock:
+                state.running = False
+
+            text_thread.join(timeout=0.5)
+            switches_thread.join(timeout=0.5)
 
             if created_display:
                 pygame.quit()
@@ -374,6 +461,12 @@ def main(screen=None, clock=None):
 
         show_frame()
         clock.tick(60)
+
+    with state.lock:
+        state.running = False
+
+    text_thread.join(timeout=0.5)
+    switches_thread.join(timeout=0.5)
 
     if created_display:
         pygame.quit()
