@@ -73,6 +73,7 @@ def main(screen=None, clock=None):
     doorup = False
     pon = False
     prev_btn = False
+    sswa = False
 
     running = True
 
@@ -123,12 +124,14 @@ def main(screen=None, clock=None):
 
         if doorup:
             count += 1
-            ss = pygame.mixer.music.load("img_keys/Switch.mp3")
-            pygame.mixer.music.play()
-            pygame.mixer.set_volume(1.0)
-            if count > 95:
-                rect_surf.fill((0, 0, 0, 255))
-            if count > 250:
+            if sswa != True:
+                sswitch = pygame.mixer.Sound("img_keys/Switch.mp3")
+                pygame.mixer.Sound.set_volume(sswitch, 1.0)
+                sswitch.play()
+                sswa = True
+            if count > 65:
+                rect_surf.fill((0, 0, 0, 0))
+            if count > 125:
                 pon = True
 
         if started and notplayed:
