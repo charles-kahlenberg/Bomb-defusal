@@ -556,6 +556,7 @@ def main(screen=None, clock=None):
 
     game_over = False
     won = False
+    zap = False
     wiresfx = pygame.mixer.Sound("img_keys/WireSfxF.mp3")
 
     running = True
@@ -579,6 +580,7 @@ def main(screen=None, clock=None):
             if event.type == pygame.KEYDOWN and not game_over:
                 if event.key in key_to_wire_index:
                     pressed_wire_index = key_to_wire_index[event.key]
+                    zap = False
 
         if pressed_wire_index is not None and not game_over:
             pressed_wire = wire_order[pressed_wire_index]
@@ -633,7 +635,9 @@ def main(screen=None, clock=None):
                     connected_wire_images[wire_color],
                     (settings["center_x"], settings["center_y"]),
                 )
-                wiresfx.play()
+                if zap == False:
+                    wiresfx.play()
+                    zap = True
 
         if not game_over:
             textbox_lines = [
