@@ -255,6 +255,8 @@ def main(screen=None, clock=None):
 
     rect_surf = pygame.Surface((1200,1200), pygame.SRCALPHA)
     transp = 0
+    rect_surf2 = pygame.Surface((1200,1200), pygame.SRCALPHA)
+    transp2 = 0
 
     # Load font used for dialogue.
     font = pygame.font.Font(FONT_PATH, 16)
@@ -288,8 +290,7 @@ def main(screen=None, clock=None):
     talking_channel = pygame.mixer.Channel(0)
     effects_channel = pygame.mixer.Channel(1)
 
-    rect_surf2 = pygame.Surface((1200,1200), pygame.SRCALPHA)
-    transp2 = 0
+  
 
     stepped = False
     stepped2 = False
@@ -368,23 +369,20 @@ def main(screen=None, clock=None):
             if escount <= 85:
                 transp += 3
             rect_surf.fill((255, 255, 255, transp))
-            rect_surf2.fill((255, 255, 255, transp2))
+           
             if escount > 90 and stepped == False:
                 effects_channel.play(steps1)
                 stepped = True
             if escount > 150 and stepped2 == False:
                 effects_channel.play(steps1)
                 stepped2 = True
-            
             if escount > 240 and escount <= 325:
                 transp2 += 3  
+            rect_surf2.fill((255, 255, 255, transp2))
             if escount > 280 and final == False:
                  effects_channel.play(endmus) 
                  final = True  
                  screenfu = True
-
-            if escount == 600:
-                running = False
 
         # -------------------------------------------------------------------
         # TEXT TYPING LOGIC
@@ -417,13 +415,15 @@ def main(screen=None, clock=None):
         # 2. Characters
         # 3. Optional future outro objects/effects
         # 4. Textbox
+
         if screenfu == False:
             screen.blit(background, (0, 0))
             screen.blit(wire_background, (WIRE_BACKGROUND_X, WIRE_BACKGROUND_Y))
             draw_character(screen)
             draw_textbox(screen, font, typed_text, done, active_message)
-        screen.blit(rect_surf, (0,0))
-        screen.blit(rect_surf2, (0,0))
+            screen.blit(rect_surf, (0,0))
+        elif screenfu:
+            screen.blit(rect_surf2, (0,0))
         pygame.display.flip()
         clock.tick(FPS)
 
