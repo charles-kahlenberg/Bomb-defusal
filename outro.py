@@ -253,11 +253,15 @@ def main(screen=None, clock=None):
     tcounter = 0
     endscreen = False
     escount = 0
+
     steps1 = pygame.mixer.Sound("img_keys/Steps1.mp3")
     steps2 = pygame.mixer.Sound("img_keys/Steps2.mp3")
     vro = pygame.mixer.Sound("img_keys/endingopen.mp3")
     endmus = pygame.mixer.Sound("img_keys/Watashino Uso.mp3")
-
+    stepped = False
+    stepped2 = False
+    vroa = False
+    
     while running:
         now = pygame.time.get_ticks()
         message = MESSAGES[active_message]
@@ -313,14 +317,15 @@ def main(screen=None, clock=None):
                 advance_message()
             prev_btn = btn
 
+
         if endscreen:
             escount += 1
-            print(transp)
             if escount <= 85:
                 transp += 3
             rect_surf.fill((255, 255, 255, transp)) 
-            if escount == 90:
+            if escount > 90 and stepped == False:
                 steps1.play()
+                stepped = True
             if escount == 130:
                 steps2.play()
             if escount == 400:
