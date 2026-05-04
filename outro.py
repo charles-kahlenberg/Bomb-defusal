@@ -288,8 +288,8 @@ def main(screen=None, clock=None):
     talking_channel = pygame.mixer.Channel(0)
     effects_channel = pygame.mixer.Channel(1)
 
-    endscrea = pygame.image.load("img_keys/BgOutro.png").convert()
-    endscrea = pygame.transform.scale(background, screen.get_size())
+    rect_surf2 = pygame.Surface((1200,1200), pygame.SRCALPHA)
+    transp2 = 0
 
     stepped = False
     stepped2 = False
@@ -343,6 +343,13 @@ def main(screen=None, clock=None):
                 if event.key == pygame.K_RETURN and not RPi:
                     advance_message()
 
+            if endscreen:
+                if escount > 300:
+                    if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_RETURN and not RPi:
+                                running = False
+                                result = False
+
         # Raspberry Pi button support.
         if RPi and component_button_state is not None:
             btn = component_button_state.value
@@ -355,26 +362,28 @@ def main(screen=None, clock=None):
 
         if endscreen:
             escount += 1
+            if escount > 3 and vroa == False:
+                effects_channel.play(vro)
+                vroa = True
             if escount <= 85:
                 transp += 3
             rect_surf.fill((255, 255, 255, transp))
+            rect_surf2.fill((255, 255, 255, transp2))
             if escount > 90 and stepped == False:
                 effects_channel.play(steps1)
                 stepped = True
             if escount > 150 and stepped2 == False:
-                effects_channel.play(steps2)
+                effects_channel.play(steps1)
                 stepped2 = True
-            if escount > 240 and vroa == False:
-                effects_channel.play(vro)
-                vroa = True
+            
             if escount > 240 and escount <= 325:
-                transp -= 3  
-            if escount > 250 and final == False:
+                transp2 += 3  
+            if escount > 280 and final == False:
                  effects_channel.play(endmus) 
                  final = True  
                  screenfu = True
 
-            if escount == 400:
+            if escount == 600:
                 running = False
 
         # -------------------------------------------------------------------
@@ -413,9 +422,8 @@ def main(screen=None, clock=None):
             screen.blit(wire_background, (WIRE_BACKGROUND_X, WIRE_BACKGROUND_Y))
             draw_character(screen)
             draw_textbox(screen, font, typed_text, done, active_message)
-        if screenfu:
-            screen.blit(endscrea, (0,0))
         screen.blit(rect_surf, (0,0))
+        screen.blit(rect_surf2, (0,0))
         pygame.display.flip()
         clock.tick(FPS)
 
