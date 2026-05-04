@@ -62,6 +62,11 @@ def import_wires_intro():
     return import_game_module("wires_intro", "wires_intro.py")
 
 
+# import the switch intro module by file path
+def import_switch_intro():
+    return import_game_module("switch_intro", "switch_intro.py")
+
+
 # import the switchG module by file path
 def import_switch_g():
     return import_game_module("switch_g", "SwitchG.py")
@@ -290,7 +295,15 @@ def main():
     if not safe_won:
         pygame.quit()
         return False
-    
+
+    # switch intro
+    switch_intro = import_switch_intro()
+    switch_intro_done = switch_intro.main(screen, clock)
+
+    if not switch_intro_done:
+        pygame.quit()
+        return False
+
     # switch game
     switch_g = import_switch_g()
     switches_won = switch_g.main(screen, clock)
