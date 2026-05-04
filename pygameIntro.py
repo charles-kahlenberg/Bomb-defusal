@@ -40,9 +40,9 @@ def main(screen=None, clock=None):
 
     screen_width, screen_height = screen.get_size()
 
-    rect_pos = pygame.Rect(0, 0, screen_width, screen_height)
+    rect_pos = pygame.image.load('img_keys/DoorM.png').convert_alpha()
     rect_surf = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
-    rect_surf.fill((0, 0, 0, 0))
+    rect_surf.fill((0, 0, 0, 255))
 
     messages = [
         "You have put our name to question for too long.....",
@@ -176,7 +176,7 @@ def main(screen=None, clock=None):
 
         screen.blit(bg, (0, 0))
         screen.blit(rect_surf, (0, 0))
-        pygame.draw.rect(screen, rect_color, rect_pos)
+        screen.blit(rect_pos, (0,0))
 
         if rect_pos.bottom > 0:
             rect_pos.move_ip(0, -2)
