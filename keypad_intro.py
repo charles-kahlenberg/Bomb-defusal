@@ -92,7 +92,8 @@ def main(screen=None, clock=None):
     done = False
     final_message_done_time = None
     prev_btn = False
-
+    tcounter = 0
+    c2t = pygame.mixer.Sound("img_keys/C2Talking.mp3")
     running = True
 
     while running:
@@ -133,8 +134,15 @@ def main(screen=None, clock=None):
 
         if counter < speed * len(message):
             counter += 1
+            if tcounter == 0:
+                c2t.play()
+            tcounter +=1
+            if tcounter > 20:
+                tcounter == 0
         else:
             done = True
+            tcounter = 0
+            pygame.mixer.stop()
 
             if active_message == len(messages) - 1:
                 if final_message_done_time is None:
