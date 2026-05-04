@@ -406,15 +406,11 @@ def main(screen=None, clock=None):
         # 2. Characters
         # 3. Optional future outro objects/effects
         # 4. Textbox
-        screen.blit(background, (0, 0))
-        screen.blit(wire_background, (WIRE_BACKGROUND_X, WIRE_BACKGROUND_Y))
-        draw_character(screen)
-
-        # Add future outro-specific images/animations here.
-        # Example:
-        #   screen.blit(my_image, (x, y))
-
-        draw_textbox(screen, font, typed_text, done, active_message)
+        if screenfu == False:
+            screen.blit(background, (0, 0))
+            screen.blit(wire_background, (WIRE_BACKGROUND_X, WIRE_BACKGROUND_Y))
+            draw_character(screen)
+            draw_textbox(screen, font, typed_text, done, active_message)
         if screenfu:
             screen.blit(endscrea, (0,0))
         screen.blit(rect_surf, (0,0))
