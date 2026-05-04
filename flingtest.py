@@ -77,6 +77,8 @@ def main(screen=None, clock=None):
 
     vent = pygame.image.load("img_keys/vent.png").convert_alpha()
     vent = pygame.transform.smoothscale(vent, vent_rect.size)
+    ven1 = pygame.mixer.Sound("img_keys/LongVent.mp3")
+    ven2 = pygame.mixer.Sound("img_keys/ShortVent.mp3")
 
     wire_bg = pygame.image.load("img_keys/WireBG.png").convert()
     wire_bg = pygame.transform.scale(wire_bg, wire_surface.get_size())
@@ -177,7 +179,8 @@ def main(screen=None, clock=None):
             angle += 20
             rx -= 40
             ry -= 40
-
+            ven1.play()
+            
             if count >= 35:
                 return True
 
