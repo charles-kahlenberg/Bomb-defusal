@@ -17,6 +17,7 @@ It can also be run directly for testing.
 """
 
 import pygame
+import sys
 
 from character_overlay import draw_character
 from display_utils import create_fullscreen_display
@@ -328,7 +329,11 @@ def main(screen=None, clock=None):
         now = pygame.time.get_ticks()
         message = MESSAGES[active_message]
         elapsed = now - start_time
-        quit_text_ready = elapsed >= WAIT_BEFORE_QUIT_TEXT_MS
+
+        if win_start_time is not None:
+            quit_text_ready = now - win_start_time >= WAIT_BEFORE_QUIT_TEXT_MS
+        else:
+            quit_text_ready = False
 
         def advance_message():
             """
@@ -365,27 +370,31 @@ def main(screen=None, clock=None):
         # Closing the window exits and returns False.
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
-                result = False
+                pygame.quit()
+                sys.exit()
 
-            if event.type == pygame.KEYDOWN:
+            if quit_text_ready and event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN and not RPi:
+                    pygame.quit()
+                    sys.exit()
+
+            if not endscreen and event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN and not RPi:
                     advance_message()
-
-            if endscreen:
-                if escount > 500:
-                    if event.type == pygame.KEYDOWN:
-                            if event.key == pygame.K_RETURN and not RPi:
-                                running = False
-                                result = False
 
         # Raspberry Pi button support.
         if RPi and component_button_state is not None:
             btn = component_button_state.value
 
-            # Only advance on a new press, not while holding the button down.
-            if btn and not prev_btn:
-                advance_message()
+            if quit_text_ready:
+                if btn and not prev_btn:
+                    pygame.quit()
+                    sys.exit()
+            elif not endscreen:
+                # Only advance on a new press, not while holding the button down.
+                if btn and not prev_btn:
+                    advance_message()
+
             prev_btn = btn
 
 
