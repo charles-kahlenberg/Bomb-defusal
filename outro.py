@@ -227,9 +227,8 @@ def main(screen=None, clock=None):
     # Load shared background.
     background = pygame.image.load(BACKGROUND_PATH).convert()
     background = pygame.transform.scale(background, screen.get_size())
-    rect_surf = pygame.Surface((800,480), pygame.SRCALPHA)
+    rect_surf = pygame.Surface((1200,1200), pygame.SRCALPHA)
     transp = 0
-    rect_surf.fill((255, 255, 255, transp))
 
     # Load font used for dialogue.
     font = pygame.font.Font(FONT_PATH, 16)
@@ -254,6 +253,10 @@ def main(screen=None, clock=None):
     tcounter = 0
     endscreen = False
     escount = 0
+    steps1 = pygame.mixer.Sound("img_keys/Steps1.mp3")
+    steps2 = pygame.mixer.Sound("img_keys/Steps2.mp3")
+    vro = pygame.mixer.Sound("img_keys/endingopen.mp3")
+    endmus = pygame.mixer.Sound("img_keys/Watashino Uso.mp3")
 
     while running:
         now = pygame.time.get_ticks()
@@ -312,9 +315,16 @@ def main(screen=None, clock=None):
 
         if endscreen:
             escount += 1
-            screen.blit(rect_surf, (0,0))
-            transp += 3
-
+            print(transp)
+            if escount <= 85:
+                transp += 3
+            rect_surf.fill((255, 255, 255, transp)) 
+            if escount == 90:
+                steps1.play()
+            if escount == 130:
+                steps2.play()
+            if escount == 400:
+                running = False
         # -------------------------------------------------------------------
         # TEXT TYPING LOGIC
         # -------------------------------------------------------------------
@@ -337,7 +347,6 @@ def main(screen=None, clock=None):
                     final_message_done_time = now
                 elif now - final_message_done_time >= FINAL_MESSAGE_WAIT_MS:
                     endscreen = True
-                    running = True
 
         typed_text = message[0:counter // TYPE_SPEED]
 
@@ -351,13 +360,14 @@ def main(screen=None, clock=None):
         # 4. Textbox
         screen.blit(background, (0, 0))
         draw_character(screen)
+        
 
         # Add future outro-specific images/animations here.
         # Example:
         #   screen.blit(my_image, (x, y))
 
         draw_textbox(screen, font, typed_text, done, active_message)
-
+        screen.blit(rect_surf, (0,0))
         pygame.display.flip()
         clock.tick(FPS)
 
