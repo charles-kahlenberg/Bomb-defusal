@@ -9,6 +9,12 @@ except ImportError:
     component_button_state = None
 
 
+GAME_W = 616
+GAME_H = 342
+
+KEY_W = 34
+KEY_H = 144
+
 TEXTBOX_X = 277
 TEXTBOX_Y = 42
 TEXTBOX_WIDTH = 471
@@ -69,16 +75,33 @@ def main(screen=None, clock=None):
     bg = pygame.image.load("img_keys/base.png").convert()
     bg = pygame.transform.scale(bg, screen.get_size())
 
-    panel = pygame.image.load("img_keys/SwitchesBg.png").convert()
-    panel = pygame.transform.smoothscale(panel, (PANEL_W, PANEL_H))
+    switch_panel_surface = pygame.Surface((GAME_W, GAME_H), pygame.SRCALPHA)
+
+    panel_bg = pygame.image.load("img_keys/SwitchesBg.png").convert()
+    panel_bg = pygame.transform.scale(panel_bg, (GAME_W, GAME_H))
+
+    door = pygame.image.load("img_keys/Door.png").convert_alpha()
+
+    switch_image = pygame.image.load("img_keys/SwitchD.png").convert_alpha()
+    switch_image = pygame.transform.scale(switch_image, (KEY_W, KEY_H))
+
+    spacing = 30
+    start_x = (820 - (4 * KEY_W + 3 * (spacing - KEY_W))) // 2
+    switch_positions = [
+        (start_x + 0 * spacing, 110),
+        (start_x + 2 * spacing, 110),
+        (start_x + 4 * spacing, 110),
+        (start_x + 6 * spacing, 110),
+    ]
 
     messages = [
-        "The safe clicks open, but it does not stop the bomb.",
-        "Inside is another control panel covered in switches.",
-        "Each switch has a hidden value.",
-        "Flip the switches until the total matches the target number.",
-        "When you think the total is right, confirm your answer.",
-        "Be careful. Wrong totals will count as strikes.",
+        "The safe clicks open, and inside is a silver key.",
+        "Charles takes the key and looks around the room.",
+        "Charles notices the door which exits the room and heads over.",
+        "Charles unlocks the door and heads down the hallway.",
+        "He is faced with a large steel door, \nadjacent are an array of switches.",
+        "Charles recognizes these as binary switches. \nHe needs to match the target number using the switches.",
+        "It won't be as simple as normal binary though..."
     ]
 
     active_message = 0
@@ -132,6 +155,14 @@ def main(screen=None, clock=None):
 
         screen.blit(bg, (0, 0))
         draw_character(screen)
+
+        switch_panel_surface.blit(panel_bg, (0, 0))
+        switch_panel_surface.blit(door, (29, 16))
+
+        for switch_pos in switch_positions:
+            switch_panel_surface.blit(switch_image, switch_pos)
+
+        panel = pygame.transform.smoothscale(switch_panel_surface, (PANEL_W, PANEL_H))
         screen.blit(panel, (PANEL_X, PANEL_Y))
 
         if counter < speed * len(message):
