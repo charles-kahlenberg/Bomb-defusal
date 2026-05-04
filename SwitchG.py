@@ -428,7 +428,7 @@ def main(screen=None, clock=None):
         screen.blit(total_text, (380, 290))
 
         if won:
-            screen.blit(font.render("You win!", True, (0, 255, 0)), (240, 270))
+            #screen.blit(font.render("You win!", True, (0, 255, 0)), (240, 270))
             show_frame()
             pygame.time.wait(1000)
 
