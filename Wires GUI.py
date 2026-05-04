@@ -1,5 +1,7 @@
 import abc
 import random
+import threading
+import time
 #random.seed(1)
 
 import pygame
@@ -381,6 +383,119 @@ def get_pressed_wire_from_rpi(previous_wire_values):
     return None
 
 
+class WiresGameState:
+    def __init__(self, wire_order):
+        self.lock = threading.Lock()
+        self.running = True
+        self.result = False
+
+        self.wire_order = wire_order
+        self.connected = {
+            "red": False,
+            "blue": False,
+            "yellow": False,
+            "green": False,
+            "orange": False,
+        }
+
+        self.current_target_wire = random.choice(wire_order)
+        self.pending_wire_index = None
+
+        self.strike_count = 0
+        self.game_over = False
+        self.won = False
+
+        self.zap_requested = False
+        self.textbox_lines = []
+
+
+class WireConnectionThread(threading.Thread):
+    def __init__(self, state):
+        super().__init__(daemon=True)
+        self.state = state
+
+    def run(self):
+        while True:
+            with self.state.lock:
+                if not self.state.running:
+                    break
+
+                if self.state.game_over:
+                    time.sleep(0.05)
+                    continue
+
+                if self.state.pending_wire_index is not None:
+                    pressed_wire = self.state.wire_order[self.state.pending_wire_index]
+                    self.state.pending_wire_index = None
+
+                    if pressed_wire == self.state.current_target_wire and not self.state.connected[pressed_wire.color]:
+                        self.state.connected[pressed_wire.color] = True
+                        self.state.zap_requested = True
+
+                        if all(self.state.connected.values()):
+                            self.state.game_over = True
+                            self.state.won = True
+                            self.state.result = True
+                            self.state.running = False
+                        else:
+                            remaining_wires = [
+                                wire for wire in self.state.wire_order
+                                if not self.state.connected[wire.color]
+                            ]
+                            self.state.current_target_wire = random.choice(remaining_wires)
+                    else:
+                        self.state.strike_count += 1
+
+                        if self.state.strike_count >= 3:
+                            self.state.game_over = True
+                            self.state.won = False
+                            self.state.result = False
+                            self.state.running = False
+
+            time.sleep(1 / 60)
+
+
+class WireDisplayThread(threading.Thread):
+    def __init__(self, state):
+        super().__init__(daemon=True)
+        self.state = state
+
+    def run(self):
+        while True:
+            with self.state.lock:
+                if not self.state.running and not self.state.game_over:
+                    break
+                # Display state is read by the main thread.
+                # This thread exists to separate/display-update responsibility.
+            time.sleep(1 / 60)
+
+
+class TextboxThread(threading.Thread):
+    def __init__(self, state, wire_display_names):
+        super().__init__(daemon=True)
+        self.state = state
+        self.wire_display_names = wire_display_names
+
+    def run(self):
+        while True:
+            with self.state.lock:
+                if self.state.game_over:
+                    self.state.textbox_lines = [
+                        f"Strikes: {self.state.strike_count}/3"
+                    ]
+                    break
+
+                if not self.state.running:
+                    break
+
+                self.state.textbox_lines = [
+                    f"Strikes: {self.state.strike_count}/3",
+                    f"Connect {self.wire_display_names[self.state.current_target_wire.color]}"
+                ]
+
+            time.sleep(1 / 30)
+
+
 def main(screen=None, clock=None):
     """
     The `main` function initializes and runs a Pygame application for a wires-based GUI game.
@@ -398,6 +513,8 @@ def main(screen=None, clock=None):
 
     display.set_caption("Wires GUI")
 
+    main_screen = screen
+    game_surface = pygame.Surface((GAME_W, GAME_H), pygame.SRCALPHA)
     main_screen = screen
     game_surface = pygame.Surface((GAME_W, GAME_H), pygame.SRCALPHA)
     screen = game_surface
@@ -490,33 +607,27 @@ def main(screen=None, clock=None):
     )
 
     textbox_font = pygame.font.Font("img_keys/Baskic8.otf", 16)
-    textbox_lines = []
 
-    def show_frame():
+    def show_frame(state):
         main_screen.blit(intro_bg, (0, 0))
         draw_character(main_screen)
-        draw_status_textbox(main_screen, textbox_font, textbox_lines)
+        draw_status_textbox(main_screen, textbox_font, state.textbox_lines)
 
         scaled_game = pygame.transform.smoothscale(game_surface, minigame_rect.size)
         main_screen.blit(scaled_game, minigame_rect)
 
-        if not won:
+        if not state.won:
             main_screen.blit(off_image, (OFF_IMAGE_X, OFF_IMAGE_Y))
 
         pygame.display.flip()
 
-    all_sprites_list = pygame.sprite.Group()
-    strike_count = 0
-    font = pygame.font.SysFont(None, 36)
-    big_font = pygame.font.SysFont(None, 72)
-
     if clock is None:
         clock = pygame.time.Clock()
 
-    state = create_game_state()
-    colors = state["colors"]
-    points = state["points"]
-    circle_radius = state["circle_radius"]
+    state_init = create_game_state()
+    colors = state_init["colors"]
+    points = state_init["points"]
+    circle_radius = state_init["circle_radius"]
 
     print("Watch the wires! Press 1-5 or connect a wire on the RPi.")
 
@@ -527,14 +638,6 @@ def main(screen=None, clock=None):
     green_wire = GreenWire(points["circle9"], points["circle4"])
     orange_wire = OrangeWire(points["circle10"], points["circle5"])
 
-    connected = {
-        "red": False,
-        "blue": False,
-        "yellow": False,
-        "green": False,
-        "orange": False,
-    }
-
     wire_order = [blue_wire, red_wire, yellow_wire, green_wire, orange_wire]
     wire_display_names = {
         "blue": "Wire 1",
@@ -543,7 +646,6 @@ def main(screen=None, clock=None):
         "green": "Wire 4",
         "orange": "Wire 5",
     }
-    current_target_wire = random.choice(wire_order)
 
     key_to_wire_index = {
         K_1: 0,
@@ -555,56 +657,52 @@ def main(screen=None, clock=None):
 
     previous_wire_values = [False for _ in component_wires] if RPi else [False] * len(wire_order)
 
-    game_over = False
-    won = False
-    zap = False
+    game_state = WiresGameState(wire_order)
+
+    connection_thread = WireConnectionThread(game_state)
+    connection_thread.start()
+
+    display_thread = WireDisplayThread(game_state)
+    display_thread.start()
+
+    textbox_thread = TextboxThread(game_state, wire_display_names)
+    textbox_thread.start()
+
     wiresfx = pygame.mixer.Sound("img_keys/WireSfxF.mp3")
 
-    running = True
-    while running:
+    while game_state.running:
         current_wire_values = get_current_wire_values()
 
-        if RPi and not game_over:
+        if RPi and not game_state.game_over:
             for index, wire in enumerate(wire_order):
-                if connected[wire.color] and not current_wire_values[index]:
-                    connected[wire.color] = False
-                    current_target_wire = wire
+                with game_state.lock:
+                    if game_state.connected[wire.color] and not current_wire_values[index]:
+                        game_state.connected[wire.color] = False
+                        game_state.current_target_wire = wire
 
         pressed_wire_index = get_pressed_wire_from_rpi(previous_wire_values)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                with game_state.lock:
+                    game_state.running = False
+
                 if created_display:
                     pygame.quit()
+
+                connection_thread.join()
+                display_thread.join()
+                textbox_thread.join()
+
                 return False
 
-            if event.type == pygame.KEYDOWN and not game_over:
+            if event.type == pygame.KEYDOWN and not game_state.game_over:
                 if event.key in key_to_wire_index:
                     pressed_wire_index = key_to_wire_index[event.key]
-                    
 
-        if pressed_wire_index is not None and not game_over:
-            pressed_wire = wire_order[pressed_wire_index]
-
-            if pressed_wire == current_target_wire and not connected[pressed_wire.color]:
-                connected[pressed_wire.color] = True
-                zap = False
-
-                if all(connected.values()):
-                    game_over = True
-                    won = True
-                else:
-                    remaining_wires = [
-                        wire for wire in wire_order
-                        if not connected[wire.color]
-                    ]
-                    current_target_wire = random.choice(remaining_wires)
-            else:
-                strike_count += 1
-
-                if strike_count >= 3:
-                    game_over = True
-                    won = False
+        if pressed_wire_index is not None and not game_state.game_over:
+            with game_state.lock:
+                game_state.pending_wire_index = pressed_wire_index
 
         screen.blit(wire_bg, (0, 0))
 
@@ -629,7 +727,7 @@ def main(screen=None, clock=None):
             draw_image_centered(screen, wire_circle_images[circle_name], points[circle_name])
 
         # Draw connected wire images after all circles are drawn
-        for wire_color, is_connected in connected.items():
+        for wire_color, is_connected in game_state.connected.items():
             if is_connected:
                 settings = connected_wire_settings[wire_color]
                 draw_image_centered(
@@ -637,30 +735,22 @@ def main(screen=None, clock=None):
                     connected_wire_images[wire_color],
                     (settings["center_x"], settings["center_y"]),
                 )
-                if zap == False:
+                if game_state.zap_requested:
                     wiresfx.play()
-                    zap = True
+                    game_state.zap_requested = False
 
-        if not game_over:
-            textbox_lines = [
-                f"Strikes: {strike_count}/3",
-                f"Connect {wire_display_names[current_target_wire.color]}"
-            ]
-
-        if game_over:
-            textbox_lines = [
-                f"Strikes: {strike_count}/3"
-            ]
-            show_frame()
-            pygame.time.wait(1500)
-
-            if created_display:
-                pygame.quit()
-
-            return won
-
-        show_frame()
+        show_frame(game_state)
         clock.tick(60)
+
+    connection_thread.join()
+    display_thread.join()
+    textbox_thread.join()
+
+    with game_state.lock:
+        if created_display:
+            pygame.quit()
+
+        return game_state.won
 
 
 if __name__ == "__main__":
