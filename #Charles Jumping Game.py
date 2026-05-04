@@ -25,7 +25,7 @@ bgX2 = bg.get_width()
 clock = pygame.time.Clock()
 
 class player(object):
-    run = [pygame.image.load(os.path.join('img_keys', "cr" + str(x) + '.png')) for x in range(1, 6)]
+    run = [pygame.image.load(os.path.join('img_keys', "cr" + str(x) + '.png')) for x in range(1, 7)]
     jump = [pygame.image.load(os.path.join('images', str(x) + '.png')) for x in range(1, 8)]
     fall = pygame.image.load(os.path.join('images', '0.png'))
     jumpList = [1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,-1,-1,-1,-1,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4]
@@ -57,7 +57,7 @@ class player(object):
             win.blit(self.fall, (self.x, self.y + 30))
 
         else:
-            if self.runCount > 29:
+            if self.runCount > 35:
                 self.runCount = 0
             win.blit(self.run[self.runCount//6], (self.x,self.y))
             self.runCount += 1
@@ -176,7 +176,7 @@ while run:
             run = False
             pygame.quit()
         if event.type == USEREVENT+1: #increase the spedd of character
-            speed += 1
+            speed += 0.2
         if event.type == USEREVENT+2:  #
             objects.append(rock(810,425,32,32)) #adjust hit box here
             #else: Put in the other object
