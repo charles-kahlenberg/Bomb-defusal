@@ -132,42 +132,21 @@ class BombTimerThread(threading.Thread):
             return self.expired
 
 
-class ProgramThread(threading.Thread):
-    def __init__(self, name, module_loader, screen, clock, result_queue):
-        super().__init__(name=name, daemon=True)
-        self.module_loader = module_loader
-        self.screen = screen
-        self.clock = clock
-        self.result_queue = result_queue
-
-    def run(self):
-        try:
-            module = self.module_loader()
-            result = module.main(self.screen, self.clock)
-            self.result_queue.put(result)
-        except Exception as error:
-            print(f"{self.name} crashed: {error}")
-            self.result_queue.put(False)
-
-
-def run_program_thread(name, module_loader, screen, clock, bomb_timer):
-    result_queue = queue.Queue()
-    program_thread = ProgramThread(name, module_loader, screen, clock, result_queue)
-    program_thread.start()
-
-    while program_thread.is_alive():
-        if bomb_timer.is_expired():
-            return False
-
-        time.sleep(0.05)
-
+def run_program(name, module_loader, screen, clock, bomb_timer):
     if bomb_timer.is_expired():
         return False
 
     try:
-        return result_queue.get_nowait()
-    except queue.Empty:
+        module = module_loader()
+        result = module.main(screen, clock)
+    except Exception as error:
+        print(f"{name} crashed: {error}")
         return False
+
+    if bomb_timer.is_expired():
+        return False
+
+    return result
 
 
 ###########
@@ -369,7 +348,7 @@ def main():
             pygame.mixer.music.set_volume(10.00)
             pygame.mixer.music.play()
 
-        program_result = run_program_thread(
+        program_result = run_program(
             program_name,
             module_loader,
             screen,
@@ -398,27 +377,27 @@ if __name__ == "__main__":
     raise SystemExit(main())
 gui = Lcd()
 
-# initialize the bomb strikes and active phases (i.e., not yet defused)
-strikes_left = NUM_STRIKES
-active_phases = NUM_PHASES
-
-# "boot" the bomb (schedule the bootup)
-gui.after(100, bootup)
-
-# main pygame loop
-clock = pygame.time.Clock()
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            gui.quit()
-        else:
-            gui.handle_event(event)
-
-    # run any scheduled callbacks
-    gui._process_scheduled()
-
-    # render the GUI
-    gui.render()
-
-    # cap the frame rate
-    clock.tick(30)
+# # initialize the bomb strikes and active phases (i.e., not yet defused)
+# strikes_left = NUM_STRIKES
+# active_phases = NUM_PHASES
+#
+# # "boot" the bomb (schedule the bootup)
+# gui.after(100, bootup)
+#
+# # main pygame loop
+# clock = pygame.time.Clock()
+# while True:
+#     for event in pygame.event.get():
+#         if event.type == pygame.QUIT:
+#             gui.quit()
+#         else:
+#             gui.handle_event(event)
+#
+#     # run any scheduled callbacks
+#     gui._process_scheduled()
+#
+#     # render the GUI
+#     gui.render()
+#
+#     # cap the frame rate
+#     clock.tick(30)
