@@ -240,10 +240,6 @@ def main():
             pygame.mixer.music.set_volume(10.00)
             pygame.mixer.music.play()
 
-        if program_name == "Outro":
-            pygame.mixer.stop()
-            
-
         program_result = run_program(
             program_name,
             module_loader,
