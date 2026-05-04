@@ -39,7 +39,7 @@ def main(screen=None, clock=None):
         "Charles is freed from the chair... ",
         "He notices a safe in the corner of the room.",
         "On the safe is a keypad. But it's a strange model.",
-        "In order to get the pin code, you must repeat the patterns displayed.",
+        "In order to get the pin code, \nyou must repeat the patterns displayed.",
         "Repeat the pattern correctly to continue.",
         "But be sure to remember the first number from the pattern",
         "Make too many mistakes and the bomb wins.",

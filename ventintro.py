@@ -18,6 +18,11 @@ TEXT_PADDING_X = 18
 TEXT_PADDING_Y = 16
 PROMPT_OFFSET_Y = 45
 
+PANEL_X = 300
+PANEL_Y = 232
+PANEL_W = 425
+PANEL_H = 299
+
 
 def main(screen=None, clock=None):
     if not pygame.get_init():
@@ -34,6 +39,9 @@ def main(screen=None, clock=None):
 
     bg = pygame.image.load("img_keys/base.png").convert()
     bg = pygame.transform.scale(bg, screen.get_size())
+
+    panel = pygame.image.load("img_keys/vent.png").convert_alpha()
+    panel = pygame.transform.smoothscale(panel, (PANEL_W, PANEL_H))
 
     messages = [
         "Charles looks around and notices a panel on his restraints.",
@@ -87,6 +95,7 @@ def main(screen=None, clock=None):
 
         screen.blit(bg, (0, 0))
         draw_character(screen)
+        screen.blit(panel, (PANEL_X, PANEL_Y))
 
         if counter < speed * len(message):
             counter += 1
