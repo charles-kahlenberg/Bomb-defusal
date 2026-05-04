@@ -580,10 +580,11 @@ def main(screen=None, clock=None):
             if event.type == pygame.KEYDOWN and not game_over:
                 if event.key in key_to_wire_index:
                     pressed_wire_index = key_to_wire_index[event.key]
-                    zap = False
+                    
 
         if pressed_wire_index is not None and not game_over:
             pressed_wire = wire_order[pressed_wire_index]
+            zap = False
 
             if pressed_wire == current_target_wire and not connected[pressed_wire.color]:
                 connected[pressed_wire.color] = True
