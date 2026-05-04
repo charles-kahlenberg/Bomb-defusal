@@ -315,6 +315,7 @@ def main(screen=None, clock=None):
     button_press_sound = make_button_press_sound()
 
     # constants and variables for game state
+    total_pattern_rounds = 8
     rounds = 0
     strikes = 0
     max_strikes = 3
@@ -383,7 +384,7 @@ def main(screen=None, clock=None):
 
         if not game_over:
             if state == "start_round":
-                if rounds <= 3:
+                if rounds < total_pattern_rounds:
                     melody_length = rounds + 1
                     melody = [random.randrange(NUM_BUTTONS) for _ in range(melody_length)]
                     player_melody = []
@@ -466,13 +467,13 @@ def main(screen=None, clock=None):
         text_y = keypad_origin_y + 30
 
         if not game_over:
-            round_text = timer_font.render(f"Round: {rounds + 1}", True, TIMER_COLOR)
+            round_text = timer_font.render(f"Round: {rounds + 1}/{total_pattern_rounds}", True, TIMER_COLOR)
             strike_text = timer_font.render(f"Strikes: {strikes}/{max_strikes}", True, (255, 0, 0))
 
             if striketime < 60:
                 striketime += 1
                 screen.blit(strike_text, (text_x, text_y))
-            elif rounds != 4:
+            elif rounds != total_pattern_rounds:
                 screen.blit(round_text, (text_x, text_y))
 
             if state in ("final_input", "final_check"):
