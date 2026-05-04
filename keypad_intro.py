@@ -25,6 +25,53 @@ WIRE_BG_Y = 232
 WIRE_BG_WIDTH = 425
 WIRE_BG_HEIGHT = 299
 
+KEYPAD_X = 409
+KEYPAD_Y = 249
+KEYPAD_W = 200
+KEYPAD_H = 268
+
+KEYPAD_SOURCE_W = 200
+KEYPAD_SOURCE_H = 300
+
+KEYPAD_GRID_COLS = 3
+KEYPAD_GRID_ROWS = 4
+KEYPAD_BUTTON_W = 50
+KEYPAD_BUTTON_H = 50
+KEYPAD_BUTTON_GAP_X = 3
+KEYPAD_BUTTON_GAP_Y = 2
+KEYPAD_BUTTON_OFFSET_Y = 71
+
+
+def make_keypad_surface():
+    keypad_surface = pygame.Surface((KEYPAD_SOURCE_W, KEYPAD_SOURCE_H), pygame.SRCALPHA)
+
+    keypad_bg = pygame.image.load("img_keys/KeypadFull.png").convert_alpha()
+    keypad_bg.set_colorkey((0, 0, 0))
+    keypad_bg = pygame.transform.scale(keypad_bg, (KEYPAD_SOURCE_W, KEYPAD_SOURCE_H))
+    keypad_surface.blit(keypad_bg, (0, 0))
+
+    white_img = pygame.image.load("img_keys/white_key.png").convert_alpha()
+    black_img = pygame.image.load("img_keys/black_key.png").convert_alpha()
+
+    white_img.set_alpha(0)
+    black_img.set_alpha(0)
+
+    white_button = pygame.transform.scale(white_img, (KEYPAD_BUTTON_W, KEYPAD_BUTTON_H))
+    black_button = pygame.transform.scale(black_img, (KEYPAD_BUTTON_W, KEYPAD_BUTTON_H))
+
+    grid_total_w = KEYPAD_GRID_COLS * KEYPAD_BUTTON_W + (KEYPAD_GRID_COLS - 1) * KEYPAD_BUTTON_GAP_X
+    grid_origin_x = (KEYPAD_SOURCE_W - grid_total_w) // 2
+    grid_origin_y = KEYPAD_BUTTON_OFFSET_Y
+
+    for row in range(KEYPAD_GRID_ROWS):
+        for col in range(KEYPAD_GRID_COLS):
+            button_image = white_button if (row + col) % 2 == 0 else black_button
+            button_x = grid_origin_x + col * (KEYPAD_BUTTON_W + KEYPAD_BUTTON_GAP_X)
+            button_y = grid_origin_y + row * (KEYPAD_BUTTON_H + KEYPAD_BUTTON_GAP_Y)
+            keypad_surface.blit(button_image, (button_x, button_y))
+
+    return keypad_surface
+
 
 def draw_wrapped_text(surface, font, text, color, x, y, max_width):
     lines = []
@@ -73,13 +120,15 @@ def main(screen=None, clock=None):
         (WIRE_BG_WIDTH, WIRE_BG_HEIGHT)
     )
 
+    keypad_surface = make_keypad_surface()
+
     messages = [
         "Charles is freed from the chair... ",
         "He notices a safe in the corner of the room.",
         "On the safe is a keypad. But it's a strange model.",
         "In order to get the pin code,\nyou must repeat the patterns displayed.",
         "Repeat the pattern correctly to continue.",
-        "But be sure to remember the first number from the pattern",
+        "But be sure to remember the first number from the pattern.\n",
         "Make too many mistakes and the bomb wins.",
     ]
 
@@ -114,6 +163,8 @@ def main(screen=None, clock=None):
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                if created_display:
+                    pygame.quit()
                 return False
 
             if event.type == pygame.KEYDOWN:
@@ -128,15 +179,20 @@ def main(screen=None, clock=None):
 
             prev_btn = btn
 
+        # Draw background, character, wire panel
         screen.blit(bg, (0, 0))
         draw_character(screen)
         screen.blit(wire_bg, (WIRE_BG_X, WIRE_BG_Y))
+
+        # Draw keypad (scaled)
+        scaled_keypad = pygame.transform.smoothscale(keypad_surface, (KEYPAD_W, KEYPAD_H))
+        screen.blit(scaled_keypad, (KEYPAD_X, KEYPAD_Y))
 
         if counter < speed * len(message):
             counter += 1
             if tcounter == 0:
                 c2t.play()
-            tcounter +=1
+            tcounter += 1
             if tcounter > 20:
                 tcounter == 0
         else:
