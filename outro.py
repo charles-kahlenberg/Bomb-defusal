@@ -240,6 +240,9 @@ def main(screen=None, clock=None):
     background = pygame.image.load(BACKGROUND_PATH).convert()
     background = pygame.transform.scale(background, screen.get_size())
 
+    endscrea = pygame.image.load("img_keys/BgOutro.png").convert()
+    endscrea = pygame.transform.scale(background, screen.get_size())
+
     # Load the wire background/panel image.
     # Its position and size are controlled by the WIRE_BACKGROUND constants above.
     wire_background = pygame.image.load(WIRE_BACKGROUND_PATH).convert()
@@ -280,7 +283,7 @@ def main(screen=None, clock=None):
 
     steps1 = pygame.mixer.Sound("img_keys/Steps1.mp3")
     steps2 = pygame.mixer.Sound("img_keys/Steps2.mp3")
-    vro = pygame.mixer.Sound("img_keys/endingopen.mp3")
+    vro = pygame.mixer.Sound("img_keys/realendmus.mp3")
     endmus = pygame.mixer.Sound("img_keys/Watashino Uso.mp3")
     talking_sound = pygame.mixer.Sound("img_keys/C2Talking.mp3")
     talking_channel = pygame.mixer.Channel(0)
@@ -289,6 +292,8 @@ def main(screen=None, clock=None):
     stepped = False
     stepped2 = False
     vroa = False
+    final = False
+    screenfu = False
     
     while running:
         now = pygame.time.get_ticks()
@@ -354,9 +359,19 @@ def main(screen=None, clock=None):
             if escount > 90 and stepped == False:
                 effects_channel.play(steps1)
                 stepped = True
-            if escount == 130 and stepped2 == False:
+            if escount > 150 and stepped2 == False:
                 effects_channel.play(steps2)
                 stepped2 = True
+            if escount > 240 and vroa == False:
+                effects_channel.play(vro)
+                vroa = True
+            if escount > 240 and escount <= 325:
+                screenfu = True
+                transp -= 3  
+            if escount > 250 and final == False:
+                 effects_channel.play(endmus) 
+                 final = True  
+
             if escount == 400:
                 running = False
 
@@ -400,6 +415,8 @@ def main(screen=None, clock=None):
         #   screen.blit(my_image, (x, y))
 
         draw_textbox(screen, font, typed_text, done, active_message)
+        if screenfu:
+            screen.blit(endscrea, (0,0))
         screen.blit(rect_surf, (0,0))
         pygame.display.flip()
         clock.tick(FPS)
