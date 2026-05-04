@@ -89,22 +89,23 @@ def main(screen=None, clock=None):
     sswa = False
 
     running = True
+    def advance_message():
+        nonlocal activem, done, final_message_done_time, message, counter, running
+
+        if done:
+            if activem < len(messages) - 1:
+                activem += 1
+                done = False
+                final_message_done_time = None
+                message = messages[activem]
+                counter = 0
+            else:
+                running = False
+
+
 
     while running:
         now = pygame.time.get_ticks()
-
-        def advance_message():
-            nonlocal activem, done, final_message_done_time, message, counter, running
-
-            if done:
-                if activem < len(messages) - 1:
-                    activem += 1
-                    done = False
-                    final_message_done_time = None
-                    message = messages[activem]
-                    counter = 0
-                else:
-                    running = False
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
