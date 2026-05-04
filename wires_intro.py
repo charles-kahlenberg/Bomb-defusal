@@ -73,6 +73,59 @@ def main(screen=None, clock=None):
     wire_bg = pygame.image.load("img_keys/WireBG.png").convert()
     wire_bg = pygame.transform.scale(wire_bg, game_surface.get_size())
 
+    def load_intro_image(path, scale):
+        image = pygame.image.load(path).convert_alpha()
+        new_size = (
+            int(image.get_width() * scale),
+            int(image.get_height() * scale)
+        )
+        return pygame.transform.smoothscale(image, new_size)
+
+    def draw_image_centered(surface, image, center):
+        surface.blit(image, image.get_rect(center=center))
+
+    wire_circle_images = {
+        "circle1": load_intro_image("img_keys/W1T.png", 2.25),
+        "circle2": load_intro_image("img_keys/W2T.png", 2.25),
+        "circle3": load_intro_image("img_keys/W3T.png", 2.25),
+        "circle4": load_intro_image("img_keys/W4T.png", 2.25),
+        "circle5": load_intro_image("img_keys/W5T.png", 2.25),
+        "circle6": load_intro_image("img_keys/W1B.png", 2.25),
+        "circle7": load_intro_image("img_keys/W2B.png", 2.25),
+        "circle8": load_intro_image("img_keys/W3B.png", 2.25),
+        "circle9": load_intro_image("img_keys/W4B.png", 2.25),
+        "circle10": load_intro_image("img_keys/W5B.png", 2.25),
+    }
+
+    connected_wire_images = {
+        "blue": load_intro_image("img_keys/Wire1.png", 2.2),
+        "red": load_intro_image("img_keys/Wire2.png", 2.4),
+        "yellow": load_intro_image("img_keys/Wire3.png", 2.2),
+        "green": load_intro_image("img_keys/Wire4.png", 2.4),
+        "orange": load_intro_image("img_keys/Wire5.png", 2.0),
+    }
+
+    circle_positions = {
+        "circle1": (112, 184),
+        "circle2": (312, 143),
+        "circle3": (512, 152),
+        "circle4": (712, 168),
+        "circle5": (912, 114),
+        "circle6": (112, 450),
+        "circle7": (312, 416),
+        "circle8": (512, 430),
+        "circle9": (712, 428),
+        "circle10": (912, 418),
+    }
+
+    connected_wire_positions = {
+        "blue": (125, 300),
+        "red": (322, 288),
+        "yellow": (500, 290),
+        "green": (718, 300),
+        "orange": (900, 263),
+    }
+
     minigame_rect = pygame.Rect(
         MINIGAME_WINDOW_X,
         MINIGAME_WINDOW_Y,
@@ -84,7 +137,7 @@ def main(screen=None, clock=None):
         "The vent cover crashes open, revealing the bomb's wire panel.",
         "These wires are still live. Touching the wrong one will count against you.",
         "The display will tell you which wire needs to be connected next.",
-        "Pay attention, move carefully, and do not guess.",
+        "Pay attention, move carefully.",
     ]
 
     active_message = 0
@@ -166,6 +219,9 @@ def main(screen=None, clock=None):
             prev_btn = btn
 
         screen.blit(wire_bg, (0, 0))
+
+        for circle_name, position in circle_positions.items():
+            draw_image_centered(screen, wire_circle_images[circle_name], position)
 
         if counter < speed * len(message):
             counter += 1
