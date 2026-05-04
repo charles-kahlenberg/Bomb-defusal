@@ -1,4 +1,7 @@
 import pygame
+import threading
+import time
+
 from character_overlay import draw_character
 from display_utils import create_fullscreen_display
 
@@ -27,6 +30,53 @@ TEXTBOX_Y = 42
 TEXTBOX_WIDTH = 471
 TEXTBOX_HEIGHT = 132
 TEXTBOX_ALPHA = 180
+
+
+class FlingState:
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.running = True
+        self.won = False
+
+        self.pressed = []
+        self.target_sequence = [1, 2, 3, 4]
+
+        self.vent_x = VENT_WINDOW_X
+        self.vent_y = VENT_WINDOW_Y
+        self.vent_angle = 0
+        self.fling = False
+        self.fling_count = 0
+        self.sound_played = False
+
+
+class VentPanelThread(threading.Thread):
+    def __init__(self, state):
+        super().__init__(daemon=True)
+        self.state = state
+
+    def run(self):
+        while True:
+            with self.state.lock:
+                if not self.state.running:
+                    break
+
+                if self.state.pressed == self.state.target_sequence:
+                    self.state.fling = True
+                elif len(self.state.pressed) >= len(self.state.target_sequence):
+                    self.state.pressed = []
+
+                if self.state.fling:
+                    self.state.fling_count += 1
+                    self.state.vent_angle += 20
+                    self.state.vent_x -= 40
+                    self.state.vent_y -= 40
+
+                    if self.state.fling_count >= 35:
+                        self.state.won = True
+                        self.state.running = False
+                        break
+
+            time.sleep(1 / 60)
 
 
 def main(screen=None, clock=None):
@@ -78,7 +128,7 @@ def main(screen=None, clock=None):
 
     vent = pygame.image.load("img_keys/vent.png").convert_alpha()
     vent = pygame.transform.smoothscale(vent, vent_rect.size)
-    ven1 = pygame.mixer.Sound("img_keys/LongVent.mp3")
+    vent_sound = pygame.mixer.Sound("img_keys/LongVent.mp3")
 
     wire_bg = pygame.image.load("img_keys/WireBG.png").convert()
     wire_bg = pygame.transform.scale(wire_bg, wire_surface.get_size())
@@ -120,34 +170,45 @@ def main(screen=None, clock=None):
         "circle10": (912, 418),
     }
 
-    angle = 0
-    pressed = []
-    target_sequence = [1, 2, 3, 4]
+    state = FlingState()
+    vent_thread = VentPanelThread(state)
+    vent_thread.start()
 
-    rx = VENT_WINDOW_X
-    ry = VENT_WINDOW_Y
-    count = 0
+    last_rpi_key = None
 
-    fling = False
-    notflung = False
-    running = True
+    while True:
+        with state.lock:
+            running = state.running
+            won = state.won
 
-    while running:
+        if not running:
+            break
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                with state.lock:
+                    state.running = False
+
                 if created_display:
                     pygame.quit()
+
                 return False
 
             if event.type == pygame.KEYDOWN and not RPi:
+                key_value = None
+
                 if event.key == pygame.K_1:
-                    pressed.append(1)
+                    key_value = 1
                 elif event.key == pygame.K_2:
-                    pressed.append(2)
+                    key_value = 2
                 elif event.key == pygame.K_3:
-                    pressed.append(3)
+                    key_value = 3
                 elif event.key == pygame.K_4:
-                    pressed.append(4)
+                    key_value = 4
+
+                if key_value is not None:
+                    with state.lock:
+                        state.pressed.append(key_value)
 
         if RPi and component_keypad is not None:
             keys = component_keypad.pressed_keys
@@ -157,49 +218,46 @@ def main(screen=None, clock=None):
 
                 if current_key != last_rpi_key:
                     if current_key in (1, 2, 3, 4):
-                        pressed.append(current_key)
+                        with state.lock:
+                            state.pressed.append(current_key)
 
                     last_rpi_key = current_key
             else:
                 last_rpi_key = None
 
         wire_surface.fill((0, 0, 0, 0))
-
         wire_surface.blit(wire_bg, (0, 0))
 
         for endpoint_name, position in wire_endpoint_positions.items():
             draw_image_centered(wire_surface, wire_endpoint_images[endpoint_name], position)
 
-        if pressed == target_sequence:
-            fling = True
-        elif len(pressed) >= len(target_sequence):
-            pressed = []
+        with state.lock:
+            vent_x = state.vent_x
+            vent_y = state.vent_y
+            vent_angle = state.vent_angle
+            should_play_sound = state.fling and not state.sound_played
 
-        if fling:
-            count += 1
-            angle += 20
-            rx -= 40
-            ry -= 40
-            if notflung == False:
-                ven1.play()
-                notflung = True
+            if should_play_sound:
+                state.sound_played = True
 
-            if count >= 35:
-                return True
+        if should_play_sound:
+            vent_sound.play()
 
         show_frame()
 
-        fvent = pygame.transform.rotate(vent, angle)
-        main_screen.blit(fvent, (rx, ry))
+        flung_vent = pygame.transform.rotate(vent, vent_angle)
+        main_screen.blit(flung_vent, (vent_x, vent_y))
         pygame.display.flip()
 
         clock.tick(60)
 
+    with state.lock:
+        state.running = False
+        won = state.won
+
+    vent_thread.join(timeout=0.5)
+
     if created_display:
         pygame.quit()
 
-    return False
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+    return won
