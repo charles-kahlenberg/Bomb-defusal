@@ -20,6 +20,11 @@ PROMPT_OFFSET_Y = 45
 LONG_MESSAGE_PROMPT_OFFSET_Y = 90
 TEXT_LINE_SPACING = 24
 
+WIRE_BG_X = 300
+WIRE_BG_Y = 232
+WIRE_BG_WIDTH = 425
+WIRE_BG_HEIGHT = 299
+
 
 def draw_wrapped_text(surface, font, text, color, x, y, max_width):
     lines = []
@@ -61,6 +66,12 @@ def main(screen=None, clock=None):
 
     bg = pygame.image.load("img_keys/base.png").convert()
     bg = pygame.transform.scale(bg, screen.get_size())
+
+    wire_bg = pygame.image.load("img_keys/WireBG.png").convert()
+    wire_bg = pygame.transform.smoothscale(
+        wire_bg,
+        (WIRE_BG_WIDTH, WIRE_BG_HEIGHT)
+    )
 
     messages = [
         "Charles is freed from the chair... ",
@@ -118,6 +129,7 @@ def main(screen=None, clock=None):
 
         screen.blit(bg, (0, 0))
         draw_character(screen)
+        screen.blit(wire_bg, (WIRE_BG_X, WIRE_BG_Y))
 
         if counter < speed * len(message):
             counter += 1

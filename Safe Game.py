@@ -19,6 +19,7 @@ import random
 import sys
 import numpy as np
 from bomb_configs import *
+from character_overlay import draw_character
 
 pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=512)
 # pygame.init()
@@ -144,6 +145,12 @@ MINIGAME_WINDOW_Y = 232
 MINIGAME_WINDOW_W = 425
 MINIGAME_WINDOW_H = 299
 
+TEXTBOX_X = 277
+TEXTBOX_Y = 42
+TEXTBOX_WIDTH = 471
+TEXTBOX_HEIGHT = 132
+TEXTBOX_ALPHA = 180
+
 # everything below is imported from https://www.geeksforgeeks.org/python/pygame-creating-sprites/ and modified to fit my game, I will be using sprites for the buttons that the user will press to play the melodies
 
 # make Sprites
@@ -231,6 +238,15 @@ def main(screen=None, clock=None):
 
     def show_frame():
         main_screen.blit(intro_bg, (0, 0))
+        draw_character(main_screen)
+
+        text_box = pygame.Surface((TEXTBOX_WIDTH, TEXTBOX_HEIGHT), pygame.SRCALPHA)
+        text_box.fill((0, 0, 0, TEXTBOX_ALPHA))
+        main_screen.blit(text_box, (TEXTBOX_X, TEXTBOX_Y))
+
+        border_rect = pygame.Rect(TEXTBOX_X, TEXTBOX_Y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT)
+        pygame.draw.rect(main_screen, (255, 255, 255), border_rect, 2)
+
         scaled_game = pygame.transform.smoothscale(game_surface, minigame_rect.size)
         main_screen.blit(scaled_game, minigame_rect)
         pygame.display.flip()
