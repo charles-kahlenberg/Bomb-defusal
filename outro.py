@@ -240,8 +240,7 @@ def main(screen=None, clock=None):
     background = pygame.image.load(BACKGROUND_PATH).convert()
     background = pygame.transform.scale(background, screen.get_size())
 
-    endscrea = pygame.image.load("img_keys/BgOutro.png").convert()
-    endscrea = pygame.transform.scale(background, screen.get_size())
+    
 
     # Load the wire background/panel image.
     # Its position and size are controlled by the WIRE_BACKGROUND constants above.
@@ -288,6 +287,9 @@ def main(screen=None, clock=None):
     talking_sound = pygame.mixer.Sound("img_keys/C2Talking.mp3")
     talking_channel = pygame.mixer.Channel(0)
     effects_channel = pygame.mixer.Channel(1)
+
+    endscrea = pygame.image.load("img_keys/BgOutro.png").convert()
+    endscrea = pygame.transform.scale(background, screen.get_size())
 
     stepped = False
     stepped2 = False
@@ -366,11 +368,11 @@ def main(screen=None, clock=None):
                 effects_channel.play(vro)
                 vroa = True
             if escount > 240 and escount <= 325:
-                screenfu = True
                 transp -= 3  
             if escount > 250 and final == False:
                  effects_channel.play(endmus) 
                  final = True  
+                 screenfu = True
 
             if escount == 400:
                 running = False
