@@ -12,19 +12,19 @@ speed = 4
 
 
 # extracting game items and characters form the resource.png image.
-player_init = Image.open("images/images/resources.png").crop((77,5,163,96)).convert("RGBA")
+player_init = Image.open("images/resources.png").crop((77,5,163,96)).convert("RGBA")
 player_init = player_init.resize(list(map(lambda x:x//2 , player_init.size)))
 
-player_frame_1 = Image.open("images/images/resources.png").crop((1679,2,1765,95)).convert("RGBA")
+player_frame_1 = Image.open("images/resources.png").crop((1679,2,1765,95)).convert("RGBA")
 player_frame_1 = player_frame_1.resize(list(map(lambda x:x//2 , player_frame_1.size)))
 
-player_frame_2 = Image.open("images/images/resources.png").crop((1767,2,1853,95)).convert("RGBA")
+player_frame_2 = Image.open("images/resources.png").crop((1767,2,1853,95)).convert("RGBA")
 player_frame_2 = player_frame_2.resize(list(map(lambda x:x//2 , player_frame_2.size)))
 
-player_frame_3 = Image.open("images/images/resources.png").crop((1855,2,1941,95)).convert("RGBA")
+player_frame_3 = Image.open("images/resources.png").crop((1855,2,1941,95)).convert("RGBA")
 player_frame_3 = player_frame_3.resize(list(map(lambda x:x//2 , player_frame_3.size)))
 
-player_frame_31 = Image.open("images/images/resources.png").crop((1943,2,2029,95)).convert("RGBA")
+player_frame_31 = Image.open("images/resources.png").crop((1943,2,2029,95)).convert("RGBA")
 player_frame_31 = player_frame_31.resize(list(map(lambda x:x//2 , player_frame_31.size)))
 
 player_frame_4 = Image.open("images/resources.png").crop((2030,2,2117,95)).convert("RGBA")
@@ -70,6 +70,8 @@ crouch = cycle([player_frame_5]*cust_speed+ [player_frame_6]*cust_speed)
 crouch_scope = [player_frame_5]+[player_frame_6]
 obstacles = [obstacle1,obstacle2, obstacle3,obstacle4,obstacle5,obstacle6]
 
+start_ticks = pygame.time.get_ticks()
+
 
 gameDisplay = pygame.display.set_mode((600,200))
 pygame.display.set_caption('T-Rex Runner')
@@ -98,6 +100,13 @@ obast3 = choice(obstacles)
 if obast3 in [obstacle4, obstacle5, obstacle6]:obs3 = (obs3[0], 115)
 
 while not crashed:
+    
+    currentTimer = max(0, 30 - (pygame.time.get_ticks() - start_ticks) // 1000)
+    if currentTimer <= 0:
+        won = True
+        #endScreen()
+    
+    
     gameDisplay.fill((255,255,255))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
