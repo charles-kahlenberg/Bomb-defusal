@@ -91,7 +91,7 @@ MESSAGES = [
     "The final switch clicks into place.",
     "The bomb goes silent.",
     "Charles exhales, realizing he made it out alive.",
-    "For now...",
+    "A light encapsulates his eyes....",
 ]
 
 
@@ -227,6 +227,9 @@ def main(screen=None, clock=None):
     # Load shared background.
     background = pygame.image.load(BACKGROUND_PATH).convert()
     background = pygame.transform.scale(background, screen.get_size())
+    rect_surf = pygame.Surface((800,480), pygame.SRCALPHA)
+    transp = 0
+    rect_surf.fill((255, 255, 255, transp))
 
     # Load font used for dialogue.
     font = pygame.font.Font(FONT_PATH, 16)
@@ -248,6 +251,9 @@ def main(screen=None, clock=None):
     prev_btn = False
     running = True
     result = True
+    tcounter = 0
+    endscreen = False
+    escount = 0
 
     while running:
         now = pygame.time.get_ticks()
@@ -264,6 +270,7 @@ def main(screen=None, clock=None):
             nonlocal done
             nonlocal final_message_done_time
             nonlocal running
+            nonlocal endscreen
 
             # Do not advance until the full message is visible.
             if not done:
@@ -277,7 +284,7 @@ def main(screen=None, clock=None):
                 final_message_done_time = None
             else:
                 # If this was the final message, end the outro.
-                running = False
+                endscreen = True
 
         # -------------------------------------------------------------------
         # INPUT HANDLING
@@ -301,24 +308,36 @@ def main(screen=None, clock=None):
             # Only advance on a new press, not while holding the button down.
             if btn and not prev_btn:
                 advance_message()
-
             prev_btn = btn
+
+        if endscreen:
+            escount += 1
+            screen.blit(rect_surf, (0,0))
+            transp += 3
 
         # -------------------------------------------------------------------
         # TEXT TYPING LOGIC
         # -------------------------------------------------------------------
         # The message reveals one character at a time.
+        talking_sound = pygame.mixer.Sound("img_keys/C2Talking.mp3")
+        
         if counter < TYPE_SPEED * len(message):
             counter += 1
+            if tcounter == 0:
+                 talking_sound.play()
+            tcounter += 1
         else:
             done = True
+            tcounter = 0
+            pygame.mixer.stop()
 
             # The final message automatically ends after a short wait.
             if active_message == len(MESSAGES) - 1:
                 if final_message_done_time is None:
                     final_message_done_time = now
                 elif now - final_message_done_time >= FINAL_MESSAGE_WAIT_MS:
-                    running = False
+                    endscreen = True
+                    running = True
 
         typed_text = message[0:counter // TYPE_SPEED]
 
