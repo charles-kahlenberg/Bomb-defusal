@@ -372,7 +372,7 @@ def main(screen=None, clock=None):
                     advance_message()
 
             if endscreen:
-                if escount > 300:
+                if escount > 500:
                     if event.type == pygame.KEYDOWN:
                             if event.key == pygame.K_RETURN and not RPi:
                                 running = False
