@@ -17,6 +17,33 @@ TEXTBOX_ALPHA = 180
 TEXT_PADDING_X = 18
 TEXT_PADDING_Y = 16
 PROMPT_OFFSET_Y = 45
+LONG_MESSAGE_PROMPT_OFFSET_Y = 90
+TEXT_LINE_SPACING = 24
+
+
+def draw_wrapped_text(surface, font, text, color, x, y, max_width):
+    lines = []
+
+    for paragraph in text.split("\n"):
+        words = paragraph.split(" ")
+        current_line = ""
+
+        for word in words:
+            test_line = word if current_line == "" else current_line + " " + word
+
+            if font.size(test_line)[0] <= max_width:
+                current_line = test_line
+            else:
+                if current_line:
+                    lines.append(current_line)
+                current_line = word
+
+        if current_line:
+            lines.append(current_line)
+
+    for index, line in enumerate(lines):
+        rendered = font.render(line, True, color)
+        surface.blit(rendered, (x, y + index * TEXT_LINE_SPACING))
 
 
 def main(screen=None, clock=None):
@@ -39,7 +66,7 @@ def main(screen=None, clock=None):
         "Charles is freed from the chair... ",
         "He notices a safe in the corner of the room.",
         "On the safe is a keypad. But it's a strange model.",
-        "In order to get the pin code, \nyou must repeat the patterns displayed.",
+        "In order to get the pin code,\nyou must repeat the patterns displayed.",
         "Repeat the pattern correctly to continue.",
         "But be sure to remember the first number from the pattern",
         "Make too many mistakes and the bomb wins.",
@@ -110,13 +137,23 @@ def main(screen=None, clock=None):
         border_rect = pygame.Rect(TEXTBOX_X, TEXTBOX_Y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT)
         pygame.draw.rect(screen, (255, 255, 255), border_rect, 2)
 
-        snip = font.render(message[0:counter // speed], True, "white")
-        screen.blit(snip, (TEXTBOX_X + TEXT_PADDING_X, TEXTBOX_Y + TEXT_PADDING_Y))
+        typed_text = message[0:counter // speed]
+        draw_wrapped_text(
+            screen,
+            font,
+            typed_text,
+            "white",
+            TEXTBOX_X + TEXT_PADDING_X,
+            TEXTBOX_Y + TEXT_PADDING_Y,
+            TEXTBOX_WIDTH - TEXT_PADDING_X * 2
+        )
 
         if done and active_message < len(messages) - 1:
             prompt_text = "Press Button" if RPi else "Press Enter"
             prompt = font.render(prompt_text, True, (180, 180, 180))
-            screen.blit(prompt, (TEXTBOX_X + TEXT_PADDING_X, TEXTBOX_Y + PROMPT_OFFSET_Y))
+
+            prompt_offset_y = LONG_MESSAGE_PROMPT_OFFSET_Y if active_message == 3 else PROMPT_OFFSET_Y
+            screen.blit(prompt, (TEXTBOX_X + TEXT_PADDING_X, TEXTBOX_Y + prompt_offset_y))
 
         pygame.display.flip()
         clock.tick(24)
