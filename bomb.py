@@ -71,6 +71,11 @@ def import_switch_intro():
 def import_switch_g():
     return import_game_module("switch_g", "SwitchG.py")
 
+
+# import the game over screen module by file path
+def import_gameover():
+    return import_game_module("gameover", "gameover.py")
+
 ###########
 # functions
 ###########
@@ -224,6 +229,17 @@ def turn_off():
     for pin in button._rgb:
         pin.value = True
 
+
+def show_game_over(screen, clock):
+    pygame.mixer.stop()
+    pygame.mixer.music.stop()
+
+    gameover = import_gameover()
+    gameover.main(screen, clock)
+
+    return False
+
+
 def main():
     setup_phases()
 
@@ -260,8 +276,7 @@ def main():
     fling_won = fling_test.main(screen, clock)
 
     if not fling_won:
-        pygame.quit()
-        return False
+        return show_game_over(screen, clock)
 
     # wires intro
     wires_intro = import_wires_intro()
@@ -275,10 +290,9 @@ def main():
     wires_gui = import_wires_gui()
     wires_won = wires_gui.main(screen, clock)
 
-    # if wires fail, quit immediately
+    # if wires fail, show game over
     if not wires_won:
-        pygame.quit()
-        return False
+        return show_game_over(screen, clock)
 
     # keypad intro
     keypad_intro = import_keypad_intro()
@@ -293,8 +307,7 @@ def main():
     safe_won = safe_game.main(screen, clock)
 
     if not safe_won:
-        pygame.quit()
-        return False
+        return show_game_over(screen, clock)
 
     # switch intro
     switch_intro = import_switch_intro()
@@ -309,8 +322,7 @@ def main():
     switches_won = switch_g.main(screen, clock)
 
     if not switches_won:
-        pygame.quit()
-        return False
+        return show_game_over(screen, clock)
 
     pygame.quit()
     return True
