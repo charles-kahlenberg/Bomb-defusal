@@ -1,4 +1,6 @@
 import pygame
+import threading
+import time
 
 from character_overlay import draw_character
 from display_utils import create_fullscreen_display
@@ -51,9 +53,76 @@ def draw_wrapped_text(surface, font, text, color, x, y, max_width):
         surface.blit(rendered, (x, y + index * TEXT_LINE_SPACING))
 
 
+class WiresIntroTextState:
+    def __init__(self, messages):
+        self.lock = threading.Lock()
+        self.running = True
+        self.result = True
+
+        self.messages = messages
+        self.active_message = 0
+        self.message = messages[0]
+        self.counter = 0
+        self.speed = 1
+        self.done = False
+        self.final_message_done_time = None
+        self.advance_requested = False
+        self.talking_counter = 0
+
+
+class WiresIntroTextThread(threading.Thread):
+    def __init__(self, state):
+        super().__init__(daemon=True)
+        self.state = state
+
+    def run(self):
+        while True:
+            with self.state.lock:
+                if not self.state.running:
+                    break
+
+                now = pygame.time.get_ticks()
+
+                if self.state.advance_requested and self.state.done:
+                    self.state.advance_requested = False
+
+                    if self.state.active_message < len(self.state.messages) - 1:
+                        self.state.active_message += 1
+                        self.state.message = self.state.messages[self.state.active_message]
+                        self.state.counter = 0
+                        self.state.done = False
+                        self.state.final_message_done_time = None
+                        self.state.talking_counter = 0
+                    else:
+                        self.state.running = False
+                        break
+
+                if self.state.counter < self.state.speed * len(self.state.message):
+                    self.state.counter += 1
+                    self.state.talking_counter += 1
+
+                    if self.state.talking_counter > 20:
+                        self.state.talking_counter = 0
+                else:
+                    self.state.done = True
+                    self.state.talking_counter = 0
+
+                    if self.state.active_message == len(self.state.messages) - 1:
+                        if self.state.final_message_done_time is None:
+                            self.state.final_message_done_time = now
+                        elif now - self.state.final_message_done_time >= 3000:
+                            self.state.running = False
+                            break
+
+            time.sleep(1 / 24)
+
+
 def main(screen=None, clock=None):
     if not pygame.get_init():
         pygame.init()
+
+    if not pygame.mixer.get_init():
+        pygame.mixer.init()
 
     created_display = screen is None
     if screen is None:
@@ -119,14 +188,6 @@ def main(screen=None, clock=None):
         "circle10": (912, 418),
     }
 
-    connected_wire_positions = {
-        "blue": (125, 300),
-        "red": (322, 288),
-        "yellow": (500, 290),
-        "green": (718, 300),
-        "orange": (900, 263),
-    }
-
     minigame_rect = pygame.Rect(
         MINIGAME_WINDOW_X,
         MINIGAME_WINDOW_Y,
@@ -141,17 +202,21 @@ def main(screen=None, clock=None):
         "Pay attention, move carefully.",
     ]
 
-    active_message = 0
-    message = messages[active_message]
+    text_state = WiresIntroTextState(messages)
+    text_thread = WiresIntroTextThread(text_state)
+    text_thread.start()
 
     font = pygame.font.Font("img_keys/Baskic8.otf", 16)
-    counter = 0
-    speed = 1
-    done = False
-    final_message_done_time = None
+    talking_sound = pygame.mixer.Sound("img_keys/C2Talking.mp3")
+
     prev_btn = False
 
     def show_frame():
+        with text_state.lock:
+            typed_text = text_state.message[0:text_state.counter // text_state.speed]
+            done = text_state.done
+            active_message = text_state.active_message
+
         main_screen.blit(bg, (0, 0))
         draw_character(main_screen)
 
@@ -162,7 +227,6 @@ def main(screen=None, clock=None):
         border_rect = pygame.Rect(TEXTBOX_X, TEXTBOX_Y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT)
         pygame.draw.rect(main_screen, (255, 255, 255), border_rect, 2)
 
-        typed_text = message[0:counter // speed]
         draw_wrapped_text(
             main_screen,
             font,
@@ -183,40 +247,36 @@ def main(screen=None, clock=None):
 
         pygame.display.flip()
 
-    tcounter = 0
-    running = True
+    while True:
+        with text_state.lock:
+            running = text_state.running
+            should_play_talking = text_state.talking_counter == 1 and not text_state.done
 
-    while running:
-        now = pygame.time.get_ticks()
-
-        def advance_message():
-            nonlocal active_message, message, counter, done, final_message_done_time, running
-
-            if done:
-                if active_message < len(messages) - 1:
-                    active_message += 1
-                    message = messages[active_message]
-                    counter = 0
-                    done = False
-                    final_message_done_time = None
-                else:
-                    running = False
+        if not running:
+            break
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                with text_state.lock:
+                    text_state.running = False
+                    text_state.result = False
+
                 if created_display:
                     pygame.quit()
+
                 return False
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN and not RPi:
-                    advance_message()
+                    with text_state.lock:
+                        text_state.advance_requested = True
 
         if RPi and component_button_state is not None:
             btn = component_button_state.value
 
             if btn and not prev_btn:
-                advance_message()
+                with text_state.lock:
+                    text_state.advance_requested = True
 
             prev_btn = btn
 
@@ -225,33 +285,26 @@ def main(screen=None, clock=None):
         for circle_name, position in circle_positions.items():
             draw_image_centered(screen, wire_circle_images[circle_name], position)
 
-        c2t = pygame.mixer.Sound("img_keys/C2Talking.mp3")
-        
-        if counter < speed * len(message):
-             counter += 1
-             if tcounter == 0:
-                c2t.play()
-             tcounter +=1
-             if tcounter > 20:
-                tcounter == 0
-        else:
-            done = True
-            tcounter = 0
-            pygame.mixer.stop()
+        if should_play_talking:
+            talking_sound.play()
 
-            if active_message == len(messages) - 1:
-                if final_message_done_time is None:
-                    final_message_done_time = now
-                elif now - final_message_done_time >= 3000:
-                    running = False
+        with text_state.lock:
+            if text_state.done:
+                pygame.mixer.stop()
 
         show_frame()
         clock.tick(24)
 
+    with text_state.lock:
+        text_state.running = False
+        result = text_state.result
+
+    text_thread.join(timeout=0.5)
+
     if created_display:
         pygame.quit()
 
-    return True
+    return result
 
 
 if __name__ == "__main__":
