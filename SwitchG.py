@@ -178,7 +178,9 @@ class SwitchesThread(threading.Thread):
                         out_of_up_flips = self.state.up_flips_this_round >= MAX_UP_FLIPS_PER_ROUND
 
                         if is_flipping_up and out_of_up_flips:
-                            continue
+                            self.state.won = False
+                            self.state.game_over = True
+                            break
 
                         if not self.state.flipping and sw.set_state(pin.value):
                             if is_flipping_up:
@@ -187,12 +189,16 @@ class SwitchesThread(threading.Thread):
                                     pygame.time.get_ticks() + FLIP_COUNTER_DISPLAY_MS
                                 )
 
+                                if self.state.up_flips_this_round >= MAX_UP_FLIPS_PER_ROUND:
+                                    self.state.won = False
+                                    self.state.game_over = True
+
                             self.state.flipswitch_index = index
                             self.state.flipping = True
                             break
 
-                    if self.state.flipping and self.state.flipswitch_index is not None:
-                        flipswitch = self.switches[self.state.flipswitch_index]
+                if self.state.flipping and self.state.flipswitch_index is not None:
+                    flipswitch = self.switches[self.state.flipswitch_index]
 
                     if flipswitch.flipup:
                         if self.state.flip_counter == 0:
@@ -411,7 +417,9 @@ def main(screen=None, clock=None):
                                 out_of_up_flips = state.up_flips_this_round >= MAX_UP_FLIPS_PER_ROUND
 
                                 if is_flipping_up and out_of_up_flips:
-                                    continue
+                                    state.won = False
+                                    state.game_over = True
+                                    break
 
                                 worked = sw.handle_click(game_pos)
 
@@ -421,6 +429,10 @@ def main(screen=None, clock=None):
                                         state.flip_counter_visible_until = (
                                             pygame.time.get_ticks() + FLIP_COUNTER_DISPLAY_MS
                                         )
+
+                                        if state.up_flips_this_round >= MAX_UP_FLIPS_PER_ROUND:
+                                            state.won = False
+                                            state.game_over = True
 
                                     state.flipswitch_index = index
                                     state.flipping = True
@@ -451,14 +463,28 @@ def main(screen=None, clock=None):
             hud_text = state.hud_text
             hud_color = state.hud_color
             total_value = state.total
+            flips_left = MAX_UP_FLIPS_PER_ROUND - state.up_flips_this_round
+            show_flip_counter = pygame.time.get_ticks() < state.flip_counter_visible_until
             won = state.won
             game_over = state.game_over
 
         hud = font.render(hud_text, True, hud_color)
         screen.blit(hud, (380, 40))
 
-        total_text = font.render(f"Total : {total_value}", True, (255, 255, 255))
-        screen.blit(total_text, (380, 290))
+        if show_flip_counter:
+            bottom_text = font.render(
+                f"Flips: {flips_left}/{MAX_UP_FLIPS_PER_ROUND}",
+                True,
+                (255, 255, 255)
+            )
+        else:
+            bottom_text = font.render(
+                f"Total : {total_value}",
+                True,
+                (255, 255, 255)
+            )
+
+        screen.blit(bottom_text, (380, 290))
 
         if won:
             #screen.blit(font.render("You win!", True, (0, 255, 0)), (240, 270))
@@ -477,7 +503,7 @@ def main(screen=None, clock=None):
             return True
 
         if game_over:
-            screen.blit(font.render("Game Over!", True, (255, 60, 60)), (230, 270))
+            #screen.blit(font.render("Game Over!", True, (255, 60, 60)), (230, 270))
             show_frame()
             pygame.time.wait(1000)
 
