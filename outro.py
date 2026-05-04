@@ -51,6 +51,20 @@ PROMPT_OFFSET_Y = 90
 # Distance between wrapped text lines.
 TEXT_LINE_SPACING = 24
 
+WIN_TEXT = "Charles 2 is better than Charles 1...."
+QUIT_TEXT_RPI = "Press Button to Quit"
+QUIT_TEXT_PC = "Press Enter to Quit"
+
+WIN_COLOR = (255, 255, 255)
+QUIT_COLOR = (150, 150, 150)
+
+WIN_FONT_SIZE = 80
+QUIT_FONT_SIZE = 24
+
+WIN_FADE_MS = 2500
+WAIT_BEFORE_QUIT_TEXT_MS = 5000
+QUIT_TEXT_FADE_MS = 2000
+
 
 # ---------------------------------------------------------------------------
 # TIMING SETTINGS
@@ -157,6 +171,11 @@ def draw_wrapped_text(surface, font, text, color, x, y, max_width):
             )
         )
 
+def draw_centered_text(surface, font, text, color, alpha, center_pos):
+    text_surface = font.render(text, True, color).convert_alpha()
+    text_surface.set_alpha(alpha)
+    text_rect = text_surface.get_rect(center=center_pos)
+    surface.blit(text_surface, text_rect)
 
 def draw_textbox(surface, font, typed_text, done, active_message):
     """
@@ -240,7 +259,10 @@ def main(screen=None, clock=None):
     background = pygame.image.load(BACKGROUND_PATH).convert()
     background = pygame.transform.scale(background, screen.get_size())
 
-    
+    win_font = pygame.font.SysFont("serif", WIN_FONT_SIZE, bold=True)
+    quit_font = pygame.font.SysFont("serif", QUIT_FONT_SIZE)
+
+    start_time = pygame.time.get_ticks()
 
     # Load the wire background/panel image.
     # Its position and size are controlled by the WIRE_BACKGROUND constants above.
@@ -255,8 +277,6 @@ def main(screen=None, clock=None):
 
     rect_surf = pygame.Surface((1200,1200), pygame.SRCALPHA)
     transp = 0
-    rect_surf2 = pygame.Surface((1200,1200), pygame.SRCALPHA)
-    transp2 = 0
 
     # Load font used for dialogue.
     font = pygame.font.Font(FONT_PATH, 16)
@@ -281,9 +301,12 @@ def main(screen=None, clock=None):
     tcounter = 0
     endscreen = False
     escount = 0
+    scr = 255
+    scb = 255
+    scg = 255
+    wintime = False
 
     steps1 = pygame.mixer.Sound("img_keys/Steps1.mp3")
-    steps2 = pygame.mixer.Sound("img_keys/Steps2.mp3")
     vro = pygame.mixer.Sound("img_keys/realendmus.mp3")
     endmus = pygame.mixer.Sound("img_keys/Watashino Uso.mp3")
     talking_sound = pygame.mixer.Sound("img_keys/C2Talking.mp3")
@@ -297,10 +320,13 @@ def main(screen=None, clock=None):
     vroa = False
     final = False
     screenfu = False
+    notfix = True
     
     while running:
         now = pygame.time.get_ticks()
         message = MESSAGES[active_message]
+        elapsed = now - start_time
+        quit_text_ready = elapsed >= WAIT_BEFORE_QUIT_TEXT_MS
 
         def advance_message():
             """
@@ -368,7 +394,7 @@ def main(screen=None, clock=None):
                 vroa = True
             if escount <= 85:
                 transp += 3
-            rect_surf.fill((255, 255, 255, transp))
+            rect_surf.fill((scr, scb, scg, transp))
            
             if escount > 90 and stepped == False:
                 effects_channel.play(steps1)
@@ -377,8 +403,21 @@ def main(screen=None, clock=None):
                 effects_channel.play(steps1)
                 stepped2 = True
             if escount > 240 and escount <= 325:
-                transp2 += 3  
-            rect_surf2.fill((255, 255, 255, transp2))
+                scr -= 3
+                scb -= 3
+                scg -= 3
+            if escount > 324:
+                if notfix:
+                    now = 0
+                    notfix == False
+                wintime = True
+                win_alpha = min(255, int((elapsed / WIN_FADE_MS) * 255))
+                if quit_text_ready:
+                    quit_elapsed = elapsed - WAIT_BEFORE_QUIT_TEXT_MS
+                    quit_alpha = min(255, int((quit_elapsed / QUIT_TEXT_FADE_MS) * 255))
+                else:
+                    quit_alpha = 0
+                
             if escount > 280 and final == False:
                  effects_channel.play(endmus) 
                  final = True  
@@ -407,6 +446,26 @@ def main(screen=None, clock=None):
 
         typed_text = message[0:counter // TYPE_SPEED]
 
+        if wintime:
+            draw_centered_text(
+                screen,
+                win_font,
+                WIN_TEXT,
+                WIN_COLOR,
+                win_alpha,
+                (screen.get_width() // 2, screen.get_height() // 2 - 40)
+            )
+
+            quit_text = QUIT_TEXT_RPI if RPi else QUIT_TEXT_PC
+            draw_centered_text(
+                screen,
+                quit_font,
+                quit_text,
+                QUIT_COLOR,
+                quit_alpha,
+                (screen.get_width() // 2, screen.get_height() // 2 + 55)
+            )
+
         # -------------------------------------------------------------------
         # DRAWING
         # -------------------------------------------------------------------
@@ -422,7 +481,6 @@ def main(screen=None, clock=None):
             draw_character(screen)
             draw_textbox(screen, font, typed_text, done, active_message)
         screen.blit(rect_surf, (0,0))
-        screen.blit(rect_surf2, (0,0))
         pygame.display.flip()
         clock.tick(FPS)
 
