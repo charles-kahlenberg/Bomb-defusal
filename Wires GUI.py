@@ -26,6 +26,15 @@ TEXT_PADDING_X = 18
 TEXT_PADDING_Y = 16
 TEXT_LINE_SPACING = 30
 
+
+# OFF_IMAGE_X = 579
+# OFF_IMAGE_Y = 518
+
+OFF_IMAGE_X = 579
+OFF_IMAGE_Y = 518
+OFF_IMAGE_W = 88
+OFF_IMAGE_H = 12
+
 from bomb_configs import *
 
 
@@ -395,6 +404,9 @@ def main(screen=None, clock=None):
     intro_bg = pygame.image.load("img_keys/base.png").convert()
     intro_bg = pygame.transform.scale(intro_bg, main_screen.get_size())
 
+    off_image = pygame.image.load("img_keys/Off.png").convert_alpha()
+    off_image = pygame.transform.smoothscale(off_image, (OFF_IMAGE_W, OFF_IMAGE_H))
+
     wire_bg = pygame.image.load("img_keys/WireBG.png").convert()
     wire_bg = pygame.transform.scale(wire_bg, game_surface.get_size())
 
@@ -483,8 +495,13 @@ def main(screen=None, clock=None):
         main_screen.blit(intro_bg, (0, 0))
         draw_character(main_screen)
         draw_status_textbox(main_screen, textbox_font, textbox_lines)
+
         scaled_game = pygame.transform.smoothscale(game_surface, minigame_rect.size)
         main_screen.blit(scaled_game, minigame_rect)
+
+        if not won:
+            main_screen.blit(off_image, (OFF_IMAGE_X, OFF_IMAGE_Y))
+
         pygame.display.flip()
 
     all_sprites_list = pygame.sprite.Group()
