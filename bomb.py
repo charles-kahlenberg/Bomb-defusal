@@ -106,6 +106,8 @@ class BombTimerThread(threading.Thread):
         self.seconds_left = seconds
         self.expired = False
         self.running = True
+        self.paused = False
+        self.lock = threading.Lock()
 
     def run(self):
         while True:
@@ -259,26 +261,26 @@ def main():
             pygame.mixer.music.set_volume(10.00)
             pygame.mixer.music.play()
 
-            try:
-                program_result = run_program(
-                    program_name,
-                    module_loader,
-                    screen,
-                    clock,
-                    bomb_timer
-                )
-            except BombTimerExpired:
-                bomb_timer.stop()
-                stop_hardware_phases()
-                return show_game_over(screen, clock)
+        try:
+            program_result = run_program(
+                program_name,
+                module_loader,
+                screen,
+                clock,
+                bomb_timer
+            )
+        except BombTimerExpired:
+            bomb_timer.stop()
+            stop_hardware_phases()
+            return show_game_over(screen, clock)
 
-            if DEBUG and death_on_fail:
-                print(f"DEBUG mode: forcing {program_name} to return True")
-                program_result = True
+        if DEBUG and death_on_fail:
+            print(f"DEBUG mode: forcing {program_name} to return True")
+            program_result = True
 
-            if program_result and program_name == "Switch Game":
-                pygame.mixer.music.stop()
-                bomb_timer.pause()
+        if program_result and program_name == "Switch Game":
+            pygame.mixer.music.stop()
+            bomb_timer.pause()
 
             if RPi and "timer" in globals() and not timer._paused:
                 timer.pause()
@@ -286,7 +288,6 @@ def main():
         if bomb_timer.is_expired():
             bomb_timer.stop()
             stop_hardware_phases()
-            return show_game_over(screen, clock)
 
         if not program_result:
             bomb_timer.stop()
