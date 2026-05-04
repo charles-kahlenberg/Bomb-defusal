@@ -421,9 +421,8 @@ def main(screen=None, clock=None):
             screen.blit(wire_background, (WIRE_BACKGROUND_X, WIRE_BACKGROUND_Y))
             draw_character(screen)
             draw_textbox(screen, font, typed_text, done, active_message)
-            screen.blit(rect_surf, (0,0))
-        elif screenfu:
-            screen.blit(rect_surf2, (0,0))
+        screen.blit(rect_surf, (0,0))
+        screen.blit(rect_surf2, (0,0))
         pygame.display.flip()
         clock.tick(FPS)
 
