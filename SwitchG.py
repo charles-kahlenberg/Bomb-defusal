@@ -19,6 +19,12 @@ MINIGAME_WINDOW_H = 299
 
 KEY_W, KEY_H = 34, 144
 
+# Balance setting:
+# This limits how many times switches can be flipped UP per round.
+# Flipping a switch DOWN does not count.
+MAX_UP_FLIPS_PER_ROUND = 10
+FLIP_COUNTER_DISPLAY_MS = 1000
+
 
 class Switch(pygame.sprite.Sprite):
     def __init__(self, x, y, label, value, key):
@@ -105,6 +111,9 @@ class SwitchGameState:
         self.strikes = 0
         self.target = random.randint(1, 15)
 
+        self.up_flips_this_round = 0
+        self.flip_counter_visible_until = 0
+
         self.game_over = False
         self.won = False
 
@@ -165,14 +174,25 @@ class SwitchesThread(threading.Thread):
                 if RPi and not self.state.game_over and not self.state.won:
                     for index, pin in enumerate(component_toggles):
                         sw = self.switches[index]
+                        is_flipping_up = pin.value and not sw.on
+                        out_of_up_flips = self.state.up_flips_this_round >= MAX_UP_FLIPS_PER_ROUND
+
+                        if is_flipping_up and out_of_up_flips:
+                            continue
 
                         if not self.state.flipping and sw.set_state(pin.value):
+                            if is_flipping_up:
+                                self.state.up_flips_this_round += 1
+                                self.state.flip_counter_visible_until = (
+                                    pygame.time.get_ticks() + FLIP_COUNTER_DISPLAY_MS
+                                )
+
                             self.state.flipswitch_index = index
                             self.state.flipping = True
                             break
 
-                if self.state.flipping and self.state.flipswitch_index is not None:
-                    flipswitch = self.switches[self.state.flipswitch_index]
+                    if self.state.flipping and self.state.flipswitch_index is not None:
+                        flipswitch = self.switches[self.state.flipswitch_index]
 
                     if flipswitch.flipup:
                         if self.state.flip_counter == 0:
@@ -307,6 +327,7 @@ def main(screen=None, clock=None):
             if total == state.target:
                 state.tcounter = 0
                 state.rounds += 1
+                state.up_flips_this_round = 0
 
                 if state.rounds >= 5:
                     state.won = True
@@ -386,9 +407,21 @@ def main(screen=None, clock=None):
                     with state.lock:
                         if not state.flipping:
                             for index, sw in enumerate(switches):
+                                is_flipping_up = sw.rect.collidepoint(game_pos) and not sw.on
+                                out_of_up_flips = state.up_flips_this_round >= MAX_UP_FLIPS_PER_ROUND
+
+                                if is_flipping_up and out_of_up_flips:
+                                    continue
+
                                 worked = sw.handle_click(game_pos)
 
                                 if worked:
+                                    if is_flipping_up:
+                                        state.up_flips_this_round += 1
+                                        state.flip_counter_visible_until = (
+                                            pygame.time.get_ticks() + FLIP_COUNTER_DISPLAY_MS
+                                        )
+
                                     state.flipswitch_index = index
                                     state.flipping = True
                                     break
