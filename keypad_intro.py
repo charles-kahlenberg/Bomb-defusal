@@ -130,7 +130,7 @@ def main(screen=None, clock=None):
         "On the safe is a keypad. But it's a strange model.",
         "In order to get the pin code,\nyou must repeat the patterns displayed.",
         "Repeat the pattern correctly to continue.",
-        "But be sure to remember the first number from the pattern.\n",
+        "But be sure to remember the first number from the pattern.",
         "Make too many mistakes and the bomb wins.",
     ]
 
@@ -230,7 +230,7 @@ def main(screen=None, clock=None):
             prompt_text = "Press Button" if RPi else "Press Enter"
             prompt = font.render(prompt_text, True, (180, 180, 180))
 
-            prompt_offset_y = LONG_MESSAGE_PROMPT_OFFSET_Y if active_message == 3 else PROMPT_OFFSET_Y
+            prompt_offset_y = LONG_MESSAGE_PROMPT_OFFSET_Y if active_message in (3, 5) else PROMPT_OFFSET_Y
             screen.blit(prompt, (TEXTBOX_X + TEXT_PADDING_X, TEXTBOX_Y + prompt_offset_y))
 
         pygame.display.flip()
