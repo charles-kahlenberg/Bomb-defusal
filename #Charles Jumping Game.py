@@ -25,7 +25,7 @@ bgX2 = bg.get_width()
 clock = pygame.time.Clock()
 
 class player(object):
-    run = [pygame.image.load(os.path.join('images', str(x) + '.png')) for x in range(8, 16)]
+    run = [pygame.image.load(os.path.join('img_keys', "cr" + str(x) + '.png')) for x in range(1, 6)]
     jump = [pygame.image.load(os.path.join('images', str(x) + '.png')) for x in range(1, 8)]
     fall = pygame.image.load(os.path.join('images', '0.png'))
     jumpList = [1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,-1,-1,-1,-1,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4]
@@ -57,7 +57,7 @@ class player(object):
             win.blit(self.fall, (self.x, self.y + 30))
 
         else:
-            if self.runCount > 42:
+            if self.runCount > 29:
                 self.runCount = 0
             win.blit(self.run[self.runCount//6], (self.x,self.y))
             self.runCount += 1
@@ -130,7 +130,7 @@ charles_runner = player(200, 420, 64,64) #64 x 64 Sprite
 
 pygame.time.set_timer(USEREVENT+1, 500)
 pygame.time.set_timer(USEREVENT+2, random.randrange(2000, 4000)) #change rate at which objects spawn ehre
-speed = 100
+speed = 24
 clock.tick(speed) #gets the FPS
 run = True
 pause = 0
@@ -176,7 +176,7 @@ while run:
             run = False
             pygame.quit()
         if event.type == USEREVENT+1: #increase the spedd of character
-            speed += 2
+            speed += 1
         if event.type == USEREVENT+2:  #
             objects.append(rock(810,425,32,32)) #adjust hit box here
             #else: Put in the other object
