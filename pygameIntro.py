@@ -18,6 +18,11 @@ TEXT_PADDING_X = 18
 TEXT_PADDING_Y = 16
 PROMPT_OFFSET_Y = 45
 
+VENT_PANEL_X = 300
+VENT_PANEL_Y = 232
+VENT_PANEL_WIDTH = 425
+VENT_PANEL_HEIGHT = 299
+
 
 def main(screen=None, clock=None):
     if not pygame.get_init():
@@ -39,6 +44,12 @@ def main(screen=None, clock=None):
     bg = pygame.transform.scale(bg, screen.get_size())
 
     screen_width, screen_height = screen.get_size()
+
+    vent_panel = pygame.image.load("img_keys/vent.png").convert_alpha()
+    vent_panel = pygame.transform.smoothscale(
+        vent_panel,
+        (VENT_PANEL_WIDTH, VENT_PANEL_HEIGHT)
+    )
 
     rect_pos = pygame.image.load('img_keys/DoorM.png').convert_alpha()
     rect_pos = pygame.transform.scale(rect_pos, screen.get_size())
@@ -116,6 +127,7 @@ def main(screen=None, clock=None):
 
         screen.blit(bg, (0, 0))
         draw_character(screen)
+        screen.blit(vent_panel, (VENT_PANEL_X, VENT_PANEL_Y))
         screen.blit(rect_surf, (0, 0))
         screen.blit(rect_pos, dpos)
 
@@ -142,20 +154,20 @@ def main(screen=None, clock=None):
             pygame.mixer.music.play()
         c1t = pygame.mixer.Sound("img_keys/C1Talking.mp3")
         pygame.mixer.Sound.set_volume(c1t, 1.0)
-        
+
         if pon:
             if counter < speed * len(message):
                 counter += 1
                 if tcounter == 0:
                     c1t.play()
-                tcounter +=1
+                tcounter += 1
                 if tcounter > 20:
-                    tcounter == 0
+                    tcounter = 0
             else:
                 done = True
                 tcounter = 0
                 pygame.mixer.stop()
-                
+
                 if activem == len(messages) - 1:
                     if final_message_done_time is None:
                         final_message_done_time = now
@@ -185,71 +197,5 @@ def main(screen=None, clock=None):
 
     return True
 
-    while running:
-        now = pygame.time.get_ticks()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return False
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN and done and activem < len(messages) - 1:
-                    activem += 1
-                    done = False
-                    final_message_done_time = None
-                    message = messages[activem]
-                    counter = 0
-
-        screen.fill((255, 255, 255))
-
-        screen.blit(bg, (0, 0))
-        screen.blit(rect_surf, (0, 0))
-        screen.blit(rect_pos, (0,0))
-
-        if rect_pos.bottom > 0:
-            rect_pos.move_ip(0, -2)
-            started = True
-        else:
-            doorup = True
-
-        if started and notplayed:
-            notplayed = False
-            pygame.mixer.music.play()
-
-        if doorup:
-            if counter < speed * len(message):
-                counter += 1
-            else:
-                done = True
-
-                if activem == len(messages) - 1:
-                    if final_message_done_time is None:
-                        final_message_done_time = now
-                    elif now - final_message_done_time >= 3000:
-                        running = False
-
-            text_box = pygame.Surface((TEXTBOX_WIDTH, TEXTBOX_HEIGHT), pygame.SRCALPHA)
-            text_box.fill((0, 0, 0, TEXTBOX_ALPHA))
-            screen.blit(text_box, (TEXTBOX_X, TEXTBOX_Y))
-
-            border_rect = pygame.Rect(TEXTBOX_X, TEXTBOX_Y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT)
-            pygame.draw.rect(screen, (255, 255, 255), border_rect, 2)
-
-            snip = font.render(message[0:counter // speed], True, "white")
-            screen.blit(snip, (TEXTBOX_X + TEXT_PADDING_X, TEXTBOX_Y + TEXT_PADDING_Y))
-
-            if done and activem < len(messages) - 1:
-                prompt = font.render("Press Enter", True, (180, 180, 180))
-                screen.blit(prompt, (TEXTBOX_X + TEXT_PADDING_X, TEXTBOX_Y + PROMPT_OFFSET_Y))
-
-        pygame.display.flip()
-        clock.tick(24)
-
-    if created_display:
-        pygame.quit()
-
-    return True
-
-
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(0 if main() else 1)
