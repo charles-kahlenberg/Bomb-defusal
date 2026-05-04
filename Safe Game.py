@@ -383,7 +383,7 @@ def main(screen=None, clock=None):
 
         if not game_over:
             if state == "start_round":
-                if rounds <= 5:
+                if rounds <= 3:
                     melody_length = rounds + 1
                     melody = [random.randrange(NUM_BUTTONS) for _ in range(melody_length)]
                     player_melody = []
