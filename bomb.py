@@ -96,14 +96,16 @@ def import_gameover():
     return import_game_module("gameover", "gameover.py")
 
 
+class BombTimerExpired(Exception):
+    pass
+
+
 class BombTimerThread(threading.Thread):
     def __init__(self, seconds):
         super().__init__(daemon=True)
         self.seconds_left = seconds
         self.expired = False
         self.running = True
-        self.paused = False
-        self.lock = threading.Lock()
 
     def run(self):
         while True:
@@ -143,17 +145,34 @@ class BombTimerThread(threading.Thread):
 
 def run_program(name, module_loader, screen, clock, bomb_timer):
     if bomb_timer.is_expired():
-        return False
+        raise BombTimerExpired()
+
+    original_event_get = pygame.event.get
+
+    def timer_checked_event_get(*args, **kwargs):
+        if bomb_timer.is_expired():
+            raise BombTimerExpired()
+
+        return original_event_get(*args, **kwargs)
 
     try:
+        pygame.event.get = timer_checked_event_get
+
         module = module_loader()
         result = module.main(screen, clock)
+
+    except BombTimerExpired:
+        raise
+
     except Exception as error:
         print(f"{name} crashed: {error}")
         return False
 
+    finally:
+        pygame.event.get = original_event_get
+
     if bomb_timer.is_expired():
-        return False
+        raise BombTimerExpired()
 
     return result
 
@@ -240,21 +259,26 @@ def main():
             pygame.mixer.music.set_volume(10.00)
             pygame.mixer.music.play()
 
-        program_result = run_program(
-            program_name,
-            module_loader,
-            screen,
-            clock,
-            bomb_timer
-        )
+            try:
+                program_result = run_program(
+                    program_name,
+                    module_loader,
+                    screen,
+                    clock,
+                    bomb_timer
+                )
+            except BombTimerExpired:
+                bomb_timer.stop()
+                stop_hardware_phases()
+                return show_game_over(screen, clock)
 
-        if DEBUG and death_on_fail:
-            print(f"DEBUG mode: forcing {program_name} to return True")
-            program_result = True
+            if DEBUG and death_on_fail:
+                print(f"DEBUG mode: forcing {program_name} to return True")
+                program_result = True
 
-        if program_result and program_name == "Switch Game":
-            pygame.mixer.music.stop()
-            bomb_timer.pause()
+            if program_result and program_name == "Switch Game":
+                pygame.mixer.music.stop()
+                bomb_timer.pause()
 
             if RPi and "timer" in globals() and not timer._paused:
                 timer.pause()
