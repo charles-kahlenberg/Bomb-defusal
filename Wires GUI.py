@@ -8,6 +8,7 @@ from pygame.sprite import *
 import sys
 import numpy as np
 from character_overlay import draw_character
+from display_utils import create_fullscreen_display
 
 GAME_W = 1024
 GAME_H = 576
@@ -393,7 +394,7 @@ def main(screen=None, clock=None):
 
     created_display = screen is None
     if screen is None:
-        screen = display.set_mode((1024, 576))
+        screen = create_fullscreen_display("Wires GUI")
 
     display.set_caption("Wires GUI")
 

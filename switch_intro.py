@@ -1,6 +1,8 @@
 import pygame
 
 from character_overlay import draw_character
+from display_utils import create_fullscreen_display
+
 
 try:
     from bomb_configs import RPi, component_button_state
@@ -65,7 +67,7 @@ def main(screen=None, clock=None):
 
     created_display = screen is None
     if screen is None:
-        screen = pygame.display.set_mode((1024, 576))
+        screen = create_fullscreen_display("Switch Intro")
 
     if clock is None:
         clock = pygame.time.Clock()

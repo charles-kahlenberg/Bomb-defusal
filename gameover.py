@@ -1,5 +1,7 @@
 import pygame
 import sys
+from display_utils import create_fullscreen_display
+
 
 try:
     from bomb_configs import RPi, component_button_state
@@ -37,14 +39,17 @@ def main(screen=None, clock=None):
     if not pygame.get_init():
         pygame.init()
 
+    if not pygame.mixer.get_init():
+        pygame.mixer.init()
+
     created_display = screen is None
     if screen is None:
-        screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
+        screen = create_fullscreen_display("Defuse the Bomb")
 
     if clock is None:
         clock = pygame.time.Clock()
 
-    pygame.display.set_caption("Game Over")
+    pygame.display.set_caption("Defuse the Bomb")
 
     died_font = pygame.font.SysFont("serif", DIED_FONT_SIZE, bold=True)
     quit_font = pygame.font.SysFont("serif", QUIT_FONT_SIZE)

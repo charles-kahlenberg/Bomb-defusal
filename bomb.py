@@ -12,6 +12,18 @@ import pygame
 import sys
 from pathlib import Path
 import importlib.util
+from display_utils import create_fullscreen_display
+
+class Lcd:
+    def __init__(self, size=(1024, 576)):
+        pygame.init()
+        pygame.font.init()
+        self.width, self.height = size
+        self.screen = create_fullscreen_display("Defuse the Bomb")
+        self.clock = pygame.time.Clock()
+        self.font_small = pygame.font.SysFont("Courier New", 16)
+        self.font_med = pygame.font.SysFont("Courier New", 22)
+        self.bg = (0, 0, 0)
 
 
 def import_game_module(module_name, file_name):
@@ -246,87 +258,12 @@ def main():
     pygame.init()
     pygame.mixer.init()
 
-    screen = pygame.display.set_mode((1024, 576))
-    pygame.display.set_caption("Defuse the Bomb")
+    screen = create_fullscreen_display("Defuse the Bomb")
     clock = pygame.time.Clock()
 
 
     # launch the pygame intro first
     pygame_intro = import_pygame_intro()
-    intro_done = pygame_intro.main(screen, clock)
-
-    if not intro_done:
-        pygame.quit()
-        return False
-
-    pygame.mixer.music.load("img_keys/10. Aphex Twin - Mt Saint Michel + Saint Michaels Mount.mp3")
-    pygame.mixer.music.set_volume(10.00)
-    pygame.mixer.music.play()
-
-    # vent intro
-    vent_intro = import_vent_intro()
-    vent_intro_done = vent_intro.main(screen, clock)
-
-    if not vent_intro_done:
-        pygame.quit()
-        return False
-
-    # vent minigame
-    fling_test = import_fling_test()
-    fling_won = fling_test.main(screen, clock)
-
-    if not fling_won:
-        return show_game_over(screen, clock)
-
-    # wires intro
-    wires_intro = import_wires_intro()
-    wires_intro_done = wires_intro.main(screen, clock)
-
-    if not wires_intro_done:
-        pygame.quit()
-        return False
-
-    # move on to wires GUI
-    wires_gui = import_wires_gui()
-    wires_won = wires_gui.main(screen, clock)
-
-    # if wires fail, show game over
-    if not wires_won:
-        return show_game_over(screen, clock)
-
-    # keypad intro
-    keypad_intro = import_keypad_intro()
-    keypad_intro_done = keypad_intro.main(screen, clock)
-
-    if not keypad_intro_done:
-        pygame.quit()
-        return False
-
-    # safe game
-    safe_game = import_safe_game()
-    safe_won = safe_game.main(screen, clock)
-
-    if not safe_won:
-        return show_game_over(screen, clock)
-
-    # switch intro
-    switch_intro = import_switch_intro()
-    switch_intro_done = switch_intro.main(screen, clock)
-
-    if not switch_intro_done:
-        pygame.quit()
-        return False
-
-    # switch game
-    switch_g = import_switch_g()
-    switches_won = switch_g.main(screen, clock)
-
-    if not switches_won:
-        return show_game_over(screen, clock)
-
-    pygame.quit()
-    return True
-
 
 ######
 # MAIN

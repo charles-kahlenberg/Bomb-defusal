@@ -20,6 +20,7 @@ import sys
 import numpy as np
 from bomb_configs import *
 from character_overlay import draw_character
+from display_utils import create_fullscreen_display
 
 pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=512)
 # pygame.init()
@@ -227,9 +228,7 @@ def main(screen=None, clock=None):
 
     created_display = screen is None
     if screen is None:
-        screen = pygame.display.set_mode((WIDTH, HEIGHT))
-
-    pygame.display.set_caption("Safe Game")
+        screen = create_fullscreen_display("Safe Game")
 
     main_screen = screen
     game_surface = pygame.Surface((KEYPAD_PANEL_W, KEYPAD_PANEL_H), pygame.SRCALPHA)

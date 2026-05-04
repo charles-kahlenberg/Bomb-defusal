@@ -3,6 +3,7 @@ import sys
 import random
 from bomb_configs import *
 from character_overlay import draw_character
+from display_utils import create_fullscreen_display
 
 if RPi:
     from bomb_configs import component_toggles, component_button_state
@@ -111,7 +112,7 @@ def main(screen=None, clock=None):
     created_display = screen is None
 
     if screen is None:
-        screen = pygame.display.set_mode((1024, 576))
+        screen = create_fullscreen_display("Switches")
 
     pygame.display.set_caption("Switches")
 
