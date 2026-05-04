@@ -253,6 +253,7 @@ def main():
             program_result = True
 
         if program_result and program_name == "Switch Game":
+            pygame.mixer.music.stop()
             bomb_timer.pause()
 
             if RPi and "timer" in globals() and not timer._paused:
