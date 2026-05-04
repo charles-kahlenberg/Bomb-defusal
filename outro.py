@@ -314,6 +314,8 @@ def main(screen=None, clock=None):
             escount += 1
             screen.blit(rect_surf, (0,0))
             transp += 3
+            if escount == 40:
+                running = False
 
         # -------------------------------------------------------------------
         # TEXT TYPING LOGIC
@@ -337,7 +339,6 @@ def main(screen=None, clock=None):
                     final_message_done_time = now
                 elif now - final_message_done_time >= FINAL_MESSAGE_WAIT_MS:
                     endscreen = True
-                    running = True
 
         typed_text = message[0:counter // TYPE_SPEED]
 
