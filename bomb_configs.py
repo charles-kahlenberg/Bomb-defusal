@@ -1,3 +1,27 @@
+"""
+bomb_configs.py
+
+Central configuration file for the Bomb Defusal game.
+
+Responsibilities:
+- Stores global configuration constants.
+- Enables or disables Raspberry Pi hardware support.
+- Defines countdown time, strike count, and debug mode.
+- Sets up hardware components when RPi mode is enabled.
+- Generates puzzle targets such as keypad codes, wire targets, and toggle targets.
+
+Important settings:
+- DEBUG: When True, bomb.py can force minigames to pass for testing.
+- RPi: Enables physical hardware setup.
+- COUNTDOWN: Total bomb timer duration in seconds.
+- NUM_STRIKES: Maximum allowed failures before game over.
+- NUM_PHASES: Number of hardware phases used by the original bomb logic.
+
+Notes:
+- Keep hardware imports inside the RPi check so the project can still run on PC.
+- This file is imported by most other modules, so avoid putting gameplay loops here.
+"""
+
 #################################
 # CSC 102 Defuse the Bomb Project
 # Configuration file
@@ -5,8 +29,8 @@
 #################################
 
 # constants
-DEBUG = True        # debug mode?
-RPi = True          # is this running on the RPi?
+DEBUG = False        # debug mode?
+RPi = True           # is this running on the RPi?
 SHOW_BUTTONS = False # show the Pause and Quit buttons on the main LCD GUI?
 COUNTDOWN = 300      # the initial bomb countdown value (seconds)
 NUM_STRIKES = 5      # the total strikes allowed before the bomb "explodes"

@@ -1,3 +1,24 @@
+"""
+wires_intro.py
+
+Story/instruction sequence before the wires minigame.
+
+Responsibilities:
+- Displays the wire panel background and wire endpoint art.
+- Shows dialogue explaining the wires challenge.
+- Uses a threaded typewriter effect for dialogue.
+- Supports Enter input on PC and button input on RPi.
+
+Main classes:
+- WiresIntroTextState: Stores dialogue state.
+- WiresIntroTextThread: Updates dialogue reveal timing.
+
+Returns:
+- True when the intro finishes normally.
+- False when the player closes the window.
+"""
+
+
 import pygame
 import threading
 import time

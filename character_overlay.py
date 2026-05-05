@@ -1,3 +1,25 @@
+"""
+character_overlay.py
+
+Shared character drawing and animation helper.
+
+Responsibilities:
+- Loads and caches character sprites.
+- Scales character frames to consistent sizes.
+- Chooses animation frames based on pygame ticks.
+- Draws both character overlays onto any supplied surface.
+
+Main features:
+- BC1 has regular frames plus an occasional laugh frame.
+- BC1 can use a separate intro speaking animation.
+- BC2 cycles through its own idle frames.
+- Cached image loading prevents reloading assets every frame.
+
+Notes:
+- Any screen or minigame can call draw_character(surface).
+- Use intro_mode=True when the intro-specific BC1 animation is needed.
+"""
+
 import pygame
 import random
 

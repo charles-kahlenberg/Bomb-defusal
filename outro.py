@@ -1,19 +1,26 @@
 """
 outro.py
 
-A simple ending/story sequence for the bomb defusal game.
+Final story and ending sequence for the Bomb Defusal game.
 
-How to edit this file:
-1. Add or change dialogue in the MESSAGES list.
-2. Adjust textbox position/size using the TEXTBOX constants.
-3. Adjust typing speed using TYPE_SPEED.
-4. Add extra images, sounds, or animations inside the main loop where marked.
+Responsibilities:
+- Displays the final outro dialogue.
+- Plays ending sound effects and music.
+- Fades the scene to black.
+- Displays the final green ending text.
+- Shows a quit prompt and exits on Enter/Button.
 
-This file is designed to be called from bomb.py using:
+Input behavior:
+- During dialogue, Enter/Button advances after text finishes.
+- During the ending screen, Enter/Button quits the program after the quit prompt appears.
 
-    module.main(screen, clock)
+Returns:
+- True if the outro completes normally.
+- False if the window is closed before completion.
 
-It can also be run directly for testing.
+Notes:
+- This module is called by bomb.py after the final minigame succeeds.
+- It can also be run directly for testing.
 """
 
 import pygame

@@ -1,18 +1,29 @@
 #Melody Game
 
-#######Notes
-#Use sprits in the form of square for each key
+"""
+Safe Game.py
 
+Keypad memory minigame for the Bomb Defusal game.
 
-#Psuedocode:
+Responsibilities:
+- Displays a keypad panel inside the main game screen.
+- Generates random patterns for the player to repeat.
+- Tracks rounds, strikes, and final combination input.
+- Plays generated sound effects for success, failure, button presses, and victory.
+- Supports keypad input in RPi mode.
 
-#1. Create a list of melodies (each melody is a list of notes)
-#2. Each button has a sound for a melody
-#3. When a button is pressed, play the corresponding melody, in which each button is presssed by the computer in corresponding order to the melody
-#4. The player must repeat the melody by pressing the buttons in the correct order
-#5. If the player presses the correct buttons in the correct order, they move on to the next melody
-#6. If the player presses the wrong button, they get a strike counter added to them, and they have to start the melody over again
-#7 If the player gets 3 strikes, they lose and have to start the game over again
+Gameplay:
+- The player watches a generated melody/pattern.
+- The player repeats the pattern.
+- The first button of each successful pattern becomes part of the final code.
+- After all rounds, the player enters the remembered final code.
+- Three strikes causes failure.
+
+Returns:
+- True when the final combination is entered correctly.
+- False when the player loses or closes the window.
+"""
+
 
 import pygame
 import random

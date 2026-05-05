@@ -1,3 +1,22 @@
+"""
+switch_intro.py
+
+Story/instruction sequence before the switch minigame.
+
+Responsibilities:
+- Shows the switch panel preview.
+- Explains the binary switch puzzle setup.
+- Displays dialogue with a typewriter effect.
+- Supports Enter input on PC and button input on RPi.
+
+Returns:
+- True when the intro completes normally.
+- False when the player closes the window.
+
+Notes:
+- This module introduces SwitchG.py but does not run the switch puzzle itself.
+"""
+
 import pygame
 
 from character_overlay import draw_character

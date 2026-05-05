@@ -1,3 +1,25 @@
+"""
+pygameIntro.py
+
+Opening story sequence for the Bomb Defusal game.
+
+Responsibilities:
+- Plays the initial intro scene.
+- Animates the door opening.
+- Displays dialogue with a typewriter effect.
+- Plays intro music and character voice sounds.
+- Supports Enter input on PC and button input on RPi.
+
+Thread usage:
+- DoorThread controls the door animation timing.
+- TextThread controls dialogue reveal and advancement.
+- AudioThread controls music, switch sounds, and talking sounds.
+
+Returns:
+- True when the intro completes normally.
+- False when the player closes the window.
+"""
+
 import pygame
 import threading
 import time

@@ -1,3 +1,28 @@
+"""
+bomb_phases.py
+
+Hardware phase and display support for the Bomb Defusal game.
+
+Responsibilities:
+- Defines phase thread classes used for Raspberry Pi hardware mode.
+- Controls the physical timer display.
+- Tracks keypad, button, wire, and toggle phase state.
+- Provides display helper classes for the Pygame-based LCD/status screen.
+
+Main classes:
+- Lcd: Pygame-based status display.
+- PhaseThread: Base class for hardware phase threads.
+- Timer: Countdown timer for the 7-segment display.
+- Keypad: Reads keypad input and checks the target code.
+- Button: Handles pushbutton release logic.
+- Wires: Placeholder for wire hardware logic.
+- Toggles: Placeholder for toggle hardware logic.
+
+Notes:
+- Phase classes are threaded so hardware can be checked continuously.
+- Some classes still contain TODO sections for future hardware behavior.
+"""
+
 #################################
 # CSC 102 Defuse the Bomb Project
 # GUI and Phase class definitions

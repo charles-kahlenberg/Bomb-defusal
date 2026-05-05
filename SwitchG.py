@@ -1,3 +1,32 @@
+"""
+SwitchG.py
+
+Switch/binary puzzle minigame for the Bomb Defusal game.
+
+Responsibilities:
+- Displays a switch panel inside the main game screen.
+- Generates target values for each round.
+- Allows the player to toggle switches to match the target total.
+- Tracks strikes, rounds, and switch flip limits.
+- Supports mouse input on PC and physical toggle/button input on RPi.
+
+Gameplay:
+- Each switch has a hidden numeric value.
+- The player toggles switches until their total matches the target.
+- Pressing Enter on PC, or the physical button on RPi, confirms the answer.
+- Incorrect totals add strikes.
+- Too many strikes causes failure.
+- Completing all rounds causes success.
+
+Thread usage:
+- SwitchTextThread updates HUD text.
+- SwitchesThread handles switch animation and RPi toggle polling.
+
+Returns:
+- True when all switch rounds are completed.
+- False when the player loses or closes the window.
+"""
+
 import pygame
 import random
 import threading

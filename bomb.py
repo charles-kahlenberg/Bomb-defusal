@@ -1,3 +1,29 @@
+"""
+bomb.py
+
+Main controller for the Bomb Defusal game.
+
+Responsibilities:
+- Initializes Pygame and shared display resources.
+- Starts and monitors the bomb countdown timer.
+- Loads each intro, minigame, and outro module in sequence.
+- Handles fail states by showing the game over screen.
+- Supports debug mode, where minigames can be forced to pass.
+- Supports Raspberry Pi hardware mode by starting hardware phase threads.
+
+Important flow:
+1. Create the fullscreen Pygame display.
+2. Start the bomb timer.
+3. Run each program in game_sequence.
+4. If the timer expires or a required minigame fails, show gameover.py.
+5. If all phases complete, run the outro and quit.
+
+Notes:
+- Story/intro modules return True when completed normally.
+- Minigames return True on success and False on failure.
+- The bomb timer is separate from individual minigame logic.
+"""
+
 #################################
 # CSC 102 Defuse the Bomb Project
 # Main program

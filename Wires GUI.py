@@ -1,3 +1,28 @@
+"""
+Wires GUI.py
+
+Wires minigame for the Bomb Defusal game.
+
+Responsibilities:
+- Displays a wire panel inside the main game screen.
+- Randomly selects which wire should be connected next.
+- Tracks connected wires and incorrect attempts.
+- Plays a wire sound effect when a wire is connected.
+- Supports keyboard input on PC and physical wire input on RPi.
+
+Gameplay:
+- The player must connect the requested wire.
+- Correct connections stay active.
+- Incorrect connections add strikes.
+- Three strikes causes failure.
+- Connecting all wires correctly causes success.
+
+Returns:
+- True when all wires are connected correctly.
+- False when the player gets too many strikes or closes the window.
+"""
+
+
 import abc
 import random
 #random.seed(1)

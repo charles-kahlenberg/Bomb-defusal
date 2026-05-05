@@ -1,3 +1,23 @@
+"""
+gameover.py
+
+Game over screen for the Bomb Defusal game.
+
+Responsibilities:
+- Displays the “YOU DIED” message.
+- Fades in the quit prompt after a delay.
+- Allows the player to quit with Enter on PC or the hardware button on RPi.
+- Stops only when the player confirms quit or closes the window.
+
+Input behavior:
+- PC mode: Press Enter after the quit text appears.
+- RPi mode: Press the physical component button after the quit text appears.
+
+Notes:
+- This module can be run directly for testing.
+- bomb.py also imports and calls main(screen, clock) when the bomb timer expires
+  or a required minigame fails.
+"""
 import pygame
 import sys
 from display_utils import create_fullscreen_display

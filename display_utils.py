@@ -1,3 +1,23 @@
+"""
+display_utils.py
+
+Shared display helpers for the Bomb Defusal game.
+
+Responsibilities:
+- Defines the game's logical design resolution.
+- Creates the fullscreen Pygame display.
+- Uses pygame.SCALED so the game keeps 1024x576 coordinates on different screens.
+
+Important constants:
+- DESIGN_W / DESIGN_H: Logical game resolution.
+- DESIGN_SIZE: Tuple used for display creation.
+- FULLSCREEN_FLAGS: Pygame flags used for fullscreen scaling.
+
+Notes:
+- Other modules should use create_fullscreen_display() instead of creating their own
+  display directly, so all screens share the same resolution behavior.
+"""
+
 # display_utils.py
 import pygame
 

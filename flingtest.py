@@ -1,3 +1,28 @@
+"""
+flingtest.py
+
+Vent minigame for the Bomb Defusal game.
+
+Responsibilities:
+- Waits for the correct keypad sequence.
+- Animates the vent flying away when solved.
+- Plays the vent sound effect.
+- Supports keyboard input on PC and keypad input on RPi.
+
+Main classes:
+- FlingState: Shared state for the vent minigame.
+- VentPanelThread: Background thread that checks the input sequence and controls
+  the vent fling animation.
+
+Returns:
+- True when the vent sequence is solved.
+- False when the player closes the window.
+
+Notes:
+- The target sequence is stored in FlingState.target_sequence.
+"""
+
+
 import pygame
 import threading
 import time

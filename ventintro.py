@@ -1,3 +1,24 @@
+"""
+ventintro.py
+
+Story sequence before the vent/keypad minigame.
+
+Responsibilities:
+- Shows the player the vent panel.
+- Displays instructions for entering the vent sequence.
+- Uses a typewriter-style dialogue effect.
+- Supports Enter input on PC and button input on RPi.
+
+Returns:
+- True when the intro completes normally.
+- False when the player closes the window.
+
+Notes:
+- This file is intended to be called by bomb.py as part of the full game sequence.
+- It can also be run directly for testing.
+"""
+
+
 import pygame
 
 from character_overlay import draw_character
